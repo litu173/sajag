@@ -97,7 +97,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .chip.good { background: #e6f5ec; color: #1d7a45; }
 
 /* ------------------------------------------------------------------ header */
-.site-header { position: sticky; top: 0; z-index: 900; background: var(--glass); backdrop-filter: saturate(1.4) blur(18px); -webkit-backdrop-filter: saturate(1.4) blur(18px); border-bottom: 1px solid transparent; transition: border-color 0.3s, box-shadow 0.3s; }
+.site-header { position: sticky; top: 0; z-index: 900; background: var(--glass); backdrop-filter: saturate(1.4) blur(18px); border-bottom: 1px solid transparent; transition: border-color 0.3s, box-shadow 0.3s; }
 .site-header.scrolled { border-bottom-color: var(--line); box-shadow: var(--shadow-sm); }
 .site-header .bar { display: flex; align-items: center; gap: 20px; height: 72px; }
 .brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 700; font-size: 24px; }
