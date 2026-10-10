@@ -141,6 +141,10 @@ class SupabaseRepository implements SajagRepository {
     if (path != null) await _db.storage.from(AppConfig.photoBucket).remove([path]);
   });
 
+  @override
+  Future<void> markResolved(String id, {String? note}) =>
+      _guard(() => _db.rpc<void>('mark_my_report_resolved', params: {'p_report': id, 'p_note': note}));
+
   // ---------------------------------------------------------------- reports
   static const _nearbyDegrees = 0.055; // ~6 km
 

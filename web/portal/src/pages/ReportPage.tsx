@@ -1,9 +1,10 @@
-import { ExternalLink, Share2 } from 'lucide-react';
-import { lazy, Suspense, useEffect } from 'react';
+import { ExternalLink, Eye, Share2 } from 'lucide-react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { digits, headline, longDate, portalSource, type ReportStatus, statusLabel, useAsync } from '@sajag/shared';
-import { Avatar, Kicker, Meta, Photo, SectionHead, Skeleton, Story, useToast } from '../components';
+import { daysToFix, digits, fixDuration, headline, longDate, photoSources, portalSource, type ReportStatus, statusLabel, timeAgo, useAsync } from '@sajag/shared';
+import { Avatar, Card, CategoryChip, Photo, place, ScrollRow, SectionHead, Skeleton, StatusChip, useToast } from '../components';
 import { useLang } from '../i18n';
+import { Reveal } from '../motion';
 
 const PointMap = lazy(() => import('../PointMap'));
 const steps: ReportStatus[] = ['open', 'acknowledged', 'in_progress', 'resolved'];
@@ -12,28 +13,34 @@ export default function ReportPage() {
   const { id = '' } = useParams();
   const { lang, t } = useLang();
   const [toast, showToast] = useToast();
+  const [zoomed, setZoomed] = useState(false);
   const report = useAsync(() => portalSource.report(id), [id]);
   const r = report.data;
   const related = useAsync(
-    async () => (r ? (await portalSource.feed({ categoryId: r.categoryId, limit: 5 })).filter((x) => x.id !== r.id).slice(0, 4) : []),
+    async () => (r ? (await portalSource.feed({ categoryId: r.categoryId, limit: 9 })).filter((x) => x.id !== r.id).slice(0, 8) : []),
     [r?.id],
   );
 
   useEffect(() => {
     if (r) document.title = `${headline(r.description, 60)} — Sajag`;
     return () => {
-      document.title = 'Sajag';
+      document.title = 'Sajag — সজাগ';
     };
   }, [r]);
 
-  useEffect(() => window.scrollTo(0, 0), [id]);
+  useEffect(() => {
+    if (!zoomed) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setZoomed(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [zoomed]);
 
   if (report.loading && !r) {
     return (
-      <main className="container article">
-        <Skeleton height={48} />
-        <div style={{ height: 16 }} />
-        <Skeleton height={420} />
+      <main className="container">
+        <div style={{ marginTop: 18 }}>
+          <Skeleton height="min(70vh, 640px)" radius={26} />
+        </div>
       </main>
     );
   }
@@ -57,74 +64,113 @@ export default function ReportPage() {
         showToast(t('copied'));
       }
     } catch {
-      // user dismissed the share sheet
+      // the user dismissed the share sheet
     }
   };
   const current = steps.indexOf(r.status);
 
   return (
     <main className="container">
-      <article className="article">
-        <Kicker report={r} />
-        <h1 className="hl">{headline(r.description, 160)}</h1>
-        <Meta report={r} />
-        <div className="byline">
-          <Avatar alias={r.authorAlias} seed={r.aliasId ?? r.id} />
-          <span>
-            <span className="meta">{t('reportedBy')}</span>
-            <strong>{r.authorAlias ?? t('anonymous')}</strong>
-          </span>
-        </div>
-        <Photo report={r} large />
-        <p className="body">{r.description}</p>
-
-        <p className="col-label">{t('status')}</p>
-        {current >= 0 ? (
-          <div className="timeline">
-            {steps.map((s, i) => (
-              <div key={s} className={i <= current ? 'done' : undefined}>
-                {statusLabel(s, lang)}
-              </div>
-            ))}
+      <section
+        className="page-hero"
+        onClick={() => r.photoUrl && setZoomed(true)}
+        role={r.photoUrl ? 'button' : undefined}
+        aria-label={r.photoUrl ? headline(r.description) : undefined}
+        tabIndex={r.photoUrl ? 0 : undefined}
+        onKeyDown={(e) => e.key === 'Enter' && r.photoUrl && setZoomed(true)}
+      >
+        <Photo report={r} sizes="100vw" width={1800} eager />
+        {r.photoCredit && <span className="chip dark credit">{t('samplePhoto')} · {r.photoCredit} / Unsplash</span>}
+        <div className="over">
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <CategoryChip id={r.categoryId} />
+            <StatusChip report={r} />
           </div>
-        ) : (
-          <p>{statusLabel(r.status, lang)}</p>
-        )}
-        {r.statusNote && <p className="excerpt">{r.statusNote}</p>}
-        {r.resolvedAt && <p className="meta">{longDate(r.resolvedAt, lang)}</p>}
-
-        <div className="actions">
-          <button type="button" className="btn" onClick={share}>
-            <Share2 size={16} aria-hidden="true" /> {t('share')}
-          </button>
-          <a
-            className="btn ghost"
-            href={`https://www.google.com/maps/search/?api=1&query=${r.lat},${r.lng}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <ExternalLink size={16} aria-hidden="true" /> {t('openInMaps')}
-          </a>
-          <span className="meta" style={{ alignSelf: 'center' }}>
-            {digits(r.confirmCount, lang)} {t('confirmations')}
-          </span>
+          <h1 className="display">{headline(r.description, 140)}</h1>
+          <div className="hero-meta" style={{ marginBottom: 0 }}>
+            <span>{place(r, lang)}</span>
+            <span>{timeAgo(r.createdAt, lang)}</span>
+          </div>
         </div>
+      </section>
 
-        <p className="col-label">{t('location')}</p>
-        <Suspense fallback={<Skeleton height={300} />}>
-          <PointMap lat={r.lat} lng={r.lng} />
-        </Suspense>
-      </article>
+      <div className="article">
+        <Reveal>
+          <p className="body">{r.description}</p>
+          <div className="byline">
+            <Avatar alias={r.authorAlias} seed={r.aliasId ?? r.id} />
+            <div>
+              <div className="muted" style={{ fontSize: 14 }}>{t('reportedBy')}</div>
+              <strong>{r.authorAlias ?? t('anonymous')}</strong>
+            </div>
+            <span style={{ marginLeft: 'auto' }} className="muted">{longDate(r.createdAt, lang)}</span>
+          </div>
+          <span className="eyebrow">{t('status')}</span>
+          {current >= 0 ? (
+            <div className="timeline">
+              {steps.map((s, i) => (
+                <div key={s} className={i <= current ? 'done' : undefined}>
+                  {statusLabel(s, lang)}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>{statusLabel(r.status, lang)}</p>
+          )}
+          {r.statusNote && <p className="muted">{r.statusNote}</p>}
+        </Reveal>
+
+        <aside className="aside">
+          {r.resolvedAt && (
+            <div className="box" style={{ boxShadow: 'inset 0 0 0 2px var(--good)' }}>
+              <h4>{t('solvedIn')}</h4>
+              <div className="big" style={{ color: 'var(--good)' }}>{fixDuration(daysToFix(r)!, lang)}</div>
+              <p className="muted" style={{ margin: '10px 0 0', fontSize: 14 }}>
+                {r.resolvedBy === 'reporter' ? t('markedByReporter') : r.resolvedBy === 'authority' ? t('markedByAuthority') : t('markedByModerator')}
+                {' · '}
+                {longDate(r.resolvedAt, lang)}
+              </p>
+            </div>
+          )}
+          <div className="box">
+            <h4>
+              <Eye size={14} style={{ verticalAlign: -2 }} /> {t('confirmations')}
+            </h4>
+            <div className="big">{digits(r.confirmCount, lang)}</div>
+          </div>
+          <div className="box">
+            <h4>{t('location')}</h4>
+            <Suspense fallback={<Skeleton height={260} radius={12} />}>
+              <PointMap lat={r.lat} lng={r.lng} />
+            </Suspense>
+            <p className="muted" style={{ margin: '12px 0 0', fontSize: 15 }}>{place(r, lang)}</p>
+          </div>
+          <div className="actions">
+            <button type="button" className="btn" onClick={share}>
+              <Share2 size={16} aria-hidden="true" /> {t('share')}
+            </button>
+            <a className="btn ghost" href={`https://www.google.com/maps/search/?api=1&query=${r.lat},${r.lng}`} target="_blank" rel="noreferrer">
+              <ExternalLink size={16} aria-hidden="true" /> {t('openInMaps')}
+            </a>
+          </div>
+        </aside>
+      </div>
 
       {(related.data?.length ?? 0) > 0 && (
         <section className="section">
           <SectionHead title={t('related')} />
-          <div className="layout-b">
+          <ScrollRow label={t('related')}>
             {related.data!.map((x) => (
-              <Story key={x.id} report={x} variant="medium" />
+              <Card key={x.id} report={x} />
             ))}
-          </div>
+          </ScrollRow>
         </section>
+      )}
+
+      {zoomed && r.photoUrl && (
+        <div className="lightbox" onClick={() => setZoomed(false)} role="dialog" aria-modal="true" aria-label={t('close')}>
+          <img src={photoSources(r.photoUrl, 2000).src} alt={r.description} />
+        </div>
       )}
       {toast}
     </main>

@@ -105,6 +105,7 @@ export interface FeedRow {
   flag_count: number;
   created_at: string;
   resolved_at: string | null;
+  resolved_by: Report['resolvedBy'];
 }
 
 export function rowToReport(r: FeedRow): Report {
@@ -115,6 +116,7 @@ export function rowToReport(r: FeedRow): Report {
     categoryId: r.category_id,
     description: r.description,
     photoUrl: photoUrl(r.photo_path),
+    photoCredit: null,
     lat: r.lat,
     lng: r.lng,
     address: r.address,
@@ -126,6 +128,7 @@ export function rowToReport(r: FeedRow): Report {
     flagCount: r.flag_count ?? 0,
     createdAt: new Date(r.created_at),
     resolvedAt: r.resolved_at ? new Date(r.resolved_at) : null,
+    resolvedBy: r.resolved_by ?? null,
   };
 }
 

@@ -1219,6 +1219,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Citizen'**
   String get citizenTitle;
+
+  /// No description provided for @markSolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as solved'**
+  String get markSolved;
+
+  /// No description provided for @markSolvedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Is this problem fixed?'**
+  String get markSolvedTitle;
+
+  /// No description provided for @markSolvedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Only mark it solved if the problem is really gone. Everyone who confirmed it will be told.'**
+  String get markSolvedBody;
+
+  /// No description provided for @markSolvedNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What changed? (optional)'**
+  String get markSolvedNoteHint;
+
+  /// No description provided for @markSolvedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as solved. Thank you!'**
+  String get markSolvedDone;
+
+  /// No description provided for @solvedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Solved in {duration}'**
+  String solvedIn(String duration);
+
+  /// No description provided for @durationHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 hour} other{{n} hours}}'**
+  String durationHours(int n);
+
+  /// No description provided for @durationDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 day} other{{n} days}}'**
+  String durationDays(int n);
+
+  /// No description provided for @markedByReporter.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked solved by the reporter'**
+  String get markedByReporter;
+
+  /// No description provided for @markedByModerator.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed solved by a moderator'**
+  String get markedByModerator;
+
+  /// No description provided for @latestVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'App version'**
+  String get latestVersion;
+
+  /// No description provided for @currentVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'You have version {version}'**
+  String currentVersion(String version);
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} is available'**
+  String updateAvailable(String version);
+
+  /// No description provided for @upToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'You have the latest version ({version})'**
+  String upToDate(String version);
+
+  /// No description provided for @checkingUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking for updates…'**
+  String get checkingUpdate;
+
+  /// No description provided for @updateCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check for updates. Check your internet.'**
+  String get updateCheckFailed;
+
+  /// No description provided for @downloadLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Download latest version'**
+  String get downloadLatest;
+
+  /// No description provided for @iosInstallNote.
+  ///
+  /// In en, this message translates to:
+  /// **'On iPhone, install the downloaded file with Sideloadly or AltStore until Sajag is on the App Store.'**
+  String get iosInstallNote;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

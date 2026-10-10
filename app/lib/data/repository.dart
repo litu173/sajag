@@ -24,6 +24,9 @@ abstract interface class SajagRepository {
   Future<List<Report>> myReports();
   Future<void> deleteReport(String id);
 
+  /// Reporter marks their own report as solved (no resolution XP; see migration 5).
+  Future<void> markResolved(String id, {String? note});
+
   // ---- reports
   Future<List<Report>> feed({
     required FeedScope scope,

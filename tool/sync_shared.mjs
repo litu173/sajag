@@ -17,6 +17,7 @@ const write = (p, s) => {
 };
 
 const categories = read('shared/categories.json');
+const photos = read('shared/demo/photos.json');
 const achievements = read('shared/achievements.json');
 
 // ---------- 1. demo reports ----------
@@ -89,12 +90,25 @@ const weightedAreas = areas.flatMap((a) => Array(a[5] * 2).fill(a));
 const statuses = [...Array(14).fill('open'), ...Array(3).fill('acknowledged'), ...Array(3).fill('in_progress'), ...Array(5).fill('resolved')];
 const catWeights = categories.flatMap((c) => Array(c.id === 'other' ? 1 : c.severity + 2).fill(c.id));
 
+// Each category cycles through its sample photos so neighbouring reports don't repeat an image.
+const photoTurn = {};
+const nextPhoto = (category) => {
+  const list = photos[category];
+  const i = (photoTurn[category] = (photoTurn[category] ?? -1) + 1);
+  return list[i % list.length];
+};
+
 const reports = Array.from({ length: 220 }, (_, i) => {
   const [area, areaBn, lat, lng, city] = pick(weightedAreas);
   const category = pick(catWeights);
   const author = pick(authors);
   const hoursAgo = Math.round(Math.pow(rand(), 1.8) * 24 * 45 * 10) / 10; // skew towards recent
   const anonymous = rand() < 0.25;
+  const [photoId, photoBy] = nextPhoto(category);
+  const status = pick(statuses);
+  // Resolution time varies from hours to weeks (derived from the index so other fields stay stable),
+  // and can't be later than now. Every third fix was confirmed by the reporter themselves.
+  const resolveHours = Math.min([8, 20, 30, 52, 75, 100, 150, 220, 340][i % 9], hoursAgo * 0.9);
   return {
     id: `demo-${String(i + 1).padStart(4, '0')}`,
     category,
@@ -104,11 +118,14 @@ const reports = Array.from({ length: 220 }, (_, i) => {
     area,
     area_bn: areaBn,
     city,
-    status: pick(statuses),
+    status,
     author_id: anonymous ? null : author.id,
     author_alias: anonymous ? null : author.alias,
     confirmations: Math.floor(Math.pow(rand(), 2.2) * 180),
     hours_ago: hoursAgo,
+    photo_id: photoId,
+    photo_by: photoBy,
+    ...(status === 'resolved' && { resolve_hours: Math.round(resolveHours * 10) / 10, resolved_by: i % 3 === 0 ? 'reporter' : 'admin' }),
   };
 }).sort((a, b) => a.hours_ago - b.hours_ago);
 

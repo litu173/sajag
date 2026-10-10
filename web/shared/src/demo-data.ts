@@ -15,6 +15,10 @@ interface DemoReport {
   author_alias: string | null;
   confirmations: number;
   hours_ago: number;
+  photo_id: string;
+  photo_by: string;
+  resolve_hours?: number;
+  resolved_by?: 'reporter' | 'admin';
 }
 
 /** Sample reports with timestamps relative to "now", so the demo always looks current. */
@@ -28,7 +32,8 @@ export function demoReports(now = new Date()): Report[] {
       authorAlias: r.author_alias,
       categoryId: r.category,
       description: r.description,
-      photoUrl: null,
+      photoUrl: `https://images.unsplash.com/photo-${r.photo_id}`,
+      photoCredit: r.photo_by,
       lat: r.lat,
       lng: r.lng,
       address: null,
@@ -39,7 +44,8 @@ export function demoReports(now = new Date()): Report[] {
       confirmCount: r.confirmations,
       flagCount: 0,
       createdAt,
-      resolvedAt: status === 'resolved' ? new Date(createdAt.getTime() + 30 * 3_600_000) : null,
+      resolvedAt: r.resolve_hours === undefined ? null : new Date(createdAt.getTime() + r.resolve_hours * 3_600_000),
+      resolvedBy: r.resolved_by ?? null,
     };
   });
 }

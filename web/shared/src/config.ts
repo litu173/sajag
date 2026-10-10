@@ -11,7 +11,16 @@ export const config = {
   tileUrl:
     (import.meta.env.VITE_TILE_URL as string | undefined) ?? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   tileAttribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  appDownloadUrl: (import.meta.env.VITE_APP_URL as string | undefined) ?? 'https://github.com/litu173/sajag/releases/latest',
+  /**
+   * GitHub's "latest release" asset links redirect straight to the newest file, so the buttons
+   * always download the current version without sending people to the release page.
+   */
+  downloads: {
+    android: 'https://github.com/litu173/sajag/releases/latest/download/sajag-android-arm64.apk',
+    androidUniversal: 'https://github.com/litu173/sajag/releases/latest/download/sajag-android-universal.apk',
+    ios: 'https://github.com/litu173/sajag/releases/latest/download/sajag-ios-unsigned.ipa',
+    latestApi: 'https://api.github.com/repos/litu173/sajag/releases/latest',
+  },
 };
 
 export const isDemo = !config.supabaseUrl || !config.supabaseKey;

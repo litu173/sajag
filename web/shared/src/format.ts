@@ -42,6 +42,21 @@ export function statusLabel(status: ReportStatus, lang: Lang): string {
   return statusLabels[status][lang];
 }
 
+/** Days between reporting and resolution, or null if unresolved. */
+export function daysToFix(r: { createdAt: Date; resolvedAt: Date | null }): number | null {
+  return r.resolvedAt ? Math.max(0, (r.resolvedAt.getTime() - r.createdAt.getTime()) / 86_400_000) : null;
+}
+
+/** "Solved in 3 days" style duration: hours under a day, otherwise whole days. */
+export function fixDuration(days: number, lang: Lang): string {
+  if (days < 1) {
+    const h = Math.max(1, Math.round(days * 24));
+    return digits(lang === 'bn' ? `${h} ঘণ্টায়` : `${h} h`, lang);
+  }
+  const d = Math.round(days);
+  return digits(lang === 'bn' ? `${d} দিনে` : `${d} day${d === 1 ? '' : 's'}`, lang);
+}
+
 /** Reports have no title; use the first sentence of the description, trimmed for headline use. */
 export function headline(description: string, max = 90): string {
   const first = description.split(/(?<=[।.!?])\s/)[0] ?? description;

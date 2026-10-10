@@ -183,4 +183,32 @@ select tests.expect_error($$select public.submit_identity('1111111111', '1990-01
 select tests.ok((select count(*) >= 1 from public.leaderboard('all')), 'public leaderboard');
 reset role;
 
+-- ================================================================ reporter marks solved (phase 1)
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
+insert into public.reports (category_id, description, photo_path, lat, lng, captured_at, area_name)
+values ('streetlight', 'Streetlight out on my lane', 'r/2026/10/s.jpg', 23.7, 90.4, now(), 'Banani');
+select tests.ok((select xp from public.profiles where id = auth.uid()) is not null, 'second citizen posted');
+reset role;
+create temp table xp_before as select xp, resolved_count from public.profiles where id = '00000000-0000-0000-0000-000000000002';
+grant select on xp_before to authenticated;
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+select tests.expect_error($$select public.mark_my_report_resolved((select id from public.report_feed where description like 'Streetlight%'))$$, 'not found');
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
+select public.mark_my_report_resolved((select id from public.report_feed where description like 'Streetlight%'), 'Fixed this morning');
+select tests.ok((select status = 'resolved' and resolved_by = 'reporter' and resolved_at is not null
+                   from public.report_feed where description like 'Streetlight%'), 'reporter can mark own report solved');
+select tests.expect_error($$select public.mark_my_report_resolved((select id from public.report_feed where description like 'Streetlight%'))$$, 'current state');
+select tests.ok((select p.xp = b.xp and p.resolved_count = b.resolved_count from public.profiles p, xp_before b
+                  where p.id = auth.uid()), 'self-resolution earns no resolution XP');
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000ad';
+select tests.ok((select resolved_by = 'admin' from public.report_feed where category_id = 'open_manhole'), 'admin resolutions are attributed');
+set role anon;
+reset request.jwt.claim.sub;
+select tests.ok((select (x.s ->> 'resolved')::int = 2 and (x.s ->> 'resolved_by_reporter')::int = 1
+                          and (x.s ->> 'avg_days') is not null
+                     from (select public.resolution_stats() as s) x), 'public resolution statistics');
+reset role;
+
 \echo 'ALL DATABASE TESTS PASSED'

@@ -1,116 +1,267 @@
-import { Download, Pause, Play } from 'lucide-react';
-import { type ReactNode, useEffect, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, CheckCircle2, Download } from 'lucide-react';
+import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  categories,
+  areaNamesBn,
   category,
   categoryName,
   CategoryIcon,
   config,
-  areaNamesBn,
+  daysToFix,
   digits,
+  fixDuration,
   headline,
   isDemo,
-  longDate,
+  type Lang,
+  photoSources,
   type Report,
   statusLabel,
-  statusLabels,
   timeAgo,
 } from '@sajag/shared';
 import { useLang } from './i18n';
+import { scrollToId, useInView } from './motion';
 
 const logoUrl = `${import.meta.env.BASE_URL}logo.svg`;
 
-/** Area name in the UI language (Bangla names are known for the demo areas). */
-export function areaLabel(area: string, lang: 'bn' | 'en'): string {
+/** Area name in the UI language (Bangla names are known for well-known areas). */
+export function areaLabel(area: string, lang: Lang): string {
   return lang === 'bn' ? (areaNamesBn.get(area) ?? area) : area;
 }
 
-export function place(r: Report, lang: 'bn' | 'en'): string {
+export function place(r: Report, lang: Lang): string {
   return [r.areaName && areaLabel(r.areaName, lang), r.city].filter(Boolean).join(', ');
+}
+
+// ------------------------------------------------------------------ photo
+/**
+ * Image with a blurred low-res preview that cross-fades to the sharp version once loaded.
+ * `sizes` lets the browser pick the right width, so phones never download desktop images.
+ */
+export function Photo({
+  report,
+  sizes = '(max-width: 720px) 100vw, 33vw',
+  eager = false,
+  width = 1200,
+  className = '',
+  children,
+}: {
+  report: Report;
+  sizes?: string;
+  eager?: boolean;
+  width?: number;
+  className?: string;
+  children?: ReactNode;
+}) {
+  const { lang } = useLang();
+  const [loaded, setLoaded] = useState(false);
+  const c = category(report.categoryId);
+  const alt = `${categoryName(report.categoryId, lang)}: ${headline(report.description, 80)}`;
+
+  if (!report.photoUrl) {
+    return (
+      <div className={`ph ${className}`} style={{ background: `linear-gradient(135deg, ${c.color}, color-mix(in srgb, ${c.color} 55%, black))` }}>
+        <div className="ph-art" role="img" aria-label={alt}>
+          <CategoryIcon id={c.id} size={56} color="#fff" />
+        </div>
+        {children}
+      </div>
+    );
+  }
+  const src = photoSources(report.photoUrl, width);
+  return (
+    <div className={`ph ${className}`}>
+      {src.placeholder && <img className="lq" src={src.placeholder} alt="" aria-hidden="true" />}
+      <img
+        className={`hi${loaded ? ' loaded' : ''}`}
+        src={src.src}
+        srcSet={src.srcSet}
+        sizes={sizes}
+        alt={alt}
+        loading={eager ? 'eager' : 'lazy'}
+        fetchPriority={eager ? 'high' : undefined}
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        ref={(img) => {
+          // Cached images can finish before React attaches onLoad.
+          if (img?.complete && img.naturalWidth > 0 && !loaded) setLoaded(true);
+        }}
+      />
+      {children}
+    </div>
+  );
+}
+
+export function CategoryChip({ id, dark = false }: { id: string; dark?: boolean }) {
+  const { lang } = useLang();
+  return (
+    <span className={`chip${dark ? ' dark' : ''}`}>
+      <CategoryIcon id={id} size={14} color={dark ? '#fff' : undefined} />
+      {categoryName(id, lang)}
+    </span>
+  );
+}
+
+export function StatusChip({ report }: { report: Report }) {
+  const { lang } = useLang();
+  if (report.status === 'open') return null;
+  return (
+    <span className={`chip${report.status === 'resolved' ? ' good' : ''}`}>
+      {report.status === 'resolved' && <CheckCircle2 size={14} />}
+      {statusLabel(report.status, lang)}
+    </span>
+  );
+}
+
+/** Photo-led mosaic tile: the image carries the story, the caption stays short. */
+export function Tile({ report, size = '', delay = 0 }: { report: Report; size?: '' | 'big' | 'wide' | 'tall'; delay?: number }) {
+  const { lang } = useLang();
+  const [ref, inView] = useInView<HTMLAnchorElement>();
+  return (
+    <Link
+      ref={ref}
+      to={`/report/${report.id}`}
+      className={`tile ${size} reveal${inView ? ' in' : ''}`}
+      style={{ '--d': `${delay}ms` } as CSSProperties}
+    >
+      <Photo
+        report={report}
+        sizes={size === 'big' ? '(max-width: 720px) 100vw, 50vw' : '(max-width: 720px) 50vw, 25vw'}
+        width={size === 'big' ? 1400 : 800}
+      />
+      <div className="top">
+        <CategoryChip id={report.categoryId} />
+        <StatusChip report={report} />
+      </div>
+      <div className="cap">
+        <h3>{headline(report.description, size === 'big' ? 120 : 80)}</h3>
+        <div className="m">
+          {place(report, lang)} · {timeAgo(report.createdAt, lang)}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/** Photo with caption underneath, for horizontal rows and grids. */
+export function Card({ report }: { report: Report }) {
+  const { lang, t } = useLang();
+  return (
+    <Link to={`/report/${report.id}`} className="card">
+      <Photo report={report} sizes="(max-width: 720px) 80vw, 380px" width={800}>
+        <div className="top">
+          <CategoryChip id={report.categoryId} />
+          <StatusChip report={report} />
+        </div>
+      </Photo>
+      <h3>{headline(report.description, 90)}</h3>
+      <div className="m">
+        {report.resolvedAt && (
+          <span className="solved-tag">
+            <CheckCircle2 size={14} aria-hidden="true" /> {t('solvedIn')} {fixDuration(daysToFix(report)!, lang)}
+          </span>
+        )}
+        <span>{place(report, lang)}</span>
+        <span>{timeAgo(report.createdAt, lang)}</span>
+        {report.confirmCount > 0 && (
+          <span>
+            {digits(report.confirmCount, lang)} {t('confirmations')}
+          </span>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+/** Horizontal, snap-scrolling row with previous/next buttons (trackpads and touch just swipe). */
+export function ScrollRow({ children, label, className = 'row-cards' }: { children: ReactNode; label: string; className?: string }) {
+  const { t } = useLang();
+  const ref = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ start: true, end: false });
+
+  const update = () => {
+    const el = ref.current;
+    if (!el) return;
+    setEdges({ start: el.scrollLeft < 8, end: el.scrollLeft + el.clientWidth > el.scrollWidth - 8 });
+  };
+  useEffect(update, [children]);
+  const page = (dir: number) => ref.current?.scrollBy({ left: dir * ref.current.clientWidth * 0.85, behavior: 'smooth' });
+
+  return (
+    <div>
+      <div className={className} ref={ref} onScroll={update} role="region" aria-label={label} tabIndex={0}>
+        {children}
+      </div>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 18 }}>
+        <button type="button" className="icon-btn" onClick={() => page(-1)} disabled={edges.start} aria-label={t('previous')}>
+          <ArrowLeft size={18} />
+        </button>
+        <button type="button" className="icon-btn" onClick={() => page(1)} disabled={edges.end} aria-label={t('next')}>
+          <ArrowRight size={18} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function SectionHead({ eyebrow, title, hint, end, id }: { eyebrow?: string; title: string; hint?: string; end?: ReactNode; id?: string }) {
+  return (
+    <div className="section-head" id={id}>
+      <div>
+        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+        <h2 className="display">{title}</h2>
+        {hint && <p>{hint}</p>}
+      </div>
+      {end && <div className="end">{end}</div>}
+    </div>
+  );
 }
 
 // ------------------------------------------------------------------ chrome
 export function Header() {
   const { lang, setLang, t } = useLang();
-  return (
-    <>
-    <header>
-      <div className="topbar">
-        <div className="container">
-          <span>{longDate(new Date(), lang)}</span>
-          {isDemo && <span className="demo-pill">{t('demo')}</span>}
-          <span className="spacer" />
-          <div className="lang-switch" role="group" aria-label="Language">
-            <button type="button" aria-pressed={lang === 'bn'} onClick={() => setLang('bn')}>
-              বাংলা
-            </button>
-            <button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>
-              English
-            </button>
-          </div>
-          <a className="btn" href={config.appDownloadUrl}>
-            <Download size={16} aria-hidden="true" /> {t('getApp')}
-          </a>
-        </div>
-      </div>
-      <div className="masthead container">
-        <Link to="/" aria-label={t('frontPage')}>
-          <img src={logoUrl} alt="" width={56} height={56} />
-          <span className="wordmark">{lang === 'bn' ? 'সজাগ' : 'Sajag'}</span>
-        </Link>
-        <div className="tagline">{t('tagline')}</div>
-      </div>
-      <hr className="masthead-rule" />
-    </header>
-      {/* Outside <header> so it can stick to the top of the viewport while scrolling. */}
-      <nav className="nav" aria-label="Sections">
-        <ul>
-          <li>
-            <NavLink to="/" end>
-              {t('frontPage')}
-            </NavLink>
-          </li>
-          {categories.map((c) => (
-            <li key={c.id}>
-              <NavLink to={`/category/${c.id}`}>
-                <CategoryIcon id={c.id} size={15} />
-                {lang === 'bn' ? c.bn : c.en}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </>
-  );
-}
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-export function Ticker({ reports }: { reports: Report[] }) {
-  const { lang, t } = useLang();
-  const [paused, setPaused] = useState(false);
-  if (reports.length === 0) return null;
-  // Rendered twice so the CSS marquee can loop seamlessly; the copy is hidden from assistive tech.
-  const items = (hidden: boolean) =>
-    reports.map((r) => (
-      <Link key={`${hidden}-${r.id}`} to={`/report/${r.id}`} aria-hidden={hidden || undefined} tabIndex={hidden ? -1 : undefined}>
-        <CategoryIcon id={r.categoryId} size={14} />
-        <span>{headline(r.description, 70)}</span>
-        <span className="when">{timeAgo(r.createdAt, lang)}</span>
-      </Link>
-    ));
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const go = (id: string) => {
+    if (location.pathname === '/') scrollToId(id);
+    else {
+      navigate('/');
+      setTimeout(() => scrollToId(id), 400);
+    }
+  };
+
   return (
-    <div className="ticker">
-      <div className="ticker-label">{t('latest')}</div>
-      <div className="ticker-track">
-        <div className="ticker-items" style={paused ? { animationPlayState: 'paused' } : undefined}>
-          {items(false)}
-          {items(true)}
+    <header className={`site-header${scrolled ? ' scrolled' : ''}`}>
+      <div className="container bar">
+        <Link to="/" className="brand" aria-label={t('frontPage')}>
+          <img src={logoUrl} alt="" width={38} height={38} />
+          {lang === 'bn' ? 'সজাগ' : 'Sajag'}
+        </Link>
+        <nav className="site-nav" aria-label="Sections">
+          <button type="button" onClick={() => go('latest')}>{t('navStories')}</button>
+          <button type="button" onClick={() => go('data')}>{t('navData')}</button>
+          <button type="button" onClick={() => go('map')}>{t('navMap')}</button>
+          <button type="button" onClick={() => go('awareness')}>{t('navAwareness')}</button>
+        </nav>
+        <span className="spacer" />
+        {isDemo && <span className="demo-note">{t('demo')}</span>}
+        <div className="lang" role="group" aria-label="Language">
+          <button type="button" aria-pressed={lang === 'bn'} onClick={() => setLang('bn')}>বাংলা</button>
+          <button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>EN</button>
         </div>
+        <button type="button" className="btn sm get-app" onClick={() => go('download')}>
+          <Download size={16} aria-hidden="true" /> {t('getApp')}
+        </button>
       </div>
-      <button type="button" className="btn ghost" style={{ borderRadius: 0, border: 0 }} onClick={() => setPaused((p) => !p)} aria-label={t('pause')}>
-        {paused ? <Play size={16} /> : <Pause size={16} />}
-      </button>
-    </div>
+    </header>
   );
 }
 
@@ -121,6 +272,9 @@ export function Footer() {
       <div className="container">
         <div className="cols">
           <div>
+            <div className="brand" style={{ color: '#fff', marginBottom: 20 }}>
+              <img src={logoUrl} alt="" width={38} height={38} /> Sajag · সজাগ
+            </div>
             <h4>{t('aboutTitle')}</h4>
             <p>{t('aboutBody')}</p>
           </div>
@@ -130,123 +284,26 @@ export function Footer() {
           </div>
           <div>
             <h4>{t('getApp')}</h4>
-            <p>
-              <a className="btn" href={config.appDownloadUrl}>
-                <Download size={16} aria-hidden="true" /> Android / iOS
+            <p style={{ marginBottom: 18 }}>{t('appPitchBody')}</p>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <a className="btn light" href={config.downloads.android} download>
+                <Download size={16} aria-hidden="true" /> Android
               </a>
-            </p>
+              <a className="btn ghost" style={{ color: '#fff', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.3)' }} href={config.downloads.ios} download>
+                <Download size={16} aria-hidden="true" /> iPhone
+              </a>
+            </div>
           </div>
         </div>
         <div className="bottom">
           <span>{t('rights')}</span>
-          <a href={`${import.meta.env.BASE_URL}admin/`}>{t('admin')}</a>
+          <span>
+            {isDemo && <>{t('samplePhoto')}: Unsplash · </>}
+            <a href={`${import.meta.env.BASE_URL}admin/`}>{t('admin')}</a>
+          </span>
         </div>
       </div>
     </footer>
-  );
-}
-
-export function SectionHead({ title, hint, more, icon }: { title: string; hint?: string; more?: string; icon?: ReactNode }) {
-  const { t } = useLang();
-  return (
-    <div className="section-head">
-      <h2>
-        {icon}
-        {title}
-      </h2>
-      {hint && <p>{hint}</p>}
-      {more && (
-        <Link className="more" to={more}>
-          {t('moreIn')} →
-        </Link>
-      )}
-    </div>
-  );
-}
-
-// ------------------------------------------------------------------ story parts
-export function Photo({ report, large = false }: { report: Report; large?: boolean }) {
-  const { lang } = useLang();
-  const c = category(report.categoryId);
-  return (
-    <div className="photo">
-      {report.photoUrl ? (
-        <img src={report.photoUrl} alt={categoryName(report.categoryId, lang)} loading="lazy" decoding="async" />
-      ) : (
-        <div
-          className="photo-art"
-          style={{ background: `linear-gradient(135deg, ${c.color}dd, color-mix(in srgb, ${c.color} 62%, black))` }}
-          aria-hidden="true"
-        >
-          <span className="big">
-            <CategoryIcon id={c.id} size={large ? 260 : 150} color="#fff" />
-          </span>
-          <CategoryIcon id={c.id} size={large ? 72 : 44} color="#fff" />
-        </div>
-      )}
-      {report.status !== 'open' && (
-        <span className="badge-status status" style={{ color: statusLabels[report.status].tone }}>
-          {statusLabel(report.status, lang)}
-        </span>
-      )}
-    </div>
-  );
-}
-
-export function Kicker({ report }: { report: Report }) {
-  const { lang } = useLang();
-  const c = category(report.categoryId);
-  return (
-    <span className="kicker" style={{ color: c.color }}>
-      <CategoryIcon id={c.id} size={14} />
-      {lang === 'bn' ? c.bn : c.en}
-    </span>
-  );
-}
-
-export function Meta({ report, confirmations = true }: { report: Report; confirmations?: boolean }) {
-  const { lang, t } = useLang();
-  const where = place(report, lang);
-  return (
-    <div className="meta">
-      {where && <span>{where}</span>}
-      <span className={where ? 'dot' : undefined}>{timeAgo(report.createdAt, lang)}</span>
-      {confirmations && report.confirmCount > 0 && (
-        <span className="dot">
-          {digits(report.confirmCount, lang)} {t('confirmations')}
-        </span>
-      )}
-    </div>
-  );
-}
-
-type Variant = 'lead' | 'medium' | 'compact' | 'list';
-
-export function Story({ report, variant }: { report: Report; variant: Variant }) {
-  const to = `/report/${report.id}`;
-  if (variant === 'compact') {
-    return (
-      <Link to={to} className="story story--compact">
-        <div>
-          <Kicker report={report} />
-          <h3 className="hl">{headline(report.description, 80)}</h3>
-          <Meta report={report} confirmations={false} />
-        </div>
-        <Photo report={report} />
-      </Link>
-    );
-  }
-  const Heading = variant === 'lead' ? 'h2' : 'h3';
-  return (
-    <Link to={to} className={`story story--${variant}`}>
-      {variant !== 'list' && <Photo report={report} large={variant === 'lead'} />}
-      <div style={variant !== 'list' ? { marginTop: 12 } : undefined}>
-        <Kicker report={report} />
-        <Heading className="hl">{headline(report.description, variant === 'lead' ? 140 : 100)}</Heading>
-        {variant === 'lead' && report.description.length > 90 && <p className="excerpt">{report.description}</p>}
-        <Meta report={report} />
-      </div>
-    </Link>
   );
 }
 
@@ -268,8 +325,8 @@ export function Avatar({ alias, seed }: { alias: string | null; seed: string }) 
   );
 }
 
-export function Skeleton({ height }: { height: number }) {
-  return <div className="skeleton" style={{ height }} />;
+export function Skeleton({ height, radius }: { height: number | string; radius?: number }) {
+  return <div className="sk" style={{ height, borderRadius: radius }} aria-hidden="true" />;
 }
 
 export function useToast(): [ReactNode, (message: string) => void] {

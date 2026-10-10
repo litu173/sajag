@@ -15,12 +15,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;600;700;800&family=Noto+Serif+Bengali:wght@700&family=Source+Serif+4:ital,wght@0,700;0,800;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hind+Siliguri:wght@400;500;600&family=Inter:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"
     />
+    <link rel="preconnect" href="https://images.unsplash.com" />
     <style>
       /* Splash: painted before any JavaScript runs, faded out once the app has rendered. */
-      #splash { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #0b7a57; color: #fff;
-        transition: opacity .35s ease; font-family: system-ui, sans-serif; text-align: center; }
+      #splash { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: radial-gradient(120% 120% at 50% 0%, #13916a, #063f2d); color: #fff;
+        transition: opacity .5s cubic-bezier(.22,1,.36,1); font-family: system-ui, sans-serif; text-align: center; }
       #splash.hide { opacity: 0; pointer-events: none; }
       #splash img { width: 96px; height: 96px; border-radius: 24px; margin: 0 auto 16px; animation: pop .6s ease-out both; }
       #splash strong { display: block; font-size: 34px; letter-spacing: .5px; }

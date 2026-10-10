@@ -47,6 +47,13 @@ Performance choices: cursor pagination, `ListView.builder`, images decoded at di
 
 npm workspaces: `shared` (types, catalog, data sources, heat layer), `portal`, `admin`. Both apps use hash routing for static hosting. Leaflet, the Supabase SDK and the demo data are code-split and only downloaded when needed; the portal paints an inline splash before any JavaScript arrives.
 
+## Resolution before authorities exist
+
+Until phase 2, the reporter can mark their own report solved (`mark_my_report_resolved`). `reports.resolved_by`
+records who closed a report (`reporter`, `admin`, `authority`); self-marked fixes earn no resolution XP and don't
+count toward resolution badges, so they can't be farmed. `resolution_stats()` exposes public solving-rate and
+time-to-fix figures (average, median, share fixed within 7 days) for the website.
+
 ## Phase 2: authorities
 
 Tables already exist and are manageable from the admin panel: `areas` (division → ward hierarchy), `authority_roles` (councillor, chairman, mayor, thana OC, ASP, DC, …), `authorities` (person ↔ role ↔ area) and `category_routes` (category → role). Next steps:

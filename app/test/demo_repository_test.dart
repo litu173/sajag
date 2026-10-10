@@ -90,6 +90,23 @@ void main() {
     expect(r.authorAlias, isNull);
   });
 
+  test('reporters can mark their own report solved, once, without earning resolution XP', () async {
+    await signIn();
+    final mine = await repo.createReport(newReport());
+    final xpBefore = (await repo.myProfile()).xp;
+    await repo.markResolved(mine.id, note: 'Lid replaced');
+    final solved = (await repo.report(mine.id))!;
+    expect(solved.status, ReportStatus.resolved);
+    expect(solved.resolvedBy, 'reporter');
+    expect(solved.statusNote, 'Lid replaced');
+    expect(solved.resolvedAt, isNotNull);
+    expect((await repo.myProfile()).xp, xpBefore);
+    await expectLater(repo.markResolved(mine.id), throwsA(isA<SajagException>()));
+    final someoneElses = (await repo.feed(scope: FeedScope.latest))
+        .firstWhere((r) => r.id != mine.id && r.canBeMarkedSolved);
+    await expectLater(repo.markResolved(someoneElses.id), throwsA(isA<SajagException>()));
+  });
+
   test('confirmations: one per person, never your own', () async {
     await signIn();
     final mine = await repo.createReport(newReport());

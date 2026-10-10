@@ -38,6 +38,7 @@ class DemoRepository implements SajagRepository {
     final hoursAgo = (r['hours_ago'] as num).toDouble();
     final created = now.subtract(Duration(minutes: (hoursAgo * 60).round()));
     final status = ReportStatus.parse(r['status'] as String);
+    final resolveHours = (r['resolve_hours'] as num?)?.toDouble();
     return Report(
       id: r['id'] as String,
       aliasId: r['author_id'] as String?,
@@ -45,6 +46,8 @@ class DemoRepository implements SajagRepository {
       authorLevel: r['author_id'] == null ? null : 1 + (r['author_id'] as String).hashCode % 5,
       categoryId: r['category'] as String,
       description: r['description'] as String,
+      // Sample photo (Unsplash) so the demo looks like real reports; real reports use the citizen's photo.
+      photoUrl: 'https://images.unsplash.com/photo-${r['photo_id']}?w=1000&q=70&auto=format&fit=crop',
       lat: (r['lat'] as num).toDouble(),
       lng: (r['lng'] as num).toDouble(),
       areaName: r['area'] as String?,
@@ -52,7 +55,8 @@ class DemoRepository implements SajagRepository {
       status: status,
       confirmCount: r['confirmations'] as int,
       createdAt: created,
-      resolvedAt: status == ReportStatus.resolved ? created.add(const Duration(hours: 30)) : null,
+      resolvedAt: resolveHours == null ? null : created.add(Duration(minutes: (resolveHours * 60).round())),
+      resolvedBy: r['resolved_by'] as String?,
     );
   }
 
@@ -158,7 +162,8 @@ class DemoRepository implements SajagRepository {
       xp: _xp,
       level: _catalog.levelForXp(_xp).level,
       reportsCount: mine.length,
-      resolvedCount: mine.where((r) => r.status == ReportStatus.resolved).length,
+      // Mirrors the server: self-marked fixes don't count toward resolution badges.
+      resolvedCount: mine.where((r) => r.status == ReportStatus.resolved && r.resolvedBy != 'reporter').length,
       confirmsReceived: mine.fold(0, (sum, r) => sum + r.confirmCount),
       confirmsGiven: _confirmsGiven,
       followingCount: _following.length,
@@ -187,6 +192,35 @@ class DemoRepository implements SajagRepository {
     await _delay();
     _reports.removeWhere((r) => r.id == id && _mine.contains(id));
     _mine.remove(id);
+  }
+
+  @override
+  Future<void> markResolved(String id, {String? note}) async {
+    await _delay();
+    final i = _reports.indexWhere((r) => r.id == id && _mine.contains(id));
+    if (i < 0 || !_reports[i].canBeMarkedSolved) throw const SajagException(SajagErrorCode.unknown);
+    final r = _reports[i];
+    _reports[i] = Report(
+      id: r.id,
+      aliasId: r.aliasId,
+      authorAlias: r.authorAlias,
+      authorLevel: r.authorLevel,
+      categoryId: r.categoryId,
+      description: r.description,
+      photoUrl: r.photoUrl,
+      localPhotoPath: r.localPhotoPath,
+      lat: r.lat,
+      lng: r.lng,
+      address: r.address,
+      areaName: r.areaName,
+      city: r.city,
+      status: ReportStatus.resolved,
+      statusNote: note == null || note.trim().isEmpty ? null : note.trim(),
+      confirmCount: r.confirmCount,
+      createdAt: r.createdAt,
+      resolvedAt: DateTime.now(),
+      resolvedBy: 'reporter',
+    );
   }
 
   void _award(int xp) => _xp = max(0, _xp + xp);

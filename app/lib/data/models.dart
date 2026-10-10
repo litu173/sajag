@@ -144,6 +144,7 @@ class Report {
     this.city,
     this.statusNote,
     this.resolvedAt,
+    this.resolvedBy,
   });
 
   factory Report.fromRow(Json r, {required String Function(String path) photoUrl}) => Report(
@@ -164,6 +165,7 @@ class Report {
     confirmCount: (r['confirm_count'] ?? 0) as int,
     createdAt: DateTime.parse(r['created_at'] as String),
     resolvedAt: r['resolved_at'] == null ? null : DateTime.parse(r['resolved_at'] as String),
+    resolvedBy: r['resolved_by'] as String?,
   );
 
   final String id;
@@ -187,6 +189,13 @@ class Report {
   final DateTime createdAt;
   final DateTime? resolvedAt;
 
+  /// 'reporter' (self-marked, phase 1), 'admin' or 'authority'.
+  final String? resolvedBy;
+
+  /// The reporter can close their own report while authorities aren't connected yet.
+  bool get canBeMarkedSolved =>
+      status == ReportStatus.open || status == ReportStatus.acknowledged || status == ReportStatus.inProgress;
+
   String get place => [areaName, city].whereType<String>().where((s) => s.isNotEmpty).join(', ');
 
   Report copyWith({required int confirmCount}) => Report(
@@ -208,6 +217,7 @@ class Report {
     confirmCount: confirmCount,
     createdAt: createdAt,
     resolvedAt: resolvedAt,
+    resolvedBy: resolvedBy,
   );
 }
 

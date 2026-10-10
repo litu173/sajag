@@ -630,4 +630,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get citizenTitle => 'Citizen';
+
+  @override
+  String get markSolved => 'Mark as solved';
+
+  @override
+  String get markSolvedTitle => 'Is this problem fixed?';
+
+  @override
+  String get markSolvedBody =>
+      'Only mark it solved if the problem is really gone. Everyone who confirmed it will be told.';
+
+  @override
+  String get markSolvedNoteHint => 'What changed? (optional)';
+
+  @override
+  String get markSolvedDone => 'Marked as solved. Thank you!';
+
+  @override
+  String solvedIn(String duration) {
+    return 'Solved in $duration';
+  }
+
+  @override
+  String durationHours(int n) {
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n hours', one: '1 hour');
+    return '$_temp0';
+  }
+
+  @override
+  String durationDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n days', one: '1 day');
+    return '$_temp0';
+  }
+
+  @override
+  String get markedByReporter => 'Marked solved by the reporter';
+
+  @override
+  String get markedByModerator => 'Confirmed solved by a moderator';
+
+  @override
+  String get latestVersion => 'App version';
+
+  @override
+  String currentVersion(String version) {
+    return 'You have version $version';
+  }
+
+  @override
+  String updateAvailable(String version) {
+    return 'Version $version is available';
+  }
+
+  @override
+  String upToDate(String version) {
+    return 'You have the latest version ($version)';
+  }
+
+  @override
+  String get checkingUpdate => 'Checking for updates…';
+
+  @override
+  String get updateCheckFailed => 'Couldn\'t check for updates. Check your internet.';
+
+  @override
+  String get downloadLatest => 'Download latest version';
+
+  @override
+  String get iosInstallNote =>
+      'On iPhone, install the downloaded file with Sideloadly or AltStore until Sajag is on the App Store.';
 }

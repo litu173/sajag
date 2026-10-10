@@ -177,6 +177,14 @@ function ReportDrawer({ report, onClose, onChanged }: { report: Report; onClose:
         <dd>{report.authorAlias ?? 'Anonymous (alias hidden)'}</dd>
         <dt>Confirmations</dt>
         <dd>{report.confirmCount}</dd>
+        {report.resolvedAt && (
+          <>
+            <dt>Resolved</dt>
+            <dd>
+              {fmtDate(report.resolvedAt)} by {report.resolvedBy === 'reporter' ? 'the reporter (self-marked)' : (report.resolvedBy ?? 'admin')}
+            </dd>
+          </>
+        )}
         {report.statusNote && (
           <>
             <dt>Status note</dt>

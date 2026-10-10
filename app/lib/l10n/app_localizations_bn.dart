@@ -624,4 +624,74 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get citizenTitle => 'নাগরিক';
+
+  @override
+  String get markSolved => 'সমাধান হয়েছে চিহ্নিত করুন';
+
+  @override
+  String get markSolvedTitle => 'সমস্যাটির কি সমাধান হয়েছে?';
+
+  @override
+  String get markSolvedBody =>
+      'সমস্যা সত্যিই দূর হলে তবেই সমাধান চিহ্নিত করুন। যারা নিশ্চিত করেছিলেন তাদের জানানো হবে।';
+
+  @override
+  String get markSolvedNoteHint => 'কী পরিবর্তন হয়েছে? (ঐচ্ছিক)';
+
+  @override
+  String get markSolvedDone => 'সমাধান চিহ্নিত হয়েছে। ধন্যবাদ!';
+
+  @override
+  String solvedIn(String duration) {
+    return '$duration সমাধান হয়েছে';
+  }
+
+  @override
+  String durationHours(int n) {
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n ঘণ্টায়');
+    return '$_temp0';
+  }
+
+  @override
+  String durationDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(n, locale: localeName, other: '$n দিনে');
+    return '$_temp0';
+  }
+
+  @override
+  String get markedByReporter => 'রিপোর্টকারী নিজে সমাধান চিহ্নিত করেছেন';
+
+  @override
+  String get markedByModerator => 'মডারেটর সমাধান নিশ্চিত করেছেন';
+
+  @override
+  String get latestVersion => 'অ্যাপ সংস্করণ';
+
+  @override
+  String currentVersion(String version) {
+    return 'আপনার সংস্করণ $version';
+  }
+
+  @override
+  String updateAvailable(String version) {
+    return 'নতুন সংস্করণ $version এসেছে';
+  }
+
+  @override
+  String upToDate(String version) {
+    return 'আপনার কাছে সর্বশেষ সংস্করণ আছে ($version)';
+  }
+
+  @override
+  String get checkingUpdate => 'আপডেট খোঁজা হচ্ছে…';
+
+  @override
+  String get updateCheckFailed => 'আপডেট দেখা যায়নি। ইন্টারনেট সংযোগ দেখুন।';
+
+  @override
+  String get downloadLatest => 'সর্বশেষ সংস্করণ ডাউনলোড করুন';
+
+  @override
+  String get iosInstallNote =>
+      'অ্যাপ স্টোরে আসার আগ পর্যন্ত আইফোনে ডাউনলোড করা ফাইলটি Sideloadly বা AltStore দিয়ে ইনস্টল করুন।';
 }

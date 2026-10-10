@@ -36,6 +36,18 @@ String timeAgo(BuildContext context, DateTime t, {DateTime? now}) {
   return localDigits(context, text);
 }
 
+/// "Solved in 3 days" for a resolved report, or null.
+String? solvedInText(BuildContext context, Report report) {
+  final at = report.resolvedAt;
+  if (at == null) return null;
+  final l = context.l10n;
+  final d = at.difference(report.createdAt);
+  final duration = d.inHours < 24
+      ? l.durationHours(d.inHours < 1 ? 1 : d.inHours)
+      : l.durationDays((d.inHours / 24).round());
+  return localDigits(context, l.solvedIn(duration));
+}
+
 String errorMessage(BuildContext context, Object error) {
   final l = context.l10n;
   if (error is! SajagException) return l.errorGeneric;

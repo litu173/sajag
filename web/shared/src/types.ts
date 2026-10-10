@@ -40,6 +40,8 @@ export interface Report {
   categoryId: string;
   description: string;
   photoUrl: string | null;
+  /** Demo only: credit for the sample photo. Real reports carry the citizen's own photo. */
+  photoCredit: string | null;
   lat: number;
   lng: number;
   address: string | null;
@@ -51,6 +53,8 @@ export interface Report {
   flagCount: number;
   createdAt: Date;
   resolvedAt: Date | null;
+  /** Who closed it. Until authorities are connected, reporters can mark their own reports solved. */
+  resolvedBy: 'reporter' | 'admin' | 'authority' | null;
 }
 
 export interface AwarenessPost {

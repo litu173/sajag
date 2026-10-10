@@ -1,238 +1,287 @@
-import { CheckCircle2, Lightbulb, MapPin, Trophy } from 'lucide-react';
-import { type CSSProperties, lazy, Suspense } from 'react';
+import { ArrowRight, Camera, CheckCircle2, MapPin, Send } from 'lucide-react';
+import { lazy, Suspense, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   category,
   categoryName,
   CategoryIcon,
-  config,
   compact,
   digits,
-  headline,
   levelName,
   portalSource,
   type Report,
   useAsync,
 } from '@sajag/shared';
-import { Avatar, SectionHead, Skeleton, Story, Ticker } from '../components';
+import { Avatar, Card, Photo, ScrollRow, SectionHead, Skeleton, Tile } from '../components';
+import Hero from '../Hero';
 import { useLang } from '../i18n';
+import Insights from '../Insights';
+import DownloadSection from '../DownloadSection';
+import { CountUp, Reveal, scrollToId } from '../motion';
 
 const HotspotMap = lazy(() => import('../HotspotMap'));
 
-const layouts = ['a', 'b', 'c'] as const;
+/** Weighted by how dangerous the category is and how many people confirmed it. */
+const impact = (r: Report) => (r.confirmCount + 5) * category(r.categoryId).severity;
 
-/** The lead: the most-confirmed recent report, weighted by how dangerous its category is. */
-function pickLead(reports: Report[]): Report | undefined {
-  const recent = reports.slice(0, 40);
-  return [...recent].sort(
-    (a, b) => b.confirmCount * category(b.categoryId).severity - a.confirmCount * category(a.categoryId).severity,
-  )[0];
-}
+// Mosaic rhythm: one big tile, then a varied pattern that tiles cleanly on a 4-column grid.
+const mosaicSizes = ['big', '', '', 'tall', 'wide', '', '', 'wide', '', ''] as const;
 
 export default function Home() {
   const { lang, t } = useLang();
-  const feed = useAsync(() => portalSource.feed({ limit: 150 }), []);
-  const top = useAsync(() => portalSource.feed({ sort: 'confirmed', limit: 5 }), []);
+  const recent = useAsync(() => portalSource.recent(90), []);
   const stats = useAsync(() => portalSource.stats(), []);
-  const resolved = useAsync(() => portalSource.feed({ status: 'resolved', limit: 4 }), []);
   const awareness = useAsync(() => portalSource.awareness(), []);
   const board = useAsync(() => portalSource.leaderboard(), []);
 
-  if (feed.error) {
+  const view = useMemo(() => {
+    const all = (recent.data ?? []).filter((r) => r.photoUrl);
+    const latest = [...all].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    // The most important recent story from five different problem types, so the carousel has variety.
+    const heroes: Report[] = [];
+    for (const r of [...latest.slice(0, 60)].sort((a, b) => impact(b) - impact(a))) {
+      if (heroes.length === 5) break;
+      if (!heroes.some((h) => h.categoryId === r.categoryId)) heroes.push(r);
+    }
+    const heroIds = new Set(heroes.map((r) => r.id));
+    const mosaic = latest.filter((r) => !heroIds.has(r.id)).slice(0, mosaicSizes.length);
+
+    const byCat = new Map<string, Report[]>();
+    for (const r of latest) byCat.set(r.categoryId, [...(byCat.get(r.categoryId) ?? []), r]);
+    const cats = [...byCat.entries()].sort((a, b) => b[1].length - a[1].length);
+    const resolved = latest.filter((r) => r.status === 'resolved').slice(0, 8);
+    return { heroes, mosaic, cats, resolved };
+  }, [recent.data]);
+
+  if (recent.error) {
     return (
       <div className="state">
         <p>{t('error')}</p>
-        <button type="button" className="btn" onClick={feed.reload}>
+        <button type="button" className="btn" onClick={recent.reload}>
           {t('retry')}
         </button>
       </div>
     );
   }
-
-  const reports = feed.data ?? [];
-  const lead = pickLead(reports);
-  const justIn = reports.filter((r) => r.id !== lead?.id).slice(0, 4);
-  const used = new Set([lead?.id, ...justIn.map((r) => r.id)]);
-
-  // Busiest categories first, each rendered with a rotating layout so the page has rhythm.
-  const byCategory = new Map<string, Report[]>();
-  for (const r of reports) {
-    if (used.has(r.id)) continue;
-    byCategory.set(r.categoryId, [...(byCategory.get(r.categoryId) ?? []), r]);
-  }
-  const sections = [...byCategory.entries()].filter(([, list]) => list.length >= 3).sort((a, b) => b[1].length - a[1].length).slice(0, 6);
+  const loading = !recent.data;
 
   return (
-    <>
-      <Ticker reports={reports.slice(0, 12)} />
-      <main className="container">
-        <section className="hero" aria-label={t('topStory')}>
-          <div>
-            <p className="col-label">{t('justIn')}</p>
-            {feed.loading && !feed.data ? (
-              <Skeleton height={320} />
-            ) : (
-              <div className="stack">
-                {justIn.map((r) => (
-                  <Story key={r.id} report={r} variant="list" />
-                ))}
-              </div>
-            )}
-          </div>
-          <div>{lead ? <Story report={lead} variant="lead" /> : <Skeleton height={460} />}</div>
-          <div>
-            <p className="col-label">{t('mostConfirmed')}</p>
-            <ol className="numbered">
-              {(top.data ?? []).map((r) => (
-                <li key={r.id}>
-                  <Link to={`/report/${r.id}`}>
-                    <h3 className="hl">{headline(r.description, 80)}</h3>
-                    <div className="meta">
-                      <span style={{ color: category(r.categoryId).color, fontWeight: 700 }}>
-                        {categoryName(r.categoryId, lang)}
-                      </span>
-                      <span className="dot">
-                        {digits(r.confirmCount, lang)} {t('confirmations')}
-                      </span>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
+    <main>
+      <div className="container">
+        {loading ? <Skeleton height="min(84vh, 820px)" radius={26} /> : <Hero slides={view.heroes} />}
 
-        <section className="stats" aria-label="Statistics">
-          {(
-            [
-              ['statTotal', stats.data?.total],
-              ['statResolved', stats.data?.resolved],
-              ['statWeek', stats.data?.thisWeek],
-              ['statAreas', stats.data?.areas],
-            ] as const
-          ).map(([key, value]) => (
-            <div key={key}>
-              <strong>{value === undefined ? '—' : compact(value, lang)}</strong>
-              <span>{t(key)}</span>
-            </div>
-          ))}
-        </section>
-
-        {sections.map(([categoryId, list], i) => {
-          const layout = layouts[i % layouts.length];
-          return (
-            <section className="section" key={categoryId}>
-              <SectionHead
-                title={categoryName(categoryId, lang)}
-                icon={<CategoryIcon id={categoryId} size={22} />}
-                more={`/category/${categoryId}`}
-              />
-              {layout === 'a' && (
-                <div className="layout-a">
-                  <Story report={list[0]!} variant="medium" />
-                  <div className="stack">
-                    {list.slice(1, 4).map((r) => (
-                      <Story key={r.id} report={r} variant="compact" />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {layout === 'b' && (
-                <div className="layout-b">
-                  {list.slice(0, 4).map((r) => (
-                    <Story key={r.id} report={r} variant="medium" />
-                  ))}
-                </div>
-              )}
-              {layout === 'c' && (
-                <div className="layout-c">
-                  {list.slice(0, 2).map((r) => (
-                    <Story key={r.id} report={r} variant="medium" />
-                  ))}
-                  <div className="stack">
-                    {list.slice(2, 6).map((r) => (
-                      <Story key={r.id} report={r} variant="list" />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </section>
-          );
-        })}
-
+        {/* ---------------------------------------------------------------- welcome */}
         <section className="section">
-          <SectionHead title={t('hotspots')} hint={t('hotspotsHint')} icon={<MapPin size={22} />} />
-          <Suspense fallback={<Skeleton height={420} />}>
-            <HotspotMap />
+          <div className="welcome">
+            <Reveal>
+              <span className="eyebrow">{t('tagline')}</span>
+              <h2 className="display">{t('welcomeTitle')}</h2>
+            </Reveal>
+            <Reveal delay={120}>
+              <p className="lede">{t('welcomeBody')}</p>
+            </Reveal>
+          </div>
+          <Reveal className="stats">
+            {(
+              [
+                ['statTotal', stats.data?.total],
+                ['statResolved', stats.data?.resolved],
+                ['statWeek', stats.data?.thisWeek],
+                ['statAreas', stats.data?.areas],
+              ] as const
+            ).map(([key, value]) => (
+              <div key={key}>
+                <strong>{value === undefined ? '—' : <CountUp value={value} format={(n) => compact(n, lang)} />}</strong>
+                <span>{t(key)}</span>
+              </div>
+            ))}
+          </Reveal>
+        </section>
+
+        {/* ---------------------------------------------------------------- latest mosaic */}
+        <section className="section" id="latest">
+          <Reveal>
+            <SectionHead eyebrow={t('navStories')} title={t('latestTitle')} hint={t('latestHint')} />
+          </Reveal>
+          <div className="mosaic">
+            {loading
+              ? mosaicSizes.map((size, i) => (
+                  <div key={i} className={`tile ${size}`} style={{ background: 'none' }}>
+                    <Skeleton height="100%" />
+                  </div>
+                ))
+              : view.mosaic.map((r, i) => <Tile key={r.id} report={r} size={mosaicSizes[i]} delay={(i % 4) * 80} />)}
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- browse by problem */}
+        <section className="section">
+          <Reveal>
+            <SectionHead eyebrow={t('allCategories')} title={t('browseTitle')} hint={t('browseHint')} />
+          </Reveal>
+          <ScrollRow label={t('browseTitle')} className="rail">
+            {view.cats.map(([id, list]) => (
+              <Link key={id} to={`/category/${id}`} className="cat-card">
+                <Photo report={list[0]!} sizes="260px" width={600} />
+                <div className="cap">
+                  <span className="ic">
+                    <CategoryIcon id={id} size={20} color="#fff" />
+                  </span>
+                  <strong>{categoryName(id, lang)}</strong>
+                  <span>
+                    {digits(list.length, lang)}
+                    {t('reportsCount')}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </ScrollRow>
+        </section>
+
+        {/* ---------------------------------------------------------------- data */}
+        <section className="section" id="data">
+          <Reveal>
+            <SectionHead eyebrow={t('navData')} title={t('dataTitle')} hint={t('dataHint')} />
+          </Reveal>
+          {loading ? <Skeleton height={620} radius={26} /> : <Insights reports={recent.data!} />}
+        </section>
+
+        {/* ---------------------------------------------------------------- map */}
+        <section className="section" id="map">
+          <Reveal>
+            <SectionHead eyebrow={t('navMap')} title={t('hotspots')} hint={t('hotspotsHint')} />
+          </Reveal>
+          <Suspense fallback={<Skeleton height={520} radius={26} />}>
+            <HotspotMap reports={recent.data ?? []} />
           </Suspense>
         </section>
 
-        {(resolved.data?.length ?? 0) > 0 && (
-          <section className="section good-news">
-            <SectionHead title={t('goodNews')} hint={t('goodNewsHint')} icon={<CheckCircle2 size={22} color="var(--good)" />} />
-            <div className="layout-b">
-              {resolved.data!.map((r) => (
-                <Story key={r.id} report={r} variant="medium" />
+        {/* ---------------------------------------------------------------- photo rows per problem */}
+        {view.cats.slice(0, 3).map(([id, list]) => (
+          <section className="section" key={id}>
+            <Reveal>
+              <SectionHead
+                eyebrow={`${digits(list.length, lang)}${t('reportsCount')}`}
+                title={categoryName(id, lang)}
+                end={
+                  <Link className="btn ghost sm" to={`/category/${id}`}>
+                    {t('viewAll')} <ArrowRight size={15} aria-hidden="true" />
+                  </Link>
+                }
+              />
+            </Reveal>
+            <ScrollRow label={categoryName(id, lang)}>
+              {list.slice(0, 10).map((r) => (
+                <Card key={r.id} report={r} />
               ))}
-            </div>
+            </ScrollRow>
+          </section>
+        ))}
+
+        {/* ---------------------------------------------------------------- good news */}
+        {view.resolved.length > 0 && (
+          <section className="section good">
+            <Reveal>
+              <SectionHead eyebrow={t('statResolved')} title={t('goodNews')} hint={t('goodNewsHint')} end={<CheckCircle2 size={40} color="var(--good)" />} />
+            </Reveal>
+            <ScrollRow label={t('goodNews')}>
+              {view.resolved.map((r) => (
+                <Card key={r.id} report={r} />
+              ))}
+            </ScrollRow>
           </section>
         )}
 
+        {/* ---------------------------------------------------------------- awareness */}
         {(awareness.data?.length ?? 0) > 0 && (
-          <section className="section">
-            <SectionHead title={t('awareness')} hint={t('awarenessHint')} icon={<Lightbulb size={22} />} />
-            <div className="awareness-grid">
-              {awareness.data!.map((a) => (
-                <article
-                  key={a.id}
-                  className="tip"
-                  style={{ '--tip': a.category_id ? category(a.category_id).color : undefined } as CSSProperties}
-                >
-                  {a.category_id && (
-                    <span className="kicker" style={{ color: category(a.category_id).color }}>
-                      <CategoryIcon id={a.category_id} size={14} />
-                      {categoryName(a.category_id, lang)}
-                    </span>
-                  )}
-                  <h3>{lang === 'bn' ? a.title_bn : a.title_en}</h3>
-                  <p>{lang === 'bn' ? a.body_bn : a.body_en}</p>
-                </article>
-              ))}
+          <section className="section" id="awareness">
+            <Reveal>
+              <SectionHead eyebrow={t('navAwareness')} title={t('awareness')} hint={t('awarenessHint')} />
+            </Reveal>
+            <div className="aware-grid">
+              {awareness.data!.slice(0, 4).map((a, i) => {
+                const cover = a.category_id ? view.cats.find(([id]) => id === a.category_id)?.[1][0] : undefined;
+                return (
+                  <Reveal key={a.id} delay={i * 90} className="aware" as="article">
+                    {cover && <Photo report={cover} sizes="(max-width: 720px) 100vw, 50vw" width={1000} />}
+                    <div className="body">
+                      {a.category_id && (
+                        <span className="chip dark">
+                          <CategoryIcon id={a.category_id} size={14} color="#fff" />
+                          {categoryName(a.category_id, lang)}
+                        </span>
+                      )}
+                      <h3>{lang === 'bn' ? a.title_bn : a.title_en}</h3>
+                      <p>{lang === 'bn' ? a.body_bn : a.body_en}</p>
+                    </div>
+                  </Reveal>
+                );
+              })}
             </div>
           </section>
         )}
 
-        <section className="section two-col">
-          <div>
-            <SectionHead title={t('leaderboard')} hint={t('leaderboardHint')} icon={<Trophy size={22} />} />
-            <ol className="board">
-              {(board.data ?? []).map((e) => (
-                <li key={e.aliasId}>
-                  <span className="rank">{digits(e.rank, lang)}</span>
-                  <Avatar alias={e.alias} seed={e.aliasId} />
-                  <span>
-                    <strong>{e.alias}</strong>
-                    <div className="meta">
-                      {levelName(e.level, lang)} · {digits(e.reportsCount, lang)} {t('reports')}
-                    </div>
-                  </span>
-                  <span className="score">
-                    {compact(e.score, lang)} {t('points')}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </div>
-          <div className="app-pitch">
-            <h3>{t('appPitchTitle')}</h3>
-            <p>{t('appPitchBody')}</p>
-            <a className="btn" href={config.appDownloadUrl}>
-              {t('getApp')}
-            </a>
+        {/* ---------------------------------------------------------------- how it works */}
+        <section className="section">
+          <Reveal>
+            <SectionHead eyebrow="Sajag" title={t('howTitle')} />
+          </Reveal>
+          <div className="how">
+            {(
+              [
+                [Camera, 'step1Title', 'step1Body'],
+                [Send, 'step2Title', 'step2Body'],
+                [MapPin, 'step3Title', 'step3Body'],
+              ] as const
+            ).map(([Icon, title, body], i) => (
+              <Reveal key={title} delay={i * 110} className="step">
+                <span className="n">
+                  <Icon size={24} />
+                </span>
+                <h3>{t(title)}</h3>
+                <p>{t(body)}</p>
+              </Reveal>
+            ))}
           </div>
         </section>
-      </main>
-    </>
+
+        {/* ---------------------------------------------------------------- app + leaderboard */}
+        <section className="section">
+          <Reveal className="cta">
+            <div>
+              <span className="eyebrow">{t('getApp')}</span>
+              <h2 className="display">{t('appPitchTitle')}</h2>
+              <p>{t('appPitchBody')}</p>
+              <button type="button" className="btn light" onClick={() => scrollToId('download')}>
+                {t('getApp')} <ArrowRight size={16} aria-hidden="true" />
+              </button>
+            </div>
+            <div>
+              <p style={{ margin: '0 0 12px', fontWeight: 600 }}>{t('leaderboard')}</p>
+              <ol className="board">
+                {(board.data ?? []).slice(0, 5).map((e) => (
+                  <li key={e.aliasId}>
+                    <span className="rank">{digits(e.rank, lang)}</span>
+                    <Avatar alias={e.alias} seed={e.aliasId} />
+                    <span className="who">
+                      {e.alias}
+                      <small>
+                        {levelName(e.level, lang)} · {digits(e.reportsCount, lang)} {t('reports')}
+                      </small>
+                    </span>
+                    <span className="score">
+                      {compact(e.score, lang)} {t('points')}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <p style={{ margin: '10px 0 0', fontSize: 13, opacity: 0.7 }}>{t('leaderboardHint')}</p>
+            </div>
+          </Reveal>
+        </section>
+
+        <DownloadSection />
+      </div>
+    </main>
   );
 }
-

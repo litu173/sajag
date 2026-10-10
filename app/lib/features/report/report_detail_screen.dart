@@ -85,11 +85,53 @@ class _Detail extends ConsumerWidget {
     }
   }
 
+  Future<void> _markSolved(BuildContext context, WidgetRef ref) async {
+    final l = context.l10n;
+    final note = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.markSolvedTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.markSolvedBody),
+            const SizedBox(height: 16),
+            TextField(
+              controller: note,
+              maxLength: 200,
+              decoration: InputDecoration(hintText: l.markSolvedNoteHint),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l.markSolved)),
+        ],
+      ),
+    );
+    final text = note.text.trim();
+    note.dispose();
+    if (ok != true || !context.mounted) return;
+    try {
+      await ref.read(repositoryProvider).markResolved(report.id, note: text.isEmpty ? null : text);
+      refreshMe(ref);
+      ref
+        ..invalidate(reportProvider(report.id))
+        ..invalidate(feedProvider);
+      if (context.mounted) showMessage(context, l.markSolvedDone);
+    } catch (e) {
+      if (context.mounted) showError(context, e);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final theme = Theme.of(context);
     final category = ref.watch(catalogProvider).category(report.categoryId);
+    final solvedIn = solvedInText(context, report);
     final mine = ref.watch(myReportsProvider).value?.any((r) => r.id == report.id) ?? false;
     final confirmations = ref.watch(confirmationsProvider);
     final count = report.confirmCount + confirmations.delta(report.id);
@@ -188,6 +230,43 @@ class _Detail extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 _StatusTimeline(report: report),
+                if (solvedIn != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: SajagColors.resolved.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: SajagColors.resolved, size: 28),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(solvedIn, style: theme.textTheme.titleMedium),
+                              Text(
+                                report.resolvedBy == 'reporter' ? l.markedByReporter : l.markedByModerator,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                if (mine && report.canBeMarkedSolved) ...[
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(backgroundColor: SajagColors.resolved),
+                    onPressed: () => _markSolved(context, ref),
+                    icon: const Icon(Icons.task_alt),
+                    label: Text(l.markSolved),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 Text(l.locationLabel, style: theme.textTheme.titleMedium),
                 const SizedBox(height: 12),

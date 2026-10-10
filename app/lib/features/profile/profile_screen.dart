@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/format.dart';
 import '../../core/providers.dart';
+import '../../core/updates.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
 
@@ -164,6 +166,8 @@ class ProfileScreen extends ConsumerWidget {
                     children: [Text(l.aboutBody, style: theme.textTheme.bodyMedium)],
                   ),
                   const Divider(height: 1),
+                  const _UpdateTile(),
+                  const Divider(height: 1),
                   ListTile(
                     leading: Icon(Icons.logout, color: theme.colorScheme.error),
                     title: Text(l.signOut, style: TextStyle(color: theme.colorScheme.error)),
@@ -217,4 +221,66 @@ class CompactReportTile extends ConsumerWidget {
       trailing: StatusChip(report.status),
     );
   }
+}
+
+/// Shows the installed version and, when GitHub has a newer release, downloads it directly.
+class _UpdateTile extends ConsumerWidget {
+  const _UpdateTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final status = ref.watch(updateStatusProvider);
+    final isIos = Theme.of(context).platform == TargetPlatform.iOS;
+    final subtitle = status.when(
+      loading: () => l.checkingUpdate,
+      error: (_, _) => l.updateCheckFailed,
+      data: (s) => s.available ? l.updateAvailable(s.latest) : l.upToDate(s.current),
+    );
+    final available = status.value?.available ?? false;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ListTile(
+            leading: Icon(available ? Icons.system_update : Icons.verified_outlined),
+            title: Text(l.latestVersion),
+            subtitle: Text(localDigits(context, subtitle)),
+            trailing: status.hasError
+                ? IconButton(
+                    tooltip: l.retry,
+                    onPressed: () => ref.invalidate(updateStatusProvider),
+                    icon: const Icon(Icons.refresh),
+                  )
+                : null,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: available
+                ? FilledButton.icon(
+                    onPressed: () => _download(isIos),
+                    icon: const Icon(Icons.download),
+                    label: Text(l.downloadLatest),
+                  )
+                : OutlinedButton.icon(
+                    onPressed: () => _download(isIos),
+                    icon: const Icon(Icons.download),
+                    label: Text(l.downloadLatest),
+                  ),
+          ),
+          if (isIos)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Text(l.iosInstallNote, style: Theme.of(context).textTheme.bodySmall),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Opens the direct file link in the system browser, which downloads it immediately.
+  static Future<bool> _download(bool isIos) =>
+      launchUrl(Uri.parse(isIos ? Releases.iosIpa : Releases.androidApk), mode: LaunchMode.externalApplication);
 }

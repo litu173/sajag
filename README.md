@@ -16,7 +16,7 @@
 | | |
 |---|---|
 | **Mobile app** (Flutter, Android + iOS) | Splash, 3 onboarding screens, phone OTP + NID verification, mandatory location, live-camera-only reporting, local feed, Snapchat-style heat map, 34 badges / 8 levels, anonymous leaderboard, follow by alias, notifications. Bangla & English, adjustable text size. |
-| **Web portal** (React) | Newspaper-style multi-column front page: lead story, live ticker, most-confirmed, section-by-category layouts, hotspot map, good-news (resolved), awareness tips, leaderboard. |
+| **Web portal** (React) | Image-first editorial site: cinematic photo carousel, photo mosaic, browse-by-problem, "what the data says" (most reported problems, most affected areas, 30-day trend, solving rate and average time to fix), hotspot map, awareness, direct Android/iPhone downloads. Smooth scrolling and blur-up image loading. |
 | **Admin panel** (React) | Dashboard & charts, moderation queue, report status workflow, citizens & ID verification, audited identity reveal, categories, awareness posts, badges, settings, admin team, audit log, and the phase-2 authority directory (areas, roles, people, routing rules). |
 | **Backend** (Supabase / Postgres) | Anonymity enforced by the database (column privileges + RLS), live-capture window, rate limits, auto-hide after community flags, XP & badge engine in SQL, audited admin RPCs. |
 

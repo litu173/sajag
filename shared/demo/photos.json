@@ -1,0 +1,20 @@
+{
+  "_note": "Sample photos for demo mode only (Unsplash License, hotlinked from images.unsplash.com). Real reports always show the citizen's own live photo.",
+  "open_manhole": [["1545459720-aac8509eb02c", "George Pagan III"], ["1564368860749-ebf3649275a7", "Eliobed Suarez"], ["1644492181635-4d3f653a2005", "Pandhuya Niking"], ["1654966306865-45e78560d2a9", "Harry Spink"]],
+  "road_damage": [["1657811146442-0d66d65dbe92", "ACatInABox"], ["1560782202-154b39d57ef2", "Matt Hoffman"], ["1657811146537-90d7d8133224", "ACatInABox"], ["1635068741358-ab1b9813623f", "Jens Aber"], ["1741996950842-c3a280a438a4", "Zoshua Colah"], ["1780227079341-334dbeb1be27", "Hasny Photojournalist"]],
+  "waterlogging": [["1729941398271-3b16f9780af8", "MeRaj Rudba"], ["1657069345471-c54f2432b79c", "Wes Warren"], ["1761252987176-c450c43f5cbb", "Aldward Castillo"], ["1762624822556-921847c110d9", "Richard R"], ["1576749288264-207936efb479", "Ulvi Safari"], ["1761252987116-a3e993bd23e9", "Aldward Castillo"]],
+  "drain_blocked": [["1662883914604-f44ea7cc5b74", "Markus Spiske"], ["1652702455452-3f200aeeb674", "TRG"], ["1774031052552-86e96d08c202", "Mark Gerrard"], ["1745265796934-c34e78554872", "Ilya Semenov"]],
+  "garbage": [["1762805545352-4ac5355b0f0b", "Zoshua Colah"], ["1760864714459-adb0301adad9", "Abhinay Tharu"], ["1620046315397-ac3195dec719", "Jozsef Hocza"], ["1570993896215-7acdbff8e2ef", "Sven Brandsma"], ["1591177057307-132bca1aec1e", "Michael Havenith"]],
+  "exposed_wire": [["1737278981311-9fccc98ccec1", "Tatiana Mokhova"], ["1667312862670-b5cbda5670ce", "Akram Hossain"], ["1714477647460-529b996515c7", "Chandranath Babu"]],
+  "streetlight": [["1645114293051-929f9e207e1f", "Ehteshamul Haque Adit"], ["1641927854144-3c2c11371272", "Marvin Zettl"], ["1543518360-68b9612a7c8c", "Lasse Møller"], ["1566276423184-a8c13d2a88a1", "Fawazlul Rizqi"]],
+  "footpath": [["1737748612461-c143b21f3a84", "Bernd Dittrich"], ["1785224929468-99361355add1", "Adhitya Sibikumar"], ["1758346971972-fc6bb529ef76", "Kelvin Zyteng"], ["1716388611346-b4858944f346", "Austin Curtis"]],
+  "illegal_parking": [["1709792349440-d026a1ee0921", "Ashraful Islam"], ["1602917054872-32f5b77df608", "Dave McMahon"], ["1583429891508-015ef9cd958e", "Niloy Biswas"], ["1658525324582-87466a09f6a3", "mohammad samir"]],
+  "traffic_signal": [["1557404763-69708cd8b9ce", "Maxim Abramov"], ["1581677641984-cf14ca58c5ee", "Tsvetoslav Hristov"], ["1654024554087-15313dc9eb0b", "Mahibul Hasan Fahim"], ["1720640783627-80704a53e1d4", "Shohidul Alam"]],
+  "construction": [["1657502244190-3eb8b6a355bd", "Gene Gallin"], ["1783474845753-d76e8566cba3", "Benjamin Taman"], ["1762944081466-09707f0577d5", "Yiquan Zhang"], ["1633788989414-8a8d43ff985e", "Sazzad Bin Jafor"]],
+  "air_pollution": [["1735064461599-b317d74c3096", "Lennox Chitando"], ["1736323276259-ee5c153f9f81", "Vladimir Wang"], ["1761847877200-46de510257ca", "Ekanta Datta"], ["1776240998454-e59156a4532f", "Saravanan Narayanan"], ["1643213530085-091692197c0a", "ochimax studio"]],
+  "noise": [["1710392046859-dba4aa3cd0bf", "Mufid Majnun"], ["1517816428104-797678c7cf0c", "Oleg Laptev"], ["1654024552945-dcf7f61eafee", "Mahibul Hasan Fahim"]],
+  "tree_cutting": [["1684332666088-f35b252b5aca", "kasia"], ["1574359173269-291f060e6fe1", "MICHAEL WILSON"], ["1697623317093-7a50b4aaf676", "Pinecrest Tree Services"], ["1721486168037-aab8e6095f67", "Christi M"]],
+  "water_supply": [["1526898943670-92bfa9f94c12", "Daan Mooij"], ["1693907986952-3cd372e4c9d8", "Rose Galloway Green"], ["1696371269814-ae41fc67cf03", "Gowtham AGM"]],
+  "sanitation": [["1727464996704-315f2686457a", "Austin"], ["1759497904878-82c9bb21b2f6", "jacopo marello"]],
+  "other": [["1728845533839-de4e2271eb10", "Erok Mule"], ["1781355584846-6a4e95ae048f", "Md. Ashraful Kabir"], ["1745556125064-4c9ce00a1719", "Md. Rasel"]]
+}
