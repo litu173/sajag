@@ -13,6 +13,7 @@ import '../../core/location.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
+import '../shell/home_shell.dart';
 import 'heat_layer.dart';
 
 /// Visible area snapped to a 0.25° grid so small pans reuse the cached query.
@@ -200,12 +201,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           if (loading) const Positioned(top: 0, left: 0, right: 0, child: SafeArea(child: LinearProgressIndicator())),
           Positioned(
             left: 12,
-            bottom: 56,
+            bottom: navClearance(context),
             child: HeatLegend(few: l.mapLegendFew, many: l.mapLegendMany),
           ),
           Positioned(
             right: 12,
-            bottom: 56,
+            bottom: navClearance(context),
             child: FloatingActionButton(
               heroTag: 'locate',
               tooltip: l.locateMe,

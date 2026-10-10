@@ -67,7 +67,7 @@ class _Detail extends ConsumerWidget {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            style: FilledButton.styleFrom(backgroundColor: SajagColors.accent, foregroundColor: SajagColors.onAccent),
             onPressed: () => Navigator.pop(context, true),
             child: Text(l.delete),
           ),
@@ -261,7 +261,7 @@ class _Detail extends ConsumerWidget {
                 if (mine && report.canBeMarkedSolved) ...[
                   const SizedBox(height: 12),
                   FilledButton.icon(
-                    style: FilledButton.styleFrom(backgroundColor: SajagColors.resolved),
+                    style: FilledButton.styleFrom(backgroundColor: SajagColors.resolved, foregroundColor: Colors.white),
                     onPressed: () => _markSolved(context, ref),
                     icon: const Icon(Icons.task_alt),
                     label: Text(l.markSolved),

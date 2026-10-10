@@ -21,8 +21,8 @@
   --r-lg: 26px;
   --r: 18px;
   --r-sm: 12px;
-  --display: 'Fraunces', 'Noto Serif Bengali', Georgia, serif;
-  --sans: 'Inter', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Fraunces', 'Anek Bangla', Georgia, serif;
+  --sans: 'Inter', 'Anek Bangla', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --max: 1280px;
   --gutter: clamp(16px, 4vw, 40px);
   --section: clamp(72px, 10vw, 136px);

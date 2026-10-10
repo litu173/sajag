@@ -8,6 +8,7 @@ import '../../core/theme.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/badge_progress.dart';
 import '../../data/models.dart';
+import '../shell/home_shell.dart';
 
 final leaderboardProvider = FutureProvider.autoDispose.family<List<LeaderboardEntry>, LeaderboardPeriod>(
   (ref, period) => ref.watch(repositoryProvider).leaderboard(period),
@@ -24,13 +25,7 @@ class AchievementsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l.achievementsTitle),
-          bottom: TabBar(
-            labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-            tabs: [
-              Tab(text: l.tabBadges),
-              Tab(text: l.tabLeaderboard),
-            ],
-          ),
+          bottom: PillTabBar(labels: [l.tabBadges, l.tabLeaderboard]),
         ),
         body: const TabBarView(children: [_BadgesTab(), _LeaderboardTab()]),
       ),
@@ -100,7 +95,7 @@ class _BadgesTab extends ConsumerWidget {
                   ),
                 ),
               ],
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              SliverToBoxAdapter(child: SizedBox(height: navClearance(context))),
             ],
           ),
         );
@@ -122,11 +117,14 @@ class LevelHeader extends ConsumerWidget {
     final fraction = next == null ? 1.0 : ((profile.xp - level.minXp) / (next.minXp - level.minXp)).clamp(0.0, 1.0);
 
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF13916A), SajagColors.brandDark]),
-        borderRadius: BorderRadius.circular(24),
+        gradient: SajagColors.heroGradient,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: SajagColors.brand.withValues(alpha: 0.3), blurRadius: 30, offset: const Offset(0, 14)),
+        ],
       ),
       child: Column(
         children: [
@@ -394,7 +392,7 @@ class _LeaderboardTabState extends ConsumerState<_LeaderboardTab> {
                 : RefreshIndicator(
                     onRefresh: () async => ref.invalidate(leaderboardProvider(_period)),
                     child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                      padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
                       itemCount: rows.length,
                       itemBuilder: (context, i) => _LeaderRow(entry: rows[i]),
                     ),

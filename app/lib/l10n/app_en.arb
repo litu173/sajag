@@ -87,11 +87,11 @@
   "awarenessTag": "Awareness",
   "reportAction": "Report a problem",
 
-  "statusOpen": "Reported",
+  "statusOpen": "Posted",
   "statusAcknowledged": "Acknowledged",
   "statusInProgress": "In progress",
   "statusResolved": "Resolved",
-  "statusHidden": "Under review",
+  "statusHidden": "Flagged",
   "statusRemoved": "Removed",
 
   "timeJustNow": "just now",
@@ -106,7 +106,7 @@
   "follow": "Follow",
   "followingButton": "Following",
   "share": "Share",
-  "flagReport": "Report this post",
+  "flagReport": "Flag this post",
   "openInMaps": "Open in Maps",
   "locationLabel": "Location",
   "shareText": "{category} reported at {place} — via Sajag",

@@ -84,11 +84,11 @@
   "awarenessTag": "সচেতনতা",
   "reportAction": "সমস্যা রিপোর্ট করুন",
 
-  "statusOpen": "রিপোর্ট করা হয়েছে",
+  "statusOpen": "পোস্ট করা হয়েছে",
   "statusAcknowledged": "গৃহীত",
   "statusInProgress": "কাজ চলছে",
   "statusResolved": "সমাধান হয়েছে",
-  "statusHidden": "পর্যালোচনায়",
+  "statusHidden": "রিপোর্ট করা হয়েছে",
   "statusRemoved": "সরানো হয়েছে",
 
   "timeJustNow": "এইমাত্র",

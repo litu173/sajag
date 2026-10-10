@@ -6,10 +6,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/format.dart';
 import '../../core/providers.dart';
+import '../../core/theme.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
 import '../report/report_card.dart';
 import 'awareness_card.dart';
+import '../shell/home_shell.dart';
 import 'feed_controller.dart';
 
 class FeedScreen extends ConsumerStatefulWidget {
@@ -25,51 +27,84 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final theme = Theme.of(context);
     final unread = ref.watch(notificationsProvider).value?.where((n) => !n.read).length ?? 0;
 
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
-          titleSpacing: 16,
-          title: Row(children: [const SajagLogo(size: 34), const SizedBox(width: 10), Text(l.appName)]),
-          actions: [
-            IconButton(
-              tooltip: l.notificationsTitle,
-              onPressed: () async {
-                await context.push('/notifications');
-                ref.invalidate(notificationsProvider);
-              },
-              icon: Badge(
-                isLabelVisible: unread > 0,
-                label: Text(localDigits(context, '$unread')),
-                child: const Icon(Icons.notifications_outlined),
-              ),
-            ),
-            const SizedBox(width: 4),
-          ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(104),
-            child: Column(
-              children: [
-                TabBar(
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-                  tabs: [
-                    Tab(text: l.feedNearby),
-                    Tab(text: l.feedLatest),
-                    Tab(text: l.feedFollowing),
+        body: Column(
+          children: [
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 16, 0),
+                child: Row(
+                  children: [
+                    const SajagLogo(size: 40),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(l.appName, style: theme.textTheme.headlineMedium)),
+                    _GlassIconButton(
+                      tooltip: l.notificationsTitle,
+                      onPressed: () async {
+                        await context.push('/notifications');
+                        ref.invalidate(notificationsProvider);
+                      },
+                      child: Badge(
+                        isLabelVisible: unread > 0,
+                        label: Text(localDigits(context, '$unread')),
+                        child: const Icon(Icons.notifications_none_rounded),
+                      ),
+                    ),
                   ],
                 ),
-                _CategoryFilter(selected: _category, onSelected: (c) => setState(() => _category = c)),
-              ],
+              ),
             ),
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            for (final scope in FeedScope.values)
-              _FeedList(key: ValueKey((scope, _category)), feedKey: (scope: scope, categoryId: _category)),
+            PillTabBar(
+              labels: [l.feedNearby, l.feedLatest, l.feedFollowing],
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+            ),
+            _CategoryFilter(selected: _category, onSelected: (c) => setState(() => _category = c)),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  for (final scope in FeedScope.values)
+                    _FeedList(key: ValueKey((scope, _category)), feedKey: (scope: scope, categoryId: _category)),
+                ],
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassIconButton extends StatelessWidget {
+  const _GlassIconButton({required this.child, required this.onPressed, required this.tooltip});
+  final Widget child;
+  final VoidCallback onPressed;
+  final String tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: theme.cardTheme.color,
+        shape: const CircleBorder(),
+        elevation: 0,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onPressed,
+          child: Container(
+            width: 48,
+            height: 48,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: SajagColors.softShadow(theme.brightness)),
+            child: child,
+          ),
         ),
       ),
     );
@@ -84,27 +119,57 @@ class _CategoryFilter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categories = ref.watch(catalogProvider).categories;
+    final theme = Theme.of(context);
+    Widget chip({required bool on, required String label, required VoidCallback onTap, Widget? icon}) => Material(
+      color: on ? theme.colorScheme.primary : theme.cardTheme.color,
+      shape: const StadiumBorder(),
+      child: InkWell(
+        customBorder: const StadiumBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[icon, const SizedBox(width: 6)],
+              Text(
+                label,
+                style: TextStyle(
+                  fontWeight: on ? FontWeight.w600 : FontWeight.w500,
+                  fontSize: 14,
+                  color: on ? theme.colorScheme.onPrimary : theme.textTheme.bodyMedium?.color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
     return SizedBox(
-      height: 56,
+      height: 62,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
         itemCount: categories.length + 1,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
           if (i == 0) {
-            return ChoiceChip(
-              label: Text(context.l10n.allCategories),
+            return Semantics(
               selected: selected == null,
-              onSelected: (_) => onSelected(null),
+              child: chip(on: selected == null, label: context.l10n.allCategories, onTap: () => onSelected(null)),
             );
           }
           final c = categories[i - 1];
-          return ChoiceChip(
-            avatar: Icon(categoryIcon(c), size: 18, color: c.color),
-            label: Text(c.name(context)),
-            selected: selected == c.id,
-            onSelected: (on) => onSelected(on ? c.id : null),
+          final on = selected == c.id;
+          return Semantics(
+            selected: on,
+            child: chip(
+              on: on,
+              label: c.name(context),
+              icon: Icon(categoryIcon(c), size: 17, color: on ? theme.colorScheme.onPrimary : c.color),
+              onTap: () => onSelected(on ? null : c.id),
+            ),
           );
         },
       ),
@@ -189,7 +254,7 @@ class _FeedListState extends ConsumerState<_FeedList> with AutomaticKeepAliveCli
           child: RefreshIndicator(
             onRefresh: refresh,
             child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              padding: EdgeInsets.fromLTRB(20, 8, 20, navClearance(context)),
               itemCount: count,
               itemBuilder: (context, index) {
                 if (header == 1 && index == 0) return _Note(text: l.demoLocationNote);
@@ -211,7 +276,7 @@ class _FeedListState extends ConsumerState<_FeedList> with AutomaticKeepAliveCli
                   );
                 }
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(bottom: 28),
                   child: ReportCard(key: ValueKey(state.items[i].id), report: state.items[i]),
                 );
               },

@@ -259,7 +259,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportAction => 'Report a problem';
 
   @override
-  String get statusOpen => 'Reported';
+  String get statusOpen => 'Posted';
 
   @override
   String get statusAcknowledged => 'Acknowledged';
@@ -271,7 +271,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusResolved => 'Resolved';
 
   @override
-  String get statusHidden => 'Under review';
+  String get statusHidden => 'Flagged';
 
   @override
   String get statusRemoved => 'Removed';
@@ -307,7 +307,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get share => 'Share';
 
   @override
-  String get flagReport => 'Report this post';
+  String get flagReport => 'Flag this post';
 
   @override
   String get openInMaps => 'Open in Maps';

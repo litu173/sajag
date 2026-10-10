@@ -77,37 +77,77 @@ class CategoryChip extends StatelessWidget {
   );
 }
 
+String statusLabel(BuildContext context, ReportStatus status) {
+  final l = context.l10n;
+  return switch (status) {
+    ReportStatus.open => l.statusOpen,
+    ReportStatus.acknowledged => l.statusAcknowledged,
+    ReportStatus.inProgress => l.statusInProgress,
+    ReportStatus.resolved => l.statusResolved,
+    ReportStatus.hidden => l.statusHidden,
+    ReportStatus.removed => l.statusRemoved,
+  };
+}
+
 class StatusChip extends StatelessWidget {
   const StatusChip(this.status, {super.key});
   final ReportStatus status;
 
   @override
   Widget build(BuildContext context) {
-    final l = context.l10n;
-    final (label, color, icon) = switch (status) {
-      ReportStatus.open => (l.statusOpen, const Color(0xFF5C6B73), Icons.flag_outlined),
-      ReportStatus.acknowledged => (l.statusAcknowledged, const Color(0xFF3A6EA5), Icons.visibility_outlined),
-      ReportStatus.inProgress => (l.statusInProgress, SajagColors.progress, Icons.handyman_outlined),
-      ReportStatus.resolved => (l.statusResolved, SajagColors.resolved, Icons.check_circle),
-      ReportStatus.hidden => (l.statusHidden, const Color(0xFF8D6E63), Icons.shield_outlined),
-      ReportStatus.removed => (l.statusRemoved, const Color(0xFFC62828), Icons.block),
+    final (color, icon) = switch (status) {
+      ReportStatus.open => (const Color(0xFF5C6B73), Icons.flag_rounded),
+      ReportStatus.acknowledged => (const Color(0xFF3A6EA5), Icons.visibility_rounded),
+      ReportStatus.inProgress => (SajagColors.progress, Icons.handyman_rounded),
+      ReportStatus.resolved => (SajagColors.resolved, Icons.check_circle_rounded),
+      ReportStatus.hidden => (const Color(0xFF8D6E63), Icons.shield_rounded),
+      ReportStatus.removed => (SajagColors.accent, Icons.block_rounded),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(20)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
+          const SizedBox(width: 5),
           Text(
-            label,
-            style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
+            statusLabel(context, status),
+            style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 12),
           ),
         ],
       ),
     );
   }
+}
+
+/// Frosted white pill used on top of photos.
+class GlassChip extends StatelessWidget {
+  const GlassChip({required this.label, required this.icon, required this.iconColor, super.key});
+  final String label;
+  final IconData icon;
+  final Color iconColor;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.92), borderRadius: BorderRadius.circular(20)),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 15, color: iconColor),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Color(0xFF1A1D1C), fontWeight: FontWeight.w600, fontSize: 13),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Photo for a report: network (cached, decoded at display size), local file (just posted in
@@ -301,4 +341,45 @@ class DemoBanner extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Segmented "pill" tabs used instead of underlined tab bars.
+class PillTabBar extends StatelessWidget implements PreferredSizeWidget {
+  const PillTabBar({required this.labels, super.key, this.padding = const EdgeInsets.fromLTRB(20, 8, 20, 8)});
+  final List<String> labels;
+  final EdgeInsets padding;
+
+  @override
+  Size get preferredSize => Size.fromHeight(48 + padding.vertical);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: padding,
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: TabBar(
+          dividerColor: Colors.transparent,
+          indicatorSize: TabBarIndicatorSize.tab,
+          splashBorderRadius: BorderRadius.circular(20),
+          indicator: BoxDecoration(
+            color: theme.cardTheme.color,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: SajagColors.softShadow(theme.brightness),
+          ),
+          labelColor: theme.colorScheme.primary,
+          unselectedLabelColor: theme.textTheme.bodySmall?.color,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+          tabs: [for (final l in labels) Tab(text: l)],
+        ),
+      ),
+    );
+  }
 }

@@ -292,12 +292,15 @@ class _ComposePageState extends ConsumerState<_ComposePage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: FilledButton.icon(
-                style: FilledButton.styleFrom(backgroundColor: SajagColors.accent),
+                style: FilledButton.styleFrom(
+                  backgroundColor: SajagColors.accent,
+                  foregroundColor: SajagColors.onAccent,
+                ),
                 onPressed: _busy || located == null || mocked ? null : () => _submit(located),
                 icon: _busy
                     ? const SizedBox.square(
                         dimension: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                        child: CircularProgressIndicator(strokeWidth: 2.5, color: SajagColors.onAccent),
                       )
                     : const Icon(Icons.send),
                 label: Text(l.submitReport),

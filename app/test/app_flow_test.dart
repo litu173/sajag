@@ -90,8 +90,8 @@ void main() {
 
     // Home feed with reports, bottom navigation and the central Report action
     expect(find.text('Nearby'), findsOneWidget);
-    expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.text('Report'), findsOneWidget);
+    expect(find.text('Map'), findsOneWidget);
+    expect(find.bySemanticsLabel('Report a problem'), findsOneWidget);
     expect(find.byType(ReportCard), findsWidgets);
 
     // Achievements tab shows the level header and badges

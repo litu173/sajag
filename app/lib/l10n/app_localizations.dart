@@ -557,7 +557,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusOpen.
   ///
   /// In en, this message translates to:
-  /// **'Reported'**
+  /// **'Posted'**
   String get statusOpen;
 
   /// No description provided for @statusAcknowledged.
@@ -581,7 +581,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusHidden.
   ///
   /// In en, this message translates to:
-  /// **'Under review'**
+  /// **'Flagged'**
   String get statusHidden;
 
   /// No description provided for @statusRemoved.
@@ -641,7 +641,7 @@ abstract class AppLocalizations {
   /// No description provided for @flagReport.
   ///
   /// In en, this message translates to:
-  /// **'Report this post'**
+  /// **'Flag this post'**
   String get flagReport;
 
   /// No description provided for @openInMaps.

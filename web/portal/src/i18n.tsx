@@ -79,7 +79,7 @@ const strings = {
   appPitchBody: { bn: 'সজাগ অ্যাপ বিনামূল্যে। বাংলা ও ইংরেজিতে। আপনার পরিচয় সম্পূর্ণ গোপন।', en: 'Sajag is free, in Bangla and English, and your identity stays completely private.' },
   confirmations: { bn: 'জন দেখেছেন', en: 'saw this' },
   anonymous: { bn: 'বেনামি নাগরিক', en: 'Anonymous citizen' },
-  reportedBy: { bn: 'রিপোর্ট করেছেন', en: 'Reported by' },
+  reportedBy: { bn: 'পোস্ট করেছেন', en: 'Posted by' },
   location: { bn: 'স্থান', en: 'Location' },
   openInMaps: { bn: 'ম্যাপে দেখুন', en: 'Open in Maps' },
   share: { bn: 'শেয়ার', en: 'Share' },

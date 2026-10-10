@@ -30,11 +30,11 @@ export function longDate(date: Date, lang: Lang): string {
 }
 
 export const statusLabels: Record<ReportStatus, { en: string; bn: string; tone: string }> = {
-  open: { en: 'Reported', bn: 'রিপোর্ট করা হয়েছে', tone: '#5c6b73' },
+  open: { en: 'Posted', bn: 'পোস্ট করা হয়েছে', tone: '#5c6b73' },
   acknowledged: { en: 'Acknowledged', bn: 'গৃহীত', tone: '#3a6ea5' },
   in_progress: { en: 'In progress', bn: 'কাজ চলছে', tone: '#c98a10' },
   resolved: { en: 'Resolved', bn: 'সমাধান হয়েছে', tone: '#2e9e5b' },
-  hidden: { en: 'Under review', bn: 'পর্যালোচনায়', tone: '#8d6e63' },
+  hidden: { en: 'Flagged', bn: 'রিপোর্ট করা হয়েছে', tone: '#8d6e63' },
   removed: { en: 'Removed', bn: 'সরানো হয়েছে', tone: '#c62828' },
 };
 

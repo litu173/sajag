@@ -12,110 +12,149 @@ import '../../data/models.dart';
 import 'confirmations.dart';
 import 'report_actions.dart';
 
+/// Photo-first feed card: the image carries the story; text is a short caption over it.
 class ReportCard extends ConsumerWidget {
   const ReportCard({required this.report, super.key});
   final Report report;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final category = ref.watch(catalogProvider).category(report.categoryId);
+    final solvedIn = solvedInText(context, report);
 
-    return Card(
-      child: InkWell(
-        onTap: () => context.push('/reports/${report.id}'),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AspectRatio(
-              aspectRatio: 16 / 10,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Hero(
-                    tag: 'photo-${report.id}',
-                    child: ReportPhoto(report: report, category: category),
-                  ),
-                  Positioned(
-                    left: 12,
-                    top: 12,
-                    right: 12,
-                    child: Row(
-                      children: [
-                        Flexible(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-                            child: CategoryChip(category),
-                          ),
-                        ),
-                        const Spacer(),
-                        if (report.status != ReportStatus.open)
-                          DecoratedBox(
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-                            child: StatusChip(report.status),
-                          ),
-                      ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GestureDetector(
+          onTap: () => context.push('/reports/${report.id}'),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: SajagColors.softShadow(Theme.of(context).brightness),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: AspectRatio(
+                aspectRatio: 4 / 3.6,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Hero(
+                      tag: 'photo-${report.id}',
+                      child: ReportPhoto(report: report, category: category),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    report.description,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.place_outlined, size: 16, color: theme.colorScheme.onSurfaceVariant),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          [if (report.place.isNotEmpty) report.place, timeAgo(context, report.createdAt)].join(' · '),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0x33000000), Colors.transparent, Colors.transparent, Color(0xD9000000)],
+                          stops: [0, 0.22, 0.5, 1],
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                    Positioned(
+                      left: 14,
+                      top: 14,
+                      right: 14,
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: GlassChip(
+                              icon: categoryIcon(category),
+                              iconColor: category.color,
+                              label: category.name(context),
+                            ),
+                          ),
+                          if (report.status != ReportStatus.open) ...[
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: GlassChip(
+                                icon: report.status == ReportStatus.resolved
+                                    ? Icons.check_circle_rounded
+                                    : Icons.schedule_rounded,
+                                iconColor: report.status == ReportStatus.resolved
+                                    ? SajagColors.resolved
+                                    : SajagColors.progress,
+                                label: solvedIn ?? statusLabel(context, report.status),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      left: 18,
+                      right: 18,
+                      bottom: 16,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            report.description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 19,
+                              fontWeight: FontWeight.w600,
+                              height: 1.3,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(Icons.place_rounded, size: 15, color: Colors.white70),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  [
+                                    if (report.place.isNotEmpty) report.place,
+                                    timeAgo(context, report.createdAt),
+                                  ].join(' · '),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 4, 8),
-              child: Row(
-                children: [
-                  Expanded(child: AuthorLine(report: report)),
-                  ConfirmButton(report: report),
-                  PopupMenuButton<String>(
-                    tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
-                    onSelected: (v) =>
-                        unawaited(v == 'flag' ? flagReport(context, ref, report) : shareReport(context, ref, report)),
-                    itemBuilder: (_) => [
-                      PopupMenuItem(
-                        value: 'share',
-                        child: ListTile(leading: const Icon(Icons.share_outlined), title: Text(context.l10n.share)),
-                      ),
-                      PopupMenuItem(
-                        value: 'flag',
-                        child: ListTile(leading: const Icon(Icons.outlined_flag), title: Text(context.l10n.flagReport)),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 10, 0, 0),
+          child: Row(
+            children: [
+              Expanded(child: AuthorLine(report: report)),
+              ConfirmButton(report: report),
+              PopupMenuButton<String>(
+                tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
+                icon: const Icon(Icons.more_horiz_rounded),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                onSelected: (v) =>
+                    unawaited(v == 'flag' ? flagReport(context, ref, report) : shareReport(context, ref, report)),
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: 'share',
+                    child: ListTile(leading: const Icon(Icons.ios_share_rounded), title: Text(context.l10n.share)),
+                  ),
+                  PopupMenuItem(
+                    value: 'flag',
+                    child: ListTile(leading: const Icon(Icons.flag_outlined), title: Text(context.l10n.flagReport)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -171,14 +210,14 @@ class ConfirmButton extends ConsumerWidget {
         onPressed: () => toggleConfirm(context, ref, report),
         style: TextButton.styleFrom(
           foregroundColor: expanded ? SajagColors.brand : color,
-          backgroundColor: on ? SajagColors.brand.withValues(alpha: 0.12) : null,
+          backgroundColor: on ? SajagColors.brand.withValues(alpha: 0.12) : Theme.of(context).cardTheme.color,
+          shape: const StadiumBorder(),
           minimumSize: Size(expanded ? double.infinity : 48, expanded ? 56 : 44),
           padding: const EdgeInsets.symmetric(horizontal: 14),
-          side: expanded ? const BorderSide(color: SajagColors.brand, width: 1.5) : null,
-          shape: expanded ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)) : null,
+          side: expanded && !on ? BorderSide(color: SajagColors.brand.withValues(alpha: 0.35), width: 1.2) : null,
           textStyle: expanded ? const TextStyle(fontSize: 17) : null,
         ),
-        icon: Icon(on ? Icons.visibility : Icons.visibility_outlined, size: expanded ? 24 : 20),
+        icon: Icon(on ? Icons.visibility_rounded : Icons.visibility_outlined, size: expanded ? 24 : 20),
         label: ExcludeSemantics(
           child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
         ),

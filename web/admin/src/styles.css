@@ -17,7 +17,7 @@
   --series-2: #1baf7a;
   --grid: #ecebe7;
   --radius: 12px;
-  --sans: 'Inter', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sans: 'Inter', 'Anek Bangla', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {

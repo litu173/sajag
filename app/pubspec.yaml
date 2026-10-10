@@ -2,7 +2,7 @@ name: sajag
 description: "Sajag — report civic issues, anonymously."
 publish_to: "none"
 
-version: 1.1.0+2
+version: 1.2.0+3
 
 environment:
   sdk: ^3.13.5
@@ -41,6 +41,18 @@ flutter:
   assets:
     - assets/data/
     - assets/brand/
+  # Anek Bangla (SIL Open Font License, see assets/fonts/OFL.txt) covers Bangla and Latin.
+  fonts:
+    - family: AnekBangla
+      fonts:
+        - asset: assets/fonts/AnekBangla-400.ttf
+          weight: 400
+        - asset: assets/fonts/AnekBangla-500.ttf
+          weight: 500
+        - asset: assets/fonts/AnekBangla-600.ttf
+          weight: 600
+        - asset: assets/fonts/AnekBangla-700.ttf
+          weight: 700
 
 flutter_launcher_icons:
   android: true

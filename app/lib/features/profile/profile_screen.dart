@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,27 +7,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/format.dart';
 import '../../core/providers.dart';
+import '../../core/theme.dart';
 import '../../core/updates.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
+import '../shell/home_shell.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
-
-  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
-    final l = context.l10n;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: Text(l.signOutConfirm),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l.signOut)),
-        ],
-      ),
-    );
-    if (ok == true) await ref.read(repositoryProvider).signOut();
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,149 +22,518 @@ class ProfileScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final profile = ref.watch(myProfileProvider);
     final reports = ref.watch(myReportsProvider);
-    final settings = ref.watch(settingsProvider);
-    final catalog = ref.watch(catalogProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.navProfile)),
       body: RefreshIndicator(
         onRefresh: () async => refreshMe(ref),
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+          padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 12, 20, navClearance(context)),
           children: [
             profile.when(
-              loading: () => const SizedBox(height: 160, child: Center(child: CircularProgressIndicator())),
+              loading: () => const _HeroSkeleton(),
               error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(myProfileProvider)),
-              data: (p) => Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      AliasAvatar(alias: p.alias, seed: p.avatarSeed, size: 80),
-                      const SizedBox(height: 12),
-                      Text(p.alias, style: theme.textTheme.titleLarge, textAlign: TextAlign.center),
-                      const SizedBox(height: 4),
-                      Text(
-                        localDigits(context, '${l.levelLabel(p.level)} · ${catalog.levelFor(p.level).name(context)}'),
-                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              data: (p) => _ProfileHero(profile: p),
+            ),
+            const SizedBox(height: 32),
+            _SectionTitle(l.myReports),
+            const SizedBox(height: 14),
+            reports.when(
+              loading: () => const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
+              error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(myReportsProvider)),
+              data: (list) => list.isEmpty ? const _NoReports() : _ReportStrip(reports: list),
+            ),
+            const SizedBox(height: 32),
+            _SectionTitle(l.settings),
+            const SizedBox(height: 14),
+            const _Settings(),
+            const SizedBox(height: 18),
+            _Group(
+              children: [
+                _Row(
+                  icon: Icons.logout_rounded,
+                  tint: SajagColors.accent,
+                  title: l.signOut,
+                  titleColor: SajagColors.accent,
+                  onTap: () => _signOut(context, ref),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Center(child: Text('Sajag · সজাগ', style: theme.textTheme.bodySmall)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    final l = context.l10n;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.signOutConfirm),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: SajagColors.accent,
+              foregroundColor: SajagColors.onAccent,
+              minimumSize: const Size(0, 48),
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l.signOut),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) await ref.read(repositoryProvider).signOut();
+  }
+}
+
+// ------------------------------------------------------------------ hero
+class _ProfileHero extends ConsumerWidget {
+  const _ProfileHero({required this.profile});
+  final Profile profile;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final catalog = ref.watch(catalogProvider);
+    final level = catalog.levelFor(profile.level);
+    final next = catalog.nextLevel(profile.level);
+    final progress = next == null ? 1.0 : ((profile.xp - level.minXp) / (next.minXp - level.minXp)).clamp(0.0, 1.0);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(22, 26, 22, 22),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: SajagColors.heroGradient,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: SajagColors.brand.withValues(alpha: 0.35), blurRadius: 34, offset: const Offset(0, 16)),
+        ],
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Soft decorative light, purely visual.
+          Positioned(
+            right: -40,
+            top: -60,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.07)),
+            ),
+          ),
+          Column(
+            children: [
+              SizedBox(
+                width: 108,
+                height: 108,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox.expand(
+                      child: CircularProgressIndicator(
+                        value: progress.toDouble(),
+                        strokeWidth: 4,
+                        strokeCap: StrokeCap.round,
+                        backgroundColor: Colors.white.withValues(alpha: 0.18),
+                        color: const Color(0xFFF0CF95),
                       ),
-                      if (p.verified) ...[
-                        const SizedBox(height: 8),
-                        Chip(
-                          avatar: Icon(Icons.verified, color: theme.colorScheme.primary, size: 18),
-                          label: Text(l.verifiedCitizen),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.9)),
+                      child: AliasAvatar(alias: profile.alias, seed: profile.avatarSeed, size: 84),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                profile.alias,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: [
+                  _GlassPill(
+                    icon: Icons.auto_awesome_rounded,
+                    text: localDigits(context, '${l.levelLabel(level.level)} · ${level.name(context)}'),
+                  ),
+                  if (profile.verified) _GlassPill(icon: Icons.verified_rounded, text: l.verifiedCitizen),
+                ],
+              ),
+              const SizedBox(height: 22),
+              Row(
+                children: [
+                  _GlassStat(value: profile.reportsCount, label: l.statReports),
+                  const SizedBox(width: 10),
+                  _GlassStat(value: profile.followersCount, label: l.followers),
+                  const SizedBox(width: 10),
+                  _GlassStat(value: profile.followingCount, label: l.followingLabel),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GlassPill extends StatelessWidget {
+  const _GlassPill({required this.icon, required this.text});
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(20)),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 15, color: const Color(0xFFF0CF95)),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+        ),
+      ],
+    ),
+  );
+}
+
+class _GlassStat extends StatelessWidget {
+  const _GlassStat({required this.value, required this.label});
+  final int value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.13), borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        children: [
+          Text(
+            compactNumber(context, value),
+            style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.78), fontSize: 12),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _HeroSkeleton extends StatelessWidget {
+  const _HeroSkeleton();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 330,
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(32),
+    ),
+  );
+}
+
+// ------------------------------------------------------------------ reports strip
+class _ReportStrip extends ConsumerWidget {
+  const _ReportStrip({required this.reports});
+  final List<Report> reports;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final catalog = ref.watch(catalogProvider);
+    return SizedBox(
+      height: 214,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
+        itemCount: reports.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
+        itemBuilder: (context, i) {
+          final r = reports[i];
+          final category = catalog.category(r.categoryId);
+          return GestureDetector(
+            onTap: () => context.push('/reports/${r.id}'),
+            child: SizedBox(
+              width: 156,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ReportPhoto(report: r, category: category, iconSize: 36),
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Color(0xCC000000)],
+                          stops: [0.45, 1],
                         ),
-                      ],
-                      const SizedBox(height: 12),
-                      Row(
+                      ),
+                    ),
+                    Positioned(
+                      left: 12,
+                      right: 12,
+                      bottom: 12,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _Count(value: p.reportsCount, label: l.statReports),
-                          _Count(value: p.followersCount, label: l.followers),
-                          _Count(value: p.followingCount, label: l.followingLabel),
+                          StatusChip(r.status),
+                          const SizedBox(height: 6),
+                          Text(
+                            r.description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                          ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            Text(l.myReports, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            reports.when(
-              loading: () => const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator()),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _NoReports extends StatelessWidget {
+  const _NoReports();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return _Group(
+      children: [
+        _Row(
+          icon: Icons.photo_camera_rounded,
+          tint: SajagColors.accent,
+          title: l.noReportsYet,
+          subtitle: l.reportAction,
+          onTap: () => context.push('/report/new'),
+        ),
+      ],
+    );
+  }
+}
+
+// ------------------------------------------------------------------ settings
+class _Settings extends ConsumerWidget {
+  const _Settings();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final settings = ref.watch(settingsProvider);
+    final notifier = ref.read(settingsProvider.notifier);
+
+    return _Group(
+      children: [
+        _Row(
+          icon: Icons.translate_rounded,
+          tint: const Color(0xFF3A6EA5),
+          title: l.language,
+          trailing: _PillToggle<String>(
+            value: settings.locale.languageCode,
+            options: const {'bn': 'বাংলা', 'en': 'EN'},
+            onChanged: (v) => notifier.setLocale(Locale(v)),
+          ),
+        ),
+        _Row(
+          icon: Icons.format_size_rounded,
+          tint: SajagColors.gold,
+          title: l.textSize,
+          trailing: _PillToggle<double>(
+            value: settings.textScale,
+            options: {1.0: 'অ', 1.2: 'অ', 1.4: 'অ'},
+            optionStyle: (v) => TextStyle(fontSize: 13 + (v - 1) * 20, fontWeight: FontWeight.w600),
+            semanticLabels: {1.0: l.textNormal, 1.2: l.textLarge, 1.4: l.textExtraLarge},
+            onChanged: notifier.setTextScale,
+          ),
+        ),
+        _Row(
+          icon: Icons.shield_rounded,
+          tint: SajagColors.brand,
+          title: l.privacy,
+          onTap: () => _info(context, l.privacy, l.privacyBody),
+        ),
+        _Row(
+          icon: Icons.info_rounded,
+          tint: const Color(0xFF8338EC),
+          title: l.about,
+          onTap: () => _info(context, l.about, l.aboutBody),
+        ),
+        const _UpdateRow(),
+      ],
+    );
+  }
+
+  static Future<void> _info(BuildContext context, String title, String body) => showModalBottomSheet<void>(
+    context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    builder: (context) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 14),
+            Text(body, style: Theme.of(context).textTheme.bodyLarge),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// App version with a direct download of the newest release from GitHub.
+class _UpdateRow extends ConsumerWidget {
+  const _UpdateRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final status = ref.watch(updateStatusProvider);
+    final isIos = Theme.of(context).platform == TargetPlatform.iOS;
+    final available = status.value?.available ?? false;
+    final subtitle = status.when(
+      loading: () => l.checkingUpdate,
+      error: (_, _) => l.updateCheckFailed,
+      data: (s) => s.available ? l.updateAvailable(s.latest) : l.upToDate(s.current),
+    );
+    return _Row(
+      icon: available ? Icons.system_update_rounded : Icons.verified_outlined,
+      tint: available ? SajagColors.accent : SajagColors.resolved,
+      title: l.latestVersion,
+      subtitle: [localDigits(context, subtitle), if (isIos) l.iosInstallNote].join('\n'),
+      trailing: status.hasError
+          ? IconButton(
+              tooltip: l.retry,
+              onPressed: () => ref.invalidate(updateStatusProvider),
+              icon: const Icon(Icons.refresh_rounded),
+            )
+          : IconButton.filledTonal(
+              tooltip: l.downloadLatest,
+              onPressed: () => launchUrl(
+                Uri.parse(isIos ? Releases.iosIpa : Releases.androidApk),
+                mode: LaunchMode.externalApplication,
               ),
-              error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(myReportsProvider)),
-              data: (list) => list.isEmpty
-                  ? Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.photo_camera_outlined),
-                        title: Text(l.noReportsYet),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => context.push('/report/new'),
-                      ),
-                    )
-                  : Card(
-                      child: Column(children: [for (final r in list.take(20)) CompactReportTile(report: r)]),
-                    ),
+              icon: const Icon(Icons.download_rounded),
             ),
-            const SizedBox(height: 24),
-            Text(l.settings, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Card(
+    );
+  }
+}
+
+// ------------------------------------------------------------------ building blocks
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(left: 4),
+    child: Text(text, style: Theme.of(context).textTheme.titleLarge),
+  );
+}
+
+/// A rounded panel of rows, separated by spacing instead of divider lines.
+class _Group extends StatelessWidget {
+  const _Group({required this.children});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: SajagColors.softShadow(theme.brightness),
+      ),
+      child: Column(children: children),
+    );
+  }
+}
+
+class _Row extends StatelessWidget {
+  const _Row({
+    required this.icon,
+    required this.tint,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.onTap,
+    this.titleColor,
+  });
+
+  final IconData icon;
+  final Color tint;
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  final Color? titleColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(color: tint.withValues(alpha: 0.13), borderRadius: BorderRadius.circular(13)),
+              child: Icon(icon, color: tint, size: 21),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.translate),
-                    title: Text(l.language),
-                    trailing: SegmentedButton<String>(
-                      showSelectedIcon: false,
-                      style: const ButtonStyle(visualDensity: VisualDensity.compact),
-                      segments: const [
-                        ButtonSegment(value: 'bn', label: Text('বাংলা')),
-                        ButtonSegment(value: 'en', label: Text('EN')),
-                      ],
-                      selected: {settings.locale.languageCode},
-                      onSelectionChanged: (s) => ref.read(settingsProvider.notifier).setLocale(Locale(s.first)),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.text_fields),
-                            const SizedBox(width: 16),
-                            Text(l.textSize, style: theme.textTheme.bodyLarge),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: SegmentedButton<double>(
-                            showSelectedIcon: false,
-                            segments: [
-                              ButtonSegment(value: 1.0, label: Text(l.textNormal)),
-                              ButtonSegment(value: 1.2, label: Text(l.textLarge)),
-                              ButtonSegment(value: 1.4, label: Text(l.textExtraLarge)),
-                            ],
-                            selected: {settings.textScale},
-                            onSelectionChanged: (s) => ref.read(settingsProvider.notifier).setTextScale(s.first),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ExpansionTile(
-                    leading: const Icon(Icons.shield_outlined),
-                    title: Text(l.privacy),
-                    childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    children: [Text(l.privacyBody, style: theme.textTheme.bodyMedium)],
-                  ),
-                  const Divider(height: 1),
-                  ExpansionTile(
-                    leading: const Icon(Icons.info_outline),
-                    title: Text(l.about),
-                    childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    children: [Text(l.aboutBody, style: theme.textTheme.bodyMedium)],
-                  ),
-                  const Divider(height: 1),
-                  const _UpdateTile(),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: Icon(Icons.logout, color: theme.colorScheme.error),
-                    title: Text(l.signOut, style: TextStyle(color: theme.colorScheme.error)),
-                    onTap: () => _signOut(context, ref),
-                  ),
+                  Text(title, style: theme.textTheme.titleSmall?.copyWith(color: titleColor)),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(subtitle!, style: theme.textTheme.bodySmall),
+                  ],
                 ],
               ),
             ),
+            if (trailing != null)
+              trailing!
+            else if (onTap != null)
+              Icon(Icons.chevron_right_rounded, color: theme.textTheme.bodySmall?.color),
           ],
         ),
       ),
@@ -183,22 +541,68 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-class _Count extends StatelessWidget {
-  const _Count({required this.value, required this.label});
-  final int value;
-  final String label;
+/// Compact segmented pill used for language and text size.
+class _PillToggle<T> extends StatelessWidget {
+  const _PillToggle({
+    required this.value,
+    required this.options,
+    required this.onChanged,
+    this.optionStyle,
+    this.semanticLabels,
+  });
+
+  final T value;
+  final Map<T, String> options;
+  final ValueChanged<T> onChanged;
+  final TextStyle Function(T)? optionStyle;
+  final Map<T, String>? semanticLabels;
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Column(
-      children: [
-        Text(compactNumber(context, value), style: Theme.of(context).textTheme.titleLarge),
-        Text(label, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final e in options.entries)
+            Semantics(
+              button: true,
+              selected: e.key == value,
+              label: semanticLabels?[e.key] ?? e.value,
+              child: GestureDetector(
+                onTap: () => onChanged(e.key),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  constraints: const BoxConstraints(minWidth: 40, minHeight: 34),
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: e.key == value ? theme.cardTheme.color : Colors.transparent,
+                    borderRadius: BorderRadius.circular(17),
+                    boxShadow: e.key == value ? SajagColors.softShadow(theme.brightness) : null,
+                  ),
+                  child: ExcludeSemantics(
+                    child: Text(
+                      e.value,
+                      style: (optionStyle?.call(e.key) ?? const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))
+                          .copyWith(color: e.key == value ? theme.colorScheme.primary : null),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
+/// Small report row used by the public profile list.
 class CompactReportTile extends ConsumerWidget {
   const CompactReportTile({required this.report, super.key});
   final Report report;
@@ -206,81 +610,46 @@ class CompactReportTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final category = ref.watch(catalogProvider).category(report.categoryId);
-    return ListTile(
-      onTap: () => context.push('/reports/${report.id}'),
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: SizedBox(
-          width: 52,
-          height: 52,
-          child: ReportPhoto(report: report, category: category, iconSize: 22),
+    return InkWell(
+      onTap: () => unawaited(context.push('/reports/${report.id}')),
+      borderRadius: BorderRadius.circular(18),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child: ReportPhoto(report: report, category: category, iconSize: 22),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    report.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${category.name(context)} · ${timeAgo(context, report.createdAt)}',
+                    maxLines: 1,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            StatusChip(report.status),
+          ],
         ),
       ),
-      title: Text(report.description, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Text('${category.name(context)} · ${timeAgo(context, report.createdAt)}', maxLines: 1),
-      trailing: StatusChip(report.status),
     );
   }
-}
-
-/// Shows the installed version and, when GitHub has a newer release, downloads it directly.
-class _UpdateTile extends ConsumerWidget {
-  const _UpdateTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    final status = ref.watch(updateStatusProvider);
-    final isIos = Theme.of(context).platform == TargetPlatform.iOS;
-    final subtitle = status.when(
-      loading: () => l.checkingUpdate,
-      error: (_, _) => l.updateCheckFailed,
-      data: (s) => s.available ? l.updateAvailable(s.latest) : l.upToDate(s.current),
-    );
-    final available = status.value?.available ?? false;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ListTile(
-            leading: Icon(available ? Icons.system_update : Icons.verified_outlined),
-            title: Text(l.latestVersion),
-            subtitle: Text(localDigits(context, subtitle)),
-            trailing: status.hasError
-                ? IconButton(
-                    tooltip: l.retry,
-                    onPressed: () => ref.invalidate(updateStatusProvider),
-                    icon: const Icon(Icons.refresh),
-                  )
-                : null,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: available
-                ? FilledButton.icon(
-                    onPressed: () => _download(isIos),
-                    icon: const Icon(Icons.download),
-                    label: Text(l.downloadLatest),
-                  )
-                : OutlinedButton.icon(
-                    onPressed: () => _download(isIos),
-                    icon: const Icon(Icons.download),
-                    label: Text(l.downloadLatest),
-                  ),
-          ),
-          if (isIos)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Text(l.iosInstallNote, style: Theme.of(context).textTheme.bodySmall),
-            ),
-        ],
-      ),
-    );
-  }
-
-  /// Opens the direct file link in the system browser, which downloads it immediately.
-  static Future<bool> _download(bool isIos) =>
-      launchUrl(Uri.parse(isIos ? Releases.iosIpa : Releases.androidApk), mode: LaunchMode.externalApplication);
 }

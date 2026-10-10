@@ -258,7 +258,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get reportAction => 'সমস্যা রিপোর্ট করুন';
 
   @override
-  String get statusOpen => 'রিপোর্ট করা হয়েছে';
+  String get statusOpen => 'পোস্ট করা হয়েছে';
 
   @override
   String get statusAcknowledged => 'গৃহীত';
@@ -270,7 +270,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get statusResolved => 'সমাধান হয়েছে';
 
   @override
-  String get statusHidden => 'পর্যালোচনায়';
+  String get statusHidden => 'রিপোর্ট করা হয়েছে';
 
   @override
   String get statusRemoved => 'সরানো হয়েছে';
