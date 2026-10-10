@@ -31,11 +31,17 @@ abstract interface class SajagRepository {
   Future<List<Report>> feed({
     required FeedScope scope,
     LatLng? near,
+
+    /// Restrict to one named area (overrides [near]).
+    String? area,
     String? categoryId,
     DateTime? before,
     int limit = 20,
   });
   Future<Report?> report(String id);
+
+  /// Area names that have reports, most active first (for the location filter).
+  Future<List<String>> knownAreas();
 
   /// Lightweight points for the heat map.
   Future<List<Report>> mapReports({required LatLng southWest, required LatLng northEast, required Duration since});

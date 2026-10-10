@@ -6,7 +6,7 @@ import '../../core/providers.dart';
 import '../../data/models.dart';
 import '../report/confirmations.dart';
 
-typedef FeedKey = ({FeedScope scope, String? categoryId});
+typedef FeedKey = ({FeedScope scope, String? categoryId, String? area});
 
 class FeedState {
   const FeedState({required this.items, required this.hasMore, this.loadingMore = false});
@@ -26,7 +26,14 @@ class FeedController extends AsyncNotifier<FeedState> {
     final near = key.scope == FeedScope.nearby ? (await ref.read(approximateFixProvider.future))?.position : null;
     final page = await ref
         .read(repositoryProvider)
-        .feed(scope: key.scope, near: near, categoryId: key.categoryId, before: before, limit: pageSize);
+        .feed(
+          scope: key.scope,
+          near: near,
+          area: key.area,
+          categoryId: key.categoryId,
+          before: before,
+          limit: pageSize,
+        );
     unawaited(ref.read(confirmationsProvider.notifier).load(page).catchError((Object _) {}));
     return page;
   }

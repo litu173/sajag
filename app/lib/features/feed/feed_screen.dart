@@ -7,12 +7,17 @@ import 'package:go_router/go_router.dart';
 import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
+import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
 import '../report/report_card.dart';
-import 'awareness_card.dart';
 import '../shell/home_shell.dart';
+import 'awareness_card.dart';
 import 'feed_controller.dart';
+
+final _knownAreasProvider = FutureProvider.autoDispose<List<String>>(
+  (ref) => ref.watch(repositoryProvider).knownAreas(),
+);
 
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
@@ -22,88 +27,404 @@ class FeedScreen extends ConsumerStatefulWidget {
 }
 
 class _FeedScreenState extends ConsumerState<FeedScreen> {
+  FeedScope _scope = FeedScope.nearby;
   String? _category;
+
+  /// A chosen area name; null means "near my current location".
+  String? _area;
+
+  Future<void> _chooseArea() async {
+    final picked = await showModalBottomSheet<({String? area})>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      builder: (_) => _AreaSheet(selected: _area),
+    );
+    if (picked != null && mounted) {
+      setState(() {
+        _area = picked.area;
+        _scope = FeedScope.nearby;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
     final theme = Theme.of(context);
     final unread = ref.watch(notificationsProvider).value?.where((n) => !n.read).length ?? 0;
+    final (placeIcon, placeLabel) = switch (_scope) {
+      FeedScope.nearby => (
+        Icons.near_me_rounded,
+        _area == null ? l.nearMe : ref.watch(catalogProvider).areaName(context, _area!),
+      ),
+      FeedScope.latest => (Icons.public_rounded, l.everywhere),
+      FeedScope.following => (Icons.group_rounded, l.feedFollowing),
+    };
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        body: Column(
-          children: [
-            SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 16, 0),
-                child: Row(
-                  children: [
-                    const SajagLogo(size: 40),
-                    const SizedBox(width: 12),
-                    Expanded(child: Text(l.appName, style: theme.textTheme.headlineMedium)),
-                    _GlassIconButton(
-                      tooltip: l.notificationsTitle,
-                      onPressed: () async {
-                        await context.push('/notifications');
-                        ref.invalidate(notificationsProvider);
-                      },
-                      child: Badge(
-                        isLabelVisible: unread > 0,
-                        label: Text(localDigits(context, '$unread')),
-                        child: const Icon(Icons.notifications_none_rounded),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            PillTabBar(
-              labels: [l.feedNearby, l.feedLatest, l.feedFollowing],
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-            ),
-            _CategoryFilter(selected: _category, onSelected: (c) => setState(() => _category = c)),
-            Expanded(
-              child: TabBarView(
+    return Scaffold(
+      body: Column(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 16, 0),
+              child: Row(
                 children: [
-                  for (final scope in FeedScope.values)
-                    _FeedList(key: ValueKey((scope, _category)), feedKey: (scope: scope, categoryId: _category)),
+                  const SajagLogo(size: 44),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l.appName, style: theme.textTheme.headlineSmall),
+                        const SizedBox(height: 2),
+                        Semantics(
+                          button: true,
+                          label: '${l.chooseArea}: $placeLabel',
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: _chooseArea,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(placeIcon, size: 15, color: theme.colorScheme.primary),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      placeLabel,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
+                                    ),
+                                  ),
+                                  Icon(Icons.expand_more_rounded, size: 18, color: theme.colorScheme.primary),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _ScopeMenu(
+                    scope: _scope,
+                    onChanged: (s) => setState(() {
+                      _scope = s;
+                      if (s != FeedScope.nearby) _area = null;
+                    }),
+                  ),
+                  const SizedBox(width: 8),
+                  _GlassIconButton(
+                    tooltip: l.notificationsTitle,
+                    onPressed: () async {
+                      await context.push('/notifications');
+                      ref.invalidate(notificationsProvider);
+                    },
+                    child: Badge(
+                      isLabelVisible: unread > 0,
+                      label: Text(localDigits(context, '$unread')),
+                      child: const Icon(Icons.notifications_none_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          _CategoryFilter(selected: _category, onSelected: (c) => setState(() => _category = c)),
+          Expanded(
+            child: _FeedList(
+              key: ValueKey((_scope, _category, _area)),
+              feedKey: (scope: _scope, categoryId: _category, area: _scope == FeedScope.nearby ? _area : null),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+/// Filter icon that opens Nearby / Latest / Following.
+class _ScopeMenu extends StatelessWidget {
+  const _ScopeMenu({required this.scope, required this.onChanged});
+  final FeedScope scope;
+  final ValueChanged<FeedScope> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final options = [
+      (FeedScope.nearby, Icons.near_me_rounded, l.feedNearby),
+      (FeedScope.latest, Icons.schedule_rounded, l.feedLatest),
+      (FeedScope.following, Icons.group_rounded, l.feedFollowing),
+    ];
+    return PopupMenuButton<FeedScope>(
+      tooltip: l.filterPosts,
+      initialValue: scope,
+      position: PopupMenuPosition.under,
+      offset: const Offset(0, 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      onSelected: onChanged,
+      itemBuilder: (_) => [
+        for (final (value, icon, label) in options)
+          PopupMenuItem(
+            value: value,
+            child: Row(
+              children: [
+                Icon(icon, size: 20, color: value == scope ? theme.colorScheme.primary : null),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontWeight: value == scope ? FontWeight.w600 : FontWeight.w400,
+                      color: value == scope ? theme.colorScheme.primary : null,
+                    ),
+                  ),
+                ),
+                if (value == scope) Icon(Icons.check_rounded, size: 18, color: theme.colorScheme.primary),
+              ],
+            ),
+          ),
+      ],
+      child: _GlassIconButton(tooltip: l.filterPosts, child: const Icon(Icons.tune_rounded)),
+    );
+  }
+}
+
+class _AreaSheet extends ConsumerStatefulWidget {
+  const _AreaSheet({required this.selected});
+  final String? selected;
+
+  @override
+  ConsumerState<_AreaSheet> createState() => _AreaSheetState();
+}
+
+class _AreaSheetState extends ConsumerState<_AreaSheet> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final areas = ref.watch(_knownAreasProvider);
+    final catalog = ref.watch(catalogProvider);
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.7,
+      maxChildSize: 0.92,
+      builder: (context, scroll) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: Text(l.chooseArea, style: theme.textTheme.headlineSmall),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: TextField(
+              onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
+              decoration: InputDecoration(hintText: l.searchArea, prefixIcon: const Icon(Icons.search_rounded)),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: areas.when(
+              loading: () => const ListSkeleton(rows: 6),
+              error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(_knownAreasProvider)),
+              data: (list) {
+                final filtered = list
+                    .where((a) => a.toLowerCase().contains(_query) || catalog.areaName(context, a).contains(_query))
+                    .toList();
+                return ListView(
+                  controller: scroll,
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+                  children: [
+                    _AreaTile(
+                      icon: Icons.my_location_rounded,
+                      label: l.useMyLocation,
+                      selected: widget.selected == null,
+                      onTap: () => Navigator.pop(context, (area: null)),
+                    ),
+                    for (final a in filtered)
+                      _AreaTile(
+                        icon: Icons.place_outlined,
+                        label: catalog.areaName(context, a),
+                        selected: widget.selected == a,
+                        onTap: () => Navigator.pop(context, (area: a)),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AreaTile extends StatelessWidget {
+  const _AreaTile({required this.icon, required this.label, required this.selected, required this.onTap});
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return ListTile(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      tileColor: selected ? primary.withValues(alpha: 0.1) : null,
+      leading: Icon(icon, color: selected ? primary : null),
+      title: Text(
+        label,
+        style: TextStyle(color: selected ? primary : null, fontWeight: selected ? FontWeight.w600 : null),
+      ),
+      trailing: selected ? Icon(Icons.check_rounded, color: primary) : null,
+      onTap: onTap,
     );
   }
 }
 
 class _GlassIconButton extends StatelessWidget {
-  const _GlassIconButton({required this.child, required this.onPressed, required this.tooltip});
+  const _GlassIconButton({required this.child, required this.tooltip, this.onPressed});
   final Widget child;
-  final VoidCallback onPressed;
   final String tooltip;
+
+  /// Null when wrapped by another tap handler (e.g. a popup menu).
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final circle = Container(
+      width: 46,
+      height: 46,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: theme.cardTheme.color,
+        boxShadow: SajagColors.softShadow(theme.brightness),
+      ),
+      child: child,
+    );
+    if (onPressed == null) return circle;
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: theme.cardTheme.color,
+        color: Colors.transparent,
         shape: const CircleBorder(),
-        elevation: 0,
+        child: InkWell(customBorder: const CircleBorder(), onTap: onPressed, child: circle),
+      ),
+    );
+  }
+}
+
+/// Five quick categories plus "Show all", which opens every category in a sheet.
+class _CategoryFilter extends ConsumerWidget {
+  const _CategoryFilter({required this.selected, required this.onSelected});
+  final String? selected;
+  final ValueChanged<String?> onSelected;
+
+  static const _quick = 5;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final categories = ref.watch(catalogProvider).categories;
+    final quick = categories.take(_quick).toList();
+    final current = selected == null ? null : ref.watch(catalogProvider).category(selected!);
+    final visible = [if (current != null && !quick.contains(current)) current, ...quick];
+
+    return SizedBox(
+      height: 58,
+      child: ListView(
+        key: const Key('category-chips'),
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+        children: [
+          for (final c in visible) ...[
+            CategoryFilterChip(
+              label: c.name(context),
+              icon: categoryIcon(c),
+              color: c.color,
+              selected: selected == c.id,
+              onTap: () => onSelected(selected == c.id ? null : c.id),
+            ),
+            const SizedBox(width: 8),
+          ],
+          CategoryFilterChip(
+            label: l.showAll,
+            icon: Icons.apps_rounded,
+            color: Theme.of(context).colorScheme.primary,
+            selected: false,
+            onTap: () async {
+              final picked = await showModalBottomSheet<({String? id})>(
+                context: context,
+                useRootNavigator: true,
+                isScrollControlled: true,
+                builder: (_) => _CategorySheet(selected: selected),
+              );
+              if (picked != null) onSelected(picked.id);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CategoryFilterChip extends StatelessWidget {
+  const CategoryFilterChip({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+    super.key,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Material(
+        color: selected ? theme.colorScheme.primary : theme.cardTheme.color,
+        shape: const StadiumBorder(),
         child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onPressed,
-          child: Container(
-            width: 48,
-            height: 48,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: SajagColors.softShadow(theme.brightness)),
-            child: child,
+          customBorder: const StadiumBorder(),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 17, color: selected ? theme.colorScheme.onPrimary : color),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    color: selected ? theme.colorScheme.onPrimary : theme.textTheme.bodyMedium?.color,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -111,67 +432,50 @@ class _GlassIconButton extends StatelessWidget {
   }
 }
 
-class _CategoryFilter extends ConsumerWidget {
-  const _CategoryFilter({required this.selected, required this.onSelected});
+class _CategorySheet extends ConsumerWidget {
+  const _CategorySheet({required this.selected});
   final String? selected;
-  final ValueChanged<String?> onSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     final categories = ref.watch(catalogProvider).categories;
-    final theme = Theme.of(context);
-    Widget chip({required bool on, required String label, required VoidCallback onTap, Widget? icon}) => Material(
-      color: on ? theme.colorScheme.primary : theme.cardTheme.color,
-      shape: const StadiumBorder(),
-      child: InkWell(
-        customBorder: const StadiumBorder(),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[icon, const SizedBox(width: 6)],
-              Text(
-                label,
-                style: TextStyle(
-                  fontWeight: on ? FontWeight.w600 : FontWeight.w500,
-                  fontSize: 14,
-                  color: on ? theme.colorScheme.onPrimary : theme.textTheme.bodyMedium?.color,
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.allCategoriesTitle, style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 16),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 10,
+                  children: [
+                    CategoryFilterChip(
+                      label: l.clearCategory,
+                      icon: Icons.select_all_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      selected: selected == null,
+                      onTap: () => Navigator.pop(context, (id: null)),
+                    ),
+                    for (final c in categories)
+                      CategoryFilterChip(
+                        label: c.name(context),
+                        icon: categoryIcon(c),
+                        color: c.color,
+                        selected: selected == c.id,
+                        onTap: () => Navigator.pop(context, (id: c.id)),
+                      ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    return SizedBox(
-      height: 62,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-        itemCount: categories.length + 1,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (context, i) {
-          if (i == 0) {
-            return Semantics(
-              selected: selected == null,
-              child: chip(on: selected == null, label: context.l10n.allCategories, onTap: () => onSelected(null)),
-            );
-          }
-          final c = categories[i - 1];
-          final on = selected == c.id;
-          return Semantics(
-            selected: on,
-            child: chip(
-              on: on,
-              label: c.name(context),
-              icon: Icon(categoryIcon(c), size: 17, color: on ? theme.colorScheme.onPrimary : c.color),
-              onTap: () => onSelected(on ? null : c.id),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
@@ -185,11 +489,8 @@ class _FeedList extends ConsumerStatefulWidget {
   ConsumerState<_FeedList> createState() => _FeedListState();
 }
 
-class _FeedListState extends ConsumerState<_FeedList> with AutomaticKeepAliveClientMixin {
+class _FeedListState extends ConsumerState<_FeedList> {
   static const _awarenessEvery = 6;
-
-  @override
-  bool get wantKeepAlive => true;
 
   bool _onScroll(ScrollNotification n) {
     if (n.metrics.extentAfter < 800) unawaited(ref.read(feedProvider(widget.feedKey).notifier).loadMore());
@@ -198,7 +499,6 @@ class _FeedListState extends ConsumerState<_FeedList> with AutomaticKeepAliveCli
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final l = context.l10n;
     final feed = ref.watch(feedProvider(widget.feedKey));
     final awareness = ref.watch(awarenessProvider).value ?? const <AwarenessPost>[];
@@ -211,7 +511,7 @@ class _FeedListState extends ConsumerState<_FeedList> with AutomaticKeepAliveCli
 
     return feed.when(
       skipLoadingOnRefresh: true,
-      loading: () => const _FeedSkeleton(),
+      loading: () => FeedSkeleton(padding: EdgeInsets.fromLTRB(20, 8, 20, navClearance(context))),
       error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(feedProvider(widget.feedKey))),
       data: (state) {
         if (state.items.isEmpty) {
@@ -271,8 +571,8 @@ class _FeedListState extends ConsumerState<_FeedList> with AutomaticKeepAliveCli
                 }
                 if (i >= state.items.length) {
                   return const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Center(child: CircularProgressIndicator()),
+                    padding: EdgeInsets.only(bottom: 28),
+                    child: Shimmer(child: SkeletonBox(aspectRatio: 4 / 3.6, radius: 28)),
                   );
                 }
                 return Padding(
@@ -303,44 +603,4 @@ class _Note extends StatelessWidget {
       ],
     ),
   );
-}
-
-class _FeedSkeleton extends StatelessWidget {
-  const _FeedSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.surfaceContainerHighest;
-    Widget bar(double w, double h) => Container(
-      width: w,
-      height: h,
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
-    );
-    return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16),
-      itemCount: 3,
-      itemBuilder: (_, _) => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Card(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(
-                aspectRatio: 16 / 10,
-                child: ColoredBox(color: color),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [bar(double.infinity, 18), const SizedBox(height: 10), bar(180, 14)],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

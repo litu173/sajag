@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/format.dart';
 import '../../core/providers.dart';
+import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
 import '../achievements/achievements_screen.dart';
@@ -36,7 +37,7 @@ class PublicProfileScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l.citizenTitle)),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Padding(padding: EdgeInsets.all(20), child: HeroSkeleton(height: 300)),
         error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(_publicProfileProvider(aliasId))),
         data: (data) {
           final p = data.profile;

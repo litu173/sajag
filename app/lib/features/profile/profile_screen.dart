@@ -9,6 +9,7 @@ import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../core/updates.dart';
+import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
 import '../shell/home_shell.dart';
@@ -30,7 +31,7 @@ class ProfileScreen extends ConsumerWidget {
           padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 12, 20, navClearance(context)),
           children: [
             profile.when(
-              loading: () => const _HeroSkeleton(),
+              loading: () => const HeroSkeleton(),
               error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(myProfileProvider)),
               data: (p) => _ProfileHero(profile: p),
             ),
@@ -38,7 +39,17 @@ class ProfileScreen extends ConsumerWidget {
             _SectionTitle(l.myReports),
             const SizedBox(height: 14),
             reports.when(
-              loading: () => const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
+              loading: () => Shimmer(
+                child: Row(
+                  children: [
+                    for (var i = 0; i < 3; i++)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 12),
+                        child: SkeletonBox(width: 112, height: 150, radius: 20),
+                      ),
+                  ],
+                ),
+              ),
               error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(myReportsProvider)),
               data: (list) => list.isEmpty ? const _NoReports() : _ReportStrip(reports: list),
             ),
@@ -241,19 +252,6 @@ class _GlassStat extends StatelessWidget {
   );
 }
 
-class _HeroSkeleton extends StatelessWidget {
-  const _HeroSkeleton();
-
-  @override
-  Widget build(BuildContext context) => Container(
-    height: 330,
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(32),
-    ),
-  );
-}
-
 // ------------------------------------------------------------------ reports strip
 class _ReportStrip extends ConsumerWidget {
   const _ReportStrip({required this.reports});
@@ -263,7 +261,7 @@ class _ReportStrip extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final catalog = ref.watch(catalogProvider);
     return SizedBox(
-      height: 214,
+      height: 150,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
@@ -275,13 +273,13 @@ class _ReportStrip extends ConsumerWidget {
           return GestureDetector(
             onTap: () => context.push('/reports/${r.id}'),
             child: SizedBox(
-              width: 156,
+              width: 112,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    ReportPhoto(report: r, category: category, iconSize: 36),
+                    ReportPhoto(report: r, category: category, iconSize: 28),
                     const DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -293,9 +291,9 @@ class _ReportStrip extends ConsumerWidget {
                       ),
                     ),
                     Positioned(
-                      left: 12,
-                      right: 12,
-                      bottom: 12,
+                      left: 10,
+                      right: 10,
+                      bottom: 10,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -305,7 +303,12 @@ class _ReportStrip extends ConsumerWidget {
                             r.description,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                              height: 1.25,
+                            ),
                           ),
                         ],
                       ),
@@ -381,16 +384,41 @@ class _Settings extends ConsumerWidget {
           title: l.privacy,
           onTap: () => _info(context, l.privacy, l.privacyBody),
         ),
-        _Row(
-          icon: Icons.info_rounded,
-          tint: const Color(0xFF8338EC),
-          title: l.about,
-          onTap: () => _info(context, l.about, l.aboutBody),
-        ),
-        const _UpdateRow(),
+        _AboutRow(onOpen: () => _about(context)),
       ],
     );
   }
+
+  static Future<void> _about(BuildContext context) => showModalBottomSheet<void>(
+    context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    builder: (context) {
+      final l = context.l10n;
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const SajagLogo(size: 52),
+                  const SizedBox(width: 14),
+                  Expanded(child: Text(l.about, style: Theme.of(context).textTheme.headlineSmall)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(l.aboutBody, style: Theme.of(context).textTheme.bodyLarge),
+              const SizedBox(height: 24),
+              const _VersionPanel(),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 
   static Future<void> _info(BuildContext context, String title, String body) => showModalBottomSheet<void>(
     context: context,
@@ -413,40 +441,100 @@ class _Settings extends ConsumerWidget {
   );
 }
 
-/// App version with a direct download of the newest release from GitHub.
-class _UpdateRow extends ConsumerWidget {
-  const _UpdateRow();
+/// "About Sajag" row, with a "New" badge when a newer version is available.
+class _AboutRow extends ConsumerWidget {
+  const _AboutRow({required this.onOpen});
+  final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
+    final available = ref.watch(updateStatusProvider).value?.available ?? false;
+    return _Row(
+      icon: Icons.info_rounded,
+      tint: const Color(0xFF8338EC),
+      title: l.about,
+      onTap: onOpen,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (available)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+              decoration: BoxDecoration(color: SajagColors.accent, borderRadius: BorderRadius.circular(12)),
+              child: Text(
+                l.newBadge,
+                style: const TextStyle(color: SajagColors.onAccent, fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ),
+          Icon(Icons.chevron_right_rounded, color: Theme.of(context).textTheme.bodySmall?.color),
+        ],
+      ),
+    );
+  }
+}
+
+/// Installed version, update status and a direct download of the newest release.
+class _VersionPanel extends ConsumerWidget {
+  const _VersionPanel();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
     final status = ref.watch(updateStatusProvider);
-    final isIos = Theme.of(context).platform == TargetPlatform.iOS;
+    final isIos = theme.platform == TargetPlatform.iOS;
     final available = status.value?.available ?? false;
     final subtitle = status.when(
       loading: () => l.checkingUpdate,
       error: (_, _) => l.updateCheckFailed,
       data: (s) => s.available ? l.updateAvailable(s.latest) : l.upToDate(s.current),
     );
-    return _Row(
-      icon: available ? Icons.system_update_rounded : Icons.verified_outlined,
-      tint: available ? SajagColors.accent : SajagColors.resolved,
-      title: l.latestVersion,
-      subtitle: [localDigits(context, subtitle), if (isIos) l.iosInstallNote].join('\n'),
-      trailing: status.hasError
-          ? IconButton(
-              tooltip: l.retry,
-              onPressed: () => ref.invalidate(updateStatusProvider),
-              icon: const Icon(Icons.refresh_rounded),
-            )
-          : IconButton.filledTonal(
-              tooltip: l.downloadLatest,
-              onPressed: () => launchUrl(
-                Uri.parse(isIos ? Releases.iosIpa : Releases.androidApk),
-                mode: LaunchMode.externalApplication,
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(color: theme.cardTheme.color, borderRadius: BorderRadius.circular(22)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(
+                available ? Icons.system_update_rounded : Icons.verified_rounded,
+                color: available ? SajagColors.accent : SajagColors.resolved,
               ),
-              icon: const Icon(Icons.download_rounded),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.versionTitle, style: theme.textTheme.titleSmall),
+                    Text(localDigits(context, subtitle), style: theme.textTheme.bodySmall),
+                  ],
+                ),
+              ),
+              if (status.hasError)
+                IconButton(
+                  tooltip: l.retry,
+                  onPressed: () => ref.invalidate(updateStatusProvider),
+                  icon: const Icon(Icons.refresh_rounded),
+                ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          FilledButton.icon(
+            style: available
+                ? FilledButton.styleFrom(backgroundColor: SajagColors.accent, foregroundColor: SajagColors.onAccent)
+                : null,
+            onPressed: () => launchUrl(
+              Uri.parse(isIos ? Releases.iosIpa : Releases.androidApk),
+              mode: LaunchMode.externalApplication,
             ),
+            icon: const Icon(Icons.download_rounded),
+            label: Text(l.downloadLatest),
+          ),
+          if (isIos) ...[const SizedBox(height: 10), Text(l.iosInstallNote, style: theme.textTheme.bodySmall)],
+        ],
+      ),
     );
   }
 }

@@ -244,5 +244,18 @@
   "checkingUpdate": "Checking for updates…",
   "updateCheckFailed": "Couldn't check for updates. Check your internet.",
   "downloadLatest": "Download latest version",
-  "iosInstallNote": "On iPhone, install the downloaded file with Sideloadly or AltStore until Sajag is on the App Store."
+  "iosInstallNote": "On iPhone, install the downloaded file with Sideloadly or AltStore until Sajag is on the App Store.",
+  "filterPosts": "Filter posts",
+  "nearMe": "Near me",
+  "everywhere": "Everywhere",
+  "chooseArea": "Choose a location",
+  "searchArea": "Search area",
+  "useMyLocation": "Use my current location",
+  "showAll": "Show all",
+  "allCategoriesTitle": "All categories",
+  "clearCategory": "All categories",
+  "earnedInPeriod": "{count} earned · {period}",
+  "@earnedInPeriod": {"placeholders": {"count": {"type": "int"}, "period": {"type": "String"}}},
+  "newBadge": "New",
+  "versionTitle": "App version"
 }

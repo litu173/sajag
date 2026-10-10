@@ -109,7 +109,8 @@ class ReportCard extends ConsumerWidget {
                               Expanded(
                                 child: Text(
                                   [
-                                    if (report.place.isNotEmpty) report.place,
+                                    if (report.areaName != null || report.city != null)
+                                      ref.watch(catalogProvider).place(context, report),
                                     timeAgo(context, report.createdAt),
                                   ].join(' · '),
                                   maxLines: 1,

@@ -11,6 +11,7 @@ import '../../core/config.dart';
 import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
+import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
 import '../feed/feed_controller.dart';
@@ -32,10 +33,7 @@ class ReportDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(reportProvider(id));
     return async.when(
-      loading: () => Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: CircularProgressIndicator()),
-      ),
+      loading: () => Scaffold(appBar: AppBar(), body: const DetailSkeleton()),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
         body: ErrorView(error: e, onRetry: () => ref.invalidate(reportProvider(id))),
@@ -208,7 +206,11 @@ class _Detail extends ConsumerWidget {
                 Text(report.description, style: theme.textTheme.titleLarge?.copyWith(height: 1.35)),
                 const SizedBox(height: 10),
                 Text(
-                  [if (report.place.isNotEmpty) report.place, timeAgo(context, report.createdAt)].join(' · '),
+                  [
+                    if (report.areaName != null || report.city != null)
+                      ref.watch(catalogProvider).place(context, report),
+                    timeAgo(context, report.createdAt),
+                  ].join(' · '),
                   style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
                 const SizedBox(height: 16),

@@ -1,23 +1,27 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 import 'models.dart';
 
 /// Categories, levels and badges. Bundled from /shared so the app works offline and
 /// matches the server seed exactly (tool/sync_shared.mjs keeps them in step).
 class Catalog {
-  Catalog._(this.categories, this.levels, this.groups, this.badges) : _byId = {for (final c in categories) c.id: c};
+  Catalog._(this.categories, this.levels, this.groups, this.badges, this._areaNamesBn)
+    : _byId = {for (final c in categories) c.id: c};
 
   static Future<Catalog> load([AssetBundle? bundle]) async {
     final b = bundle ?? rootBundle;
     final cats = jsonDecode(await b.loadString('assets/data/categories.json')) as List<dynamic>;
     final ach = jsonDecode(await b.loadString('assets/data/achievements.json')) as Json;
+    final areas = (jsonDecode(await b.loadString('assets/data/areas.json')) as Json).cast<String, String>();
     return Catalog._(
       cats.map((e) => Category.fromJson(e as Json)).toList(growable: false),
       (ach['levels'] as List<dynamic>).map((e) => Level.fromJson(e as Json)).toList(growable: false),
       (ach['groups'] as List<dynamic>).map((e) => BadgeGroup.fromJson(e as Json)).toList(growable: false),
       (ach['badges'] as List<dynamic>).map((e) => AchievementBadge.fromJson(e as Json)).toList(growable: false),
+      areas,
     );
   }
 
@@ -26,6 +30,14 @@ class Catalog {
   final List<BadgeGroup> groups;
   final List<AchievementBadge> badges;
   final Map<String, Category> _byId;
+  final Map<String, String> _areaNamesBn;
+
+  /// Area name in the UI language; Bangla names are known for common areas.
+  String areaName(BuildContext context, String area) => isBangla(context) ? (_areaNamesBn[area] ?? area) : area;
+
+  /// "Area, City" for a report in the UI language.
+  String place(BuildContext context, Report r) =>
+      [if (r.areaName != null) areaName(context, r.areaName!), ?r.city].where((s) => s.isNotEmpty).join(', ');
 
   Category category(String id) => _byId[id] ?? _byId['other']!;
 

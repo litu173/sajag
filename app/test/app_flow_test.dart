@@ -88,15 +88,40 @@ void main() {
     await tester.tap(find.text('Verify identity'));
     await tester.pumpAndSettle();
 
-    // Home feed with reports, bottom navigation and the central Report action
-    expect(find.text('Nearby'), findsOneWidget);
-    expect(find.text('Map'), findsOneWidget);
+    // Home feed: location pill, icon-only tab bar with the central Report action, report cards
+    expect(find.text('Near me'), findsOneWidget);
+    expect(find.bySemanticsLabel('Map'), findsOneWidget);
+    expect(find.text('Map'), findsNothing, reason: 'tab bar shows icons only');
     expect(find.bySemanticsLabel('Report a problem'), findsOneWidget);
     expect(find.byType(ReportCard), findsWidgets);
 
-    // Achievements tab shows the level header and badges
-    await tester.tap(find.text('Badges').last);
+    // Filter dropdown: Nearby / Latest / Following
+    await tester.tap(find.byTooltip('Filter posts'));
     await tester.pumpAndSettle();
+    expect(find.text('Following'), findsOneWidget);
+    await tester.tap(find.text('Latest'));
+    await tester.pumpAndSettle();
+    expect(find.text('Everywhere'), findsOneWidget);
+
+    // Five quick categories + "Show all" opens every category in a sheet
+    await tester.dragUntilVisible(
+      find.text('Show all'),
+      find.byKey(const Key('category-chips')),
+      const Offset(-200, 0),
+    );
+    await tester.tap(find.text('Show all'));
+    await tester.pumpAndSettle();
+    expect(find.text('All categories'), findsWidgets);
+    await tester.ensureVisible(find.text('Noise pollution'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Noise pollution'));
+    await tester.pumpAndSettle();
+    expect(find.text('Noise pollution'), findsOneWidget, reason: 'picked category appears as a selected chip');
+
+    // Achievements: period dropdown beside the title, level header and badges
+    await tester.tap(find.bySemanticsLabel('Badges'));
+    await tester.pumpAndSettle();
+    expect(find.text('This week'), findsOneWidget);
     // Verifying earns Founding Member (+100 XP), which lifts a new citizen to level 2.
     expect(find.text('Observer'), findsOneWidget);
     expect(find.text('First Snap'), findsOneWidget);

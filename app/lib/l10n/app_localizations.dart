@@ -1327,6 +1327,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'On iPhone, install the downloaded file with Sideloadly or AltStore until Sajag is on the App Store.'**
   String get iosInstallNote;
+
+  /// No description provided for @filterPosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter posts'**
+  String get filterPosts;
+
+  /// No description provided for @nearMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Near me'**
+  String get nearMe;
+
+  /// No description provided for @everywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Everywhere'**
+  String get everywhere;
+
+  /// No description provided for @chooseArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a location'**
+  String get chooseArea;
+
+  /// No description provided for @searchArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Search area'**
+  String get searchArea;
+
+  /// No description provided for @useMyLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my current location'**
+  String get useMyLocation;
+
+  /// No description provided for @showAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get showAll;
+
+  /// No description provided for @allCategoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All categories'**
+  String get allCategoriesTitle;
+
+  /// No description provided for @clearCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'All categories'**
+  String get clearCategory;
+
+  /// No description provided for @earnedInPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} earned · {period}'**
+  String earnedInPeriod(int count, String period);
+
+  /// No description provided for @newBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get newBadge;
+
+  /// No description provided for @versionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App version'**
+  String get versionTitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

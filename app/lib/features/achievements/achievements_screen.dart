@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
+import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/badge_progress.dart';
 import '../../data/models.dart';
@@ -13,6 +14,21 @@ import '../shell/home_shell.dart';
 final leaderboardProvider = FutureProvider.autoDispose.family<List<LeaderboardEntry>, LeaderboardPeriod>(
   (ref, period) => ref.watch(repositoryProvider).leaderboard(period),
 );
+
+/// Period shown on the achievements page (leaderboard ranking and "earned in period" count).
+class PeriodNotifier extends Notifier<LeaderboardPeriod> {
+  @override
+  LeaderboardPeriod build() => LeaderboardPeriod.week;
+  void set(LeaderboardPeriod p) => state = p;
+}
+
+final achievementsPeriodProvider = NotifierProvider<PeriodNotifier, LeaderboardPeriod>(PeriodNotifier.new);
+
+String periodLabel(BuildContext context, LeaderboardPeriod p) => switch (p) {
+  LeaderboardPeriod.week => context.l10n.periodWeek,
+  LeaderboardPeriod.month => context.l10n.periodMonth,
+  LeaderboardPeriod.all => context.l10n.periodAll,
+};
 
 class AchievementsScreen extends StatelessWidget {
   const AchievementsScreen({super.key});
@@ -25,9 +41,57 @@ class AchievementsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l.achievementsTitle),
+          actions: const [_PeriodMenu(), SizedBox(width: 12)],
           bottom: PillTabBar(labels: [l.tabBadges, l.tabLeaderboard]),
         ),
         body: const TabBarView(children: [_BadgesTab(), _LeaderboardTab()]),
+      ),
+    );
+  }
+}
+
+/// "This week ▾" dropdown beside the page title.
+class _PeriodMenu extends ConsumerWidget {
+  const _PeriodMenu();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final period = ref.watch(achievementsPeriodProvider);
+    return PopupMenuButton<LeaderboardPeriod>(
+      initialValue: period,
+      position: PopupMenuPosition.under,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      onSelected: ref.read(achievementsPeriodProvider.notifier).set,
+      itemBuilder: (_) => [
+        for (final p in LeaderboardPeriod.values)
+          PopupMenuItem(
+            value: p,
+            child: Row(
+              children: [
+                Expanded(child: Text(periodLabel(context, p))),
+                if (p == period) Icon(Icons.check_rounded, size: 18, color: theme.colorScheme.primary),
+              ],
+            ),
+          ),
+      ],
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
+        decoration: BoxDecoration(
+          color: theme.cardTheme.color,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: SajagColors.softShadow(theme.brightness),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              periodLabel(context, period),
+              style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
+            ),
+            Icon(Icons.expand_more_rounded, size: 20, color: theme.colorScheme.primary),
+          ],
+        ),
       ),
     );
   }
@@ -40,11 +104,19 @@ class _BadgesTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(myProfileProvider);
     final reports = ref.watch(myReportsProvider).value ?? const <Report>[];
-    final earned = {for (final b in ref.watch(myBadgesProvider).value ?? const <EarnedBadge>[]) b.badgeId};
+    final earnedList = ref.watch(myBadgesProvider).value ?? const <EarnedBadge>[];
+    final earned = {for (final b in earnedList) b.badgeId};
     final catalog = ref.watch(catalogProvider);
+    final period = ref.watch(achievementsPeriodProvider);
+    final since = switch (period) {
+      LeaderboardPeriod.week => DateTime.now().subtract(const Duration(days: 7)),
+      LeaderboardPeriod.month => DateTime.now().subtract(const Duration(days: 30)),
+      LeaderboardPeriod.all => DateTime(2000),
+    };
+    final earnedInPeriod = earnedList.where((b) => b.awardedAt.isAfter(since)).length;
 
     return profile.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const _BadgesSkeleton(),
       error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(myProfileProvider)),
       data: (p) {
         final progress = BadgeProgress(p, reports);
@@ -56,9 +128,19 @@ class _BadgesTab extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                  child: Text(
-                    localDigits(context, context.l10n.badgesEarned(earned.length, catalog.badges.length)),
-                    style: Theme.of(context).textTheme.titleMedium,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        localDigits(context, context.l10n.badgesEarned(earned.length, catalog.badges.length)),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        localDigits(context, context.l10n.earnedInPeriod(earnedInPeriod, periodLabel(context, period))),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -102,6 +184,19 @@ class _BadgesTab extends ConsumerWidget {
       },
     );
   }
+}
+
+class _BadgesSkeleton extends StatelessWidget {
+  const _BadgesSkeleton();
+
+  @override
+  Widget build(BuildContext context) => ListView(
+    physics: const NeverScrollableScrollPhysics(),
+    children: const [
+      Padding(padding: EdgeInsets.fromLTRB(20, 12, 20, 24), child: HeroSkeleton(height: 220)),
+      GridSkeleton(),
+    ],
+  );
 }
 
 class LevelHeader extends ConsumerWidget {
@@ -341,37 +436,19 @@ class _BadgeSheet extends StatelessWidget {
   }
 }
 
-class _LeaderboardTab extends ConsumerStatefulWidget {
+class _LeaderboardTab extends ConsumerWidget {
   const _LeaderboardTab();
 
   @override
-  ConsumerState<_LeaderboardTab> createState() => _LeaderboardTabState();
-}
-
-class _LeaderboardTabState extends ConsumerState<_LeaderboardTab> {
-  LeaderboardPeriod _period = LeaderboardPeriod.week;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final theme = Theme.of(context);
-    final board = ref.watch(leaderboardProvider(_period));
+    final period = ref.watch(achievementsPeriodProvider);
+    final board = ref.watch(leaderboardProvider(period));
 
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: SegmentedButton<LeaderboardPeriod>(
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(value: LeaderboardPeriod.week, label: Text(l.periodWeek)),
-              ButtonSegment(value: LeaderboardPeriod.month, label: Text(l.periodMonth)),
-              ButtonSegment(value: LeaderboardPeriod.all, label: Text(l.periodAll)),
-            ],
-            selected: {_period},
-            onSelectionChanged: (s) => setState(() => _period = s.first),
-          ),
-        ),
+        const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
@@ -385,12 +462,12 @@ class _LeaderboardTabState extends ConsumerState<_LeaderboardTab> {
         const SizedBox(height: 8),
         Expanded(
           child: board.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(leaderboardProvider(_period))),
+            loading: () => const ListSkeleton(),
+            error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(leaderboardProvider(period))),
             data: (rows) => rows.isEmpty
                 ? EmptyState(icon: Icons.emoji_events_outlined, message: l.emptyLeaderboard)
                 : RefreshIndicator(
-                    onRefresh: () async => ref.invalidate(leaderboardProvider(_period)),
+                    onRefresh: () async => ref.invalidate(leaderboardProvider(period)),
                     child: ListView.builder(
                       padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
                       itemCount: rows.length,

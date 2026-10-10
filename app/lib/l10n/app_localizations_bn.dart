@@ -694,4 +694,42 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get iosInstallNote =>
       'অ্যাপ স্টোরে আসার আগ পর্যন্ত আইফোনে ডাউনলোড করা ফাইলটি Sideloadly বা AltStore দিয়ে ইনস্টল করুন।';
+
+  @override
+  String get filterPosts => 'পোস্ট ফিল্টার';
+
+  @override
+  String get nearMe => 'আমার কাছাকাছি';
+
+  @override
+  String get everywhere => 'সব এলাকা';
+
+  @override
+  String get chooseArea => 'এলাকা বেছে নিন';
+
+  @override
+  String get searchArea => 'এলাকা খুঁজুন';
+
+  @override
+  String get useMyLocation => 'আমার বর্তমান অবস্থান ব্যবহার করুন';
+
+  @override
+  String get showAll => 'সব দেখুন';
+
+  @override
+  String get allCategoriesTitle => 'সব ক্যাটাগরি';
+
+  @override
+  String get clearCategory => 'সব ক্যাটাগরি';
+
+  @override
+  String earnedInPeriod(int count, String period) {
+    return '$period: $countটি অর্জিত';
+  }
+
+  @override
+  String get newBadge => 'নতুন';
+
+  @override
+  String get versionTitle => 'অ্যাপ সংস্করণ';
 }

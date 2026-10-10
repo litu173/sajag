@@ -152,14 +152,16 @@ class SupabaseRepository implements SajagRepository {
   Future<List<Report>> feed({
     required FeedScope scope,
     LatLng? near,
+    String? area,
     String? categoryId,
     DateTime? before,
     int limit = 20,
   }) => _guard(() async {
     var q = _db.from('report_feed').select().not('status', 'in', '(hidden,removed)');
     if (categoryId != null) q = q.eq('category_id', categoryId);
+    if (area != null) q = q.eq('area_name', area);
     if (before != null) q = q.lt('created_at', before.toUtc().toIso8601String());
-    if (scope == FeedScope.nearby && near != null) {
+    if (scope == FeedScope.nearby && area == null && near != null) {
       q = q
           .gte('lat', near.latitude - _nearbyDegrees)
           .lte('lat', near.latitude + _nearbyDegrees)
@@ -181,6 +183,23 @@ class SupabaseRepository implements SajagRepository {
     if (row != null) return _report(row);
     final mine = await myReports();
     return mine.where((r) => r.id == id).firstOrNull;
+  });
+
+  @override
+  Future<List<String>> knownAreas() => _guard(() async {
+    final rows = await _db
+        .from('report_feed')
+        .select('area_name')
+        .not('area_name', 'is', null)
+        .not('status', 'in', '(hidden,removed)')
+        .order('created_at', ascending: false)
+        .limit(1000);
+    final counts = <String, int>{};
+    for (final r in rows) {
+      final a = r['area_name'] as String;
+      counts[a] = (counts[a] ?? 0) + 1;
+    }
+    return (counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value))).map((e) => e.key).toList();
   });
 
   @override

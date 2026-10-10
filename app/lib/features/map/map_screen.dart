@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config.dart';
 import '../../core/format.dart';
@@ -162,7 +163,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     showCounts: _zoom >= 12,
                   ),
                 ),
-              const SimpleAttributionWidget(source: Text(AppConfig.tileAttribution)),
             ],
           ),
           SafeArea(
@@ -199,6 +199,23 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ),
           ),
           if (loading) const Positioned(top: 0, left: 0, right: 0, child: SafeArea(child: LinearProgressIndicator())),
+          // Tile attribution (required by OpenStreetMap), kept visible above the floating tab bar.
+          Positioned(
+            right: 12,
+            bottom: navClearance(context) + 64,
+            child: GestureDetector(
+              onTap: () =>
+                  launchUrl(Uri.parse('https://www.openstreetmap.org/copyright'), mode: LaunchMode.externalApplication),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text('© ${AppConfig.tileAttribution}', style: Theme.of(context).textTheme.labelSmall),
+              ),
+            ),
+          ),
           Positioned(
             left: 12,
             bottom: navClearance(context),

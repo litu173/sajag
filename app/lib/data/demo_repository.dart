@@ -255,6 +255,7 @@ class DemoRepository implements SajagRepository {
   Future<List<Report>> feed({
     required FeedScope scope,
     LatLng? near,
+    String? area,
     String? categoryId,
     DateTime? before,
     int limit = 20,
@@ -263,10 +264,11 @@ class DemoRepository implements SajagRepository {
     const distance = Distance();
     Iterable<Report> items = _visible;
     if (categoryId != null) items = items.where((r) => r.categoryId == categoryId);
+    if (area != null) items = items.where((r) => r.areaName == area);
     if (before != null) items = items.where((r) => r.createdAt.isBefore(before));
     switch (scope) {
       case FeedScope.nearby:
-        if (near != null) {
+        if (area == null && near != null) {
           items = items.where((r) => distance.as(LengthUnit.Kilometer, near, LatLng(r.lat, r.lng)) <= 6);
         }
       case FeedScope.following:
@@ -285,6 +287,15 @@ class DemoRepository implements SajagRepository {
       if (r.id == id && (r.status != ReportStatus.removed || _mine.contains(id))) return r;
     }
     return null;
+  }
+
+  @override
+  Future<List<String>> knownAreas() async {
+    final counts = <String, int>{};
+    for (final r in _visible) {
+      if (r.areaName != null) counts[r.areaName!] = (counts[r.areaName!] ?? 0) + 1;
+    }
+    return (counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value))).map((e) => e.key).toList();
   }
 
   @override

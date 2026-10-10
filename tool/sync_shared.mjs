@@ -147,6 +147,7 @@ for (const f of ['categories.json', 'achievements.json']) {
   write(`app/assets/data/${f}`, fs.readFileSync(path.join(root, 'shared', f), 'utf8'));
 }
 write('app/assets/data/demo.json', JSON.stringify(demo) + '\n');
+write('app/assets/data/areas.json', fs.readFileSync(path.join(root, 'shared/demo/areas.json'), 'utf8'));
 
 // ---------- 3. seed SQL ----------
 const q = (v) => (v === null || v === undefined ? 'null' : typeof v === 'number' || typeof v === 'boolean' ? String(v) : `'${String(v).replace(/'/g, "''")}'`);

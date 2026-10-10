@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
+import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/catalog.dart';
 import '../../data/models.dart';
@@ -36,7 +37,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(l.notificationsTitle)),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ListSkeleton(),
         error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(notificationsProvider)),
         data: (items) => items.isEmpty
             ? EmptyState(icon: Icons.notifications_none, message: l.noNotifications)

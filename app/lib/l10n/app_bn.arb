@@ -219,5 +219,17 @@
   "checkingUpdate": "আপডেট খোঁজা হচ্ছে…",
   "updateCheckFailed": "আপডেট দেখা যায়নি। ইন্টারনেট সংযোগ দেখুন।",
   "downloadLatest": "সর্বশেষ সংস্করণ ডাউনলোড করুন",
-  "iosInstallNote": "অ্যাপ স্টোরে আসার আগ পর্যন্ত আইফোনে ডাউনলোড করা ফাইলটি Sideloadly বা AltStore দিয়ে ইনস্টল করুন।"
+  "iosInstallNote": "অ্যাপ স্টোরে আসার আগ পর্যন্ত আইফোনে ডাউনলোড করা ফাইলটি Sideloadly বা AltStore দিয়ে ইনস্টল করুন।",
+  "filterPosts": "পোস্ট ফিল্টার",
+  "nearMe": "আমার কাছাকাছি",
+  "everywhere": "সব এলাকা",
+  "chooseArea": "এলাকা বেছে নিন",
+  "searchArea": "এলাকা খুঁজুন",
+  "useMyLocation": "আমার বর্তমান অবস্থান ব্যবহার করুন",
+  "showAll": "সব দেখুন",
+  "allCategoriesTitle": "সব ক্যাটাগরি",
+  "clearCategory": "সব ক্যাটাগরি",
+  "earnedInPeriod": "{period}: {count}টি অর্জিত",
+  "newBadge": "নতুন",
+  "versionTitle": "অ্যাপ সংস্করণ"
 }

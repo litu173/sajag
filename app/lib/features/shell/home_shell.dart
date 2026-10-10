@@ -10,8 +10,17 @@ import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/widgets/visuals.dart';
 
-/// Space screens should leave at the bottom so content can scroll clear of the floating tab bar.
-double navClearance(BuildContext context) => MediaQuery.paddingOf(context).bottom + 24;
+const double _barHeight = 64;
+const double _barGap = 4;
+const double _barMinBottom = 10;
+
+/// Space a scrolling page must leave at its end so the last content stops above the floating tab
+/// bar (plus breathing room), derived from the bar's own geometry and the device's bottom inset.
+double navClearance(BuildContext context) {
+  // Read from the window itself: Scaffolds strip bottom padding/viewPadding from their bodies.
+  final inset = MediaQueryData.fromView(View.of(context)).viewPadding.bottom;
+  return (inset > _barMinBottom ? inset : _barMinBottom) + _barGap + _barHeight + 20;
+}
 
 /// Home layout with a floating, frosted-glass tab bar. Content scrolls underneath it.
 class HomeShell extends StatelessWidget {
@@ -81,10 +90,11 @@ class _GlassBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final light = Theme.of(context).brightness == Brightness.light;
     return SafeArea(
+      key: const Key('glass-tab-bar'),
       top: false,
-      minimum: const EdgeInsets.only(bottom: 10),
+      minimum: const EdgeInsets.only(bottom: _barMinBottom),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 0, 14, 4),
+        padding: const EdgeInsets.fromLTRB(14, 0, 14, _barGap),
         child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(30),
@@ -95,7 +105,7 @@ class _GlassBar extends StatelessWidget {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
               child: Container(
-                height: 72,
+                height: _barHeight,
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 color: light ? Colors.white.withValues(alpha: 0.72) : const Color(0xFF1B201E).withValues(alpha: 0.72),
                 child: Row(children: [for (final c in children) Expanded(child: c)]),
@@ -131,33 +141,23 @@ class _NavItem extends StatelessWidget {
       button: true,
       selected: active,
       label: label,
-      child: InkResponse(
-        onTap: onTap,
-        radius: 36,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedContainer(
+      child: Tooltip(
+        message: label,
+        child: InkResponse(
+          onTap: onTap,
+          radius: 32,
+          child: Center(
+            child: AnimatedContainer(
               duration: const Duration(milliseconds: 260),
               curve: Curves.easeOutCubic,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               decoration: BoxDecoration(
                 color: active ? scheme.primary.withValues(alpha: 0.13) : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(22),
               ),
-              child: Icon(active ? activeIcon : icon, color: color, size: 24),
+              child: Icon(active ? activeIcon : icon, color: color, size: 26),
             ),
-            const SizedBox(height: 3),
-            ExcludeSemantics(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.fade,
-                softWrap: false,
-                style: TextStyle(fontSize: 12, fontWeight: active ? FontWeight.w600 : FontWeight.w500, color: color),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

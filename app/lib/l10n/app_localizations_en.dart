@@ -700,4 +700,42 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get iosInstallNote =>
       'On iPhone, install the downloaded file with Sideloadly or AltStore until Sajag is on the App Store.';
+
+  @override
+  String get filterPosts => 'Filter posts';
+
+  @override
+  String get nearMe => 'Near me';
+
+  @override
+  String get everywhere => 'Everywhere';
+
+  @override
+  String get chooseArea => 'Choose a location';
+
+  @override
+  String get searchArea => 'Search area';
+
+  @override
+  String get useMyLocation => 'Use my current location';
+
+  @override
+  String get showAll => 'Show all';
+
+  @override
+  String get allCategoriesTitle => 'All categories';
+
+  @override
+  String get clearCategory => 'All categories';
+
+  @override
+  String earnedInPeriod(int count, String period) {
+    return '$count earned · $period';
+  }
+
+  @override
+  String get newBadge => 'New';
+
+  @override
+  String get versionTitle => 'App version';
 }
