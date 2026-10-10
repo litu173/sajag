@@ -122,6 +122,8 @@ const awareness = [
 
 const demo = { generated_for: 'demo', authors, reports, awareness };
 write('shared/demo/reports.json', JSON.stringify(demo, null, 1) + '\n');
+// Tiny lookup the web UI always needs (Bangla area names), kept apart so production bundles skip the demo data.
+write('shared/demo/areas.json', JSON.stringify(Object.fromEntries(areas.map((a) => [a[0], a[1]])), null, 1) + '\n');
 
 // ---------- 2. copy to Flutter assets ----------
 for (const f of ['categories.json', 'achievements.json']) {

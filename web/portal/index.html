@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sajag — সজাগ</title>
+    <meta name="description" content="সজাগ: নাগরিকদের রিপোর্ট করা রাস্তার সমস্যা — খোলা ম্যানহোল, ভাঙা রাস্তা, ময়লা, জলাবদ্ধতা। Citizen reports of civic problems across Bangladesh." />
+    <meta name="theme-color" content="#0b7a57" />
+    <meta property="og:title" content="Sajag — সজাগ" />
+    <meta property="og:description" content="See it. Snap it. Fix it. Citizen reports of civic problems, anonymously." />
+    <meta property="og:image" content="icon-512.png" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="apple-touch-icon" href="icon-512.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;600;700;800&family=Noto+Serif+Bengali:wght@700&family=Source+Serif+4:ital,wght@0,700;0,800;1,400&display=swap"
+    />
+    <style>
+      /* Splash: painted before any JavaScript runs, faded out once the app has rendered. */
+      #splash { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #0b7a57; color: #fff;
+        transition: opacity .35s ease; font-family: system-ui, sans-serif; text-align: center; }
+      #splash.hide { opacity: 0; pointer-events: none; }
+      #splash img { width: 96px; height: 96px; border-radius: 24px; margin: 0 auto 16px; animation: pop .6s ease-out both; }
+      #splash strong { display: block; font-size: 34px; letter-spacing: .5px; }
+      #splash span { opacity: .85; }
+      @keyframes pop { from { transform: scale(.7); opacity: 0; } }
+      @media (prefers-reduced-motion: reduce) { #splash img { animation: none; } }
+    </style>
+  </head>
+  <body>
+    <div id="splash" role="status" aria-label="Loading Sajag">
+      <div><img src="logo.svg" alt="" /><strong>সজাগ · Sajag</strong><span>দেখুন। ছবি তুলুন। সমাধান করুন।</span></div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

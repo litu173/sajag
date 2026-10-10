@@ -1,0 +1,69 @@
+# Going live
+
+Everything works in demo mode without any of this. Follow these steps to run Sajag on real data.
+
+## 1. Supabase project
+
+1. Create a project at [supabase.com](https://supabase.com) (region: Singapore is closest to Bangladesh).
+2. Apply the schema — either with the Supabase CLI:
+   ```bash
+   supabase link --project-ref <ref>
+   supabase db push            # applies supabase/migrations/*
+   psql "$DATABASE_URL" -f supabase/seed.sql
+   ```
+   or by pasting each file in `supabase/migrations/` (in order), then `supabase/seed.sql`, into the SQL editor.
+3. Copy **Project URL** and the **publishable key** (Settings → API). The publishable key is safe to ship in apps; Row Level Security protects the data.
+
+## 2. Phone sign-in (SMS OTP)
+
+Authentication → Providers → **Phone**: enable it and connect an SMS provider (Twilio, MessageBird, Vonage), or use the **Send SMS hook** to call a Bangladeshi gateway (e.g. SSL Wireless, BulkSMSBD) from an Edge Function — usually far cheaper for +880 numbers.
+
+## 3. NID verification
+
+`app_config.nid_auto_verify` (Admin → Settings) controls what happens when a citizen submits their NID:
+
+- **On (default):** format and one-account-per-NID checks pass instantly.
+- **Off:** submissions wait in Admin → Citizens → *Pending ID check* for a moderator.
+
+For automatic checks against the national database, integrate a provider such as **Porichoy** in an Edge Function that calls the provider and then updates `public.identities` with the service role. Turn auto-verify off once that's in place.
+
+## 4. First super admin
+
+Create a user with email + password in Authentication → Users, then in the SQL editor:
+
+```sql
+insert into public.admin_users (user_id, role, display_name)
+select id, 'super_admin', 'Your Name' from auth.users where email = 'you@example.com';
+```
+
+Further admins can be added from the admin panel (Admin team).
+
+## 5. Build the apps against your project
+
+```bash
+cd app
+flutter build apk --release \
+  --dart-define=SUPABASE_URL=https://<ref>.supabase.co \
+  --dart-define=SUPABASE_PUBLISHABLE_KEY=<publishable key> \
+  --dart-define=TILE_URL='https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=<key>'
+flutter build ipa --dart-define=...   # needs an Apple Developer account
+```
+
+For CI builds, add `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` as repository secrets — the release and Pages workflows pick them up. Before publishing to Play Store, replace the debug signing config in `app/android/app/build.gradle.kts` with your upload key.
+
+## 6. Web
+
+The Pages workflow builds the portal and admin with the same secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`). Locally:
+
+```bash
+cd web
+VITE_SUPABASE_URL=... VITE_SUPABASE_PUBLISHABLE_KEY=... npm run build
+```
+
+## 7. Map tiles
+
+The default is the OpenStreetMap community tile server, which is fine for testing but **not for production traffic** (see its usage policy). Before launch, set `TILE_URL` (app) and `VITE_TILE_URL` (web) to a commercial provider such as MapTiler, Stadia Maps or Mapbox.
+
+## 8. Push notifications (next step)
+
+In-app notifications are already written by database triggers (`public.notifications`). To deliver them as push messages, add Firebase Cloud Messaging to the app, store device tokens, and send from a database webhook / Edge Function on `notifications` inserts.

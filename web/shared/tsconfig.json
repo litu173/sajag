@@ -1,0 +1,5 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": { "composite": true, "noEmit": false, "emitDeclarationOnly": true, "outDir": "../node_modules/.tsbuild/shared", "rootDir": "../.." },
+  "include": ["src", "../shared/src", "../../shared/*.json", "../../shared/demo/*.json"]
+}
