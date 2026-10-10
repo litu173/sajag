@@ -211,4 +211,37 @@ select tests.ok((select (x.s ->> 'resolved')::int = 2 and (x.s ->> 'resolved_by_
                      from (select public.resolution_stats() as s) x), 'public resolution statistics');
 reset role;
 
+-- ================================================================ account settings
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
+update public.profiles set avatar_emoji = '🦉' where id = auth.uid();
+select tests.ok((select author_avatar_emoji = '🦉' from public.report_feed where description like 'Streetlight%'), 'emoji avatar on the public author line');
+select tests.expect_error($$select public.set_my_alias('ab')$$, 'invalid alias');
+select tests.expect_error($$select public.set_my_alias('Call 01712345678')$$, 'invalid alias');
+select tests.expect_error($$select public.set_my_alias((select alias from public.profiles where id = '00000000-0000-0000-0000-000000000001'))$$, 'alias taken');
+select tests.ok(public.set_my_alias('  নীল   Owl ') = 'নীল Owl', 'citizen picks a Bangla/Latin alias');
+select tests.expect_error($$select public.set_my_alias('Another Name')$$, 'changed recently');
+select tests.expect_error($$update public.profiles set alias = 'Sneaky' where id = auth.uid()$$, 'permission denied');
+select tests.ok((select phone = '+8801700000002' and nid_last4 is not null and not has_password from public.my_account()), 'owner reads own account details');
+select tests.ok((select count(*) = 1 from public.my_account()), 'my_account returns only the caller');
+reset role;
+update public.app_config set value = 'false' where key = 'nid_auto_verify';
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
+select tests.ok(public.submit_identity('9999999999', '1991-02-03') = 'pending', 'changed NID goes to review');
+select tests.ok((select not verified from public.profiles where id = auth.uid()), 'posting paused until the new NID is approved');
+reset role;
+update public.app_config set value = 'true' where key = 'nid_auto_verify';
+update auth.users set phone = '+8801800000002' where id = '00000000-0000-0000-0000-000000000002';
+select tests.ok((select phone = '+8801800000002' from public.identities where user_id = '00000000-0000-0000-0000-000000000002'), 'phone change synced to identity');
+set role anon;
+select tests.expect_error($$select * from public.my_account()$$, 'permission denied');
+select tests.expect_error($$select public.delete_my_account()$$, 'permission denied');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
+select public.delete_my_account();
+reset role;
+select tests.ok(not exists (select 1 from public.profiles where id = '00000000-0000-0000-0000-000000000002')
+                and not exists (select 1 from public.reports where description like 'Streetlight%'), 'account deletion removes profile and reports');
+
 \echo 'ALL DATABASE TESTS PASSED'

@@ -23,15 +23,22 @@ final authStageProvider = StreamProvider<AuthStage>((ref) async* {
 
 // ---------------------------------------------------------------- user settings
 class SettingsState {
-  const SettingsState({required this.locale, required this.textScale, required this.onboarded});
+  const SettingsState({
+    required this.locale,
+    required this.textScale,
+    required this.onboarded,
+    this.themeMode = ThemeMode.system,
+  });
   final Locale locale;
   final double textScale;
   final bool onboarded;
+  final ThemeMode themeMode;
 
-  SettingsState copyWith({Locale? locale, double? textScale, bool? onboarded}) => SettingsState(
+  SettingsState copyWith({Locale? locale, double? textScale, bool? onboarded, ThemeMode? themeMode}) => SettingsState(
     locale: locale ?? this.locale,
     textScale: textScale ?? this.textScale,
     onboarded: onboarded ?? this.onboarded,
+    themeMode: themeMode ?? this.themeMode,
   );
 }
 
@@ -39,6 +46,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   static const _kLocale = 'settings.locale';
   static const _kScale = 'settings.textScale';
   static const _kOnboarded = 'settings.onboarded';
+  static const _kTheme = 'settings.theme';
 
   SharedPreferences get _prefs => ref.read(prefsProvider);
 
@@ -49,6 +57,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       locale: Locale(prefs.getString(_kLocale) ?? 'bn'),
       textScale: prefs.getDouble(_kScale) ?? 1.0,
       onboarded: prefs.getBool(_kOnboarded) ?? false,
+      themeMode: ThemeMode.values.asNameMap()[prefs.getString(_kTheme)] ?? ThemeMode.system,
     );
   }
 
@@ -60,6 +69,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
   void setTextScale(double scale) {
     state = state.copyWith(textScale: scale);
     unawaited(_prefs.setDouble(_kScale, scale));
+  }
+
+  void setThemeMode(ThemeMode mode) {
+    state = state.copyWith(themeMode: mode);
+    unawaited(_prefs.setString(_kTheme, mode.name));
   }
 
   void completeOnboarding() {
@@ -126,9 +140,15 @@ class FollowingNotifier extends AsyncNotifier<Set<String>> {
 final followingProvider = AsyncNotifierProvider<FollowingNotifier, Set<String>>(FollowingNotifier.new);
 
 /// Called after anything that changes the user's stats (posting, confirming, ...).
+final myAccountProvider = FutureProvider.autoDispose<AccountInfo>((ref) {
+  ref.watch(authStageProvider);
+  return ref.watch(repositoryProvider).myAccount();
+});
+
 void refreshMe(WidgetRef ref) {
   ref
     ..invalidate(myProfileProvider)
+    ..invalidate(myAccountProvider)
     ..invalidate(myReportsProvider)
     ..invalidate(notificationsProvider);
 }

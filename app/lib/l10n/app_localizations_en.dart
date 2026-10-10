@@ -738,4 +738,230 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get versionTitle => 'App version';
+
+  @override
+  String get accountSettings => 'Account settings';
+
+  @override
+  String get publicProfileSection => 'Public profile';
+
+  @override
+  String get publicProfileHint => 'This is all other citizens ever see.';
+
+  @override
+  String get avatarLabel => 'Profile emoji';
+
+  @override
+  String get aliasLabel => 'Alias';
+
+  @override
+  String get identitySection => 'Private identity';
+
+  @override
+  String get identityHint => 'Used only to verify you. Never shown to anyone.';
+
+  @override
+  String get idVerified => 'Verified';
+
+  @override
+  String get idPending => 'Under review';
+
+  @override
+  String get securitySection => 'Security';
+
+  @override
+  String get passwordLabel => 'Password';
+
+  @override
+  String get passwordNotSet => 'Not set · you sign in with an SMS code';
+
+  @override
+  String get passwordIsSet => 'On · sign in with code or password';
+
+  @override
+  String get setPassword => 'Set password';
+
+  @override
+  String get changePassword => 'Change password';
+
+  @override
+  String passwordIntro(String phone) {
+    return 'Add a password to sign in without waiting for an SMS. First we\'ll send a code to $phone.';
+  }
+
+  @override
+  String get newPassword => 'New password';
+
+  @override
+  String get confirmPassword => 'Confirm password';
+
+  @override
+  String get passwordMismatch => 'Passwords don\'t match.';
+
+  @override
+  String get passwordRule => 'At least 8 characters, with a letter and a number.';
+
+  @override
+  String get passwordSaved => 'Password saved.';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
+  String get signInWithPassword => 'Sign in with password';
+
+  @override
+  String get signInWithCode => 'Sign in with an SMS code instead';
+
+  @override
+  String get signIn => 'Sign in';
+
+  @override
+  String get deleteAccount => 'Delete account';
+
+  @override
+  String get deleteAccountHint => 'Removes your profile, reports and photos for good.';
+
+  @override
+  String get deleteAccountConfirm => 'Delete your account?';
+
+  @override
+  String get deleteAccountBody =>
+      'Your alias, XP, badges, reports and photos will be permanently deleted. This can\'t be undone.';
+
+  @override
+  String get deleteAccountType => 'Type DELETE to confirm';
+
+  @override
+  String get accountDeleted => 'Your account has been deleted.';
+
+  @override
+  String get chooseEmoji => 'Choose your emoji';
+
+  @override
+  String get emojiBackground => 'Background';
+
+  @override
+  String get emojiUseAlias => 'Alias animal';
+
+  @override
+  String get emojiCatAnimals => 'Animals';
+
+  @override
+  String get emojiCatNature => 'Nature';
+
+  @override
+  String get emojiCatFaces => 'Faces';
+
+  @override
+  String get emojiCatFood => 'Food';
+
+  @override
+  String get emojiCatActivity => 'Activity';
+
+  @override
+  String get emojiCatPlaces => 'Places';
+
+  @override
+  String get emojiCatObjects => 'Objects';
+
+  @override
+  String get emojiCatSymbols => 'Symbols';
+
+  @override
+  String get saveChanges => 'Save';
+
+  @override
+  String get savedMessage => 'Saved.';
+
+  @override
+  String get changeAlias => 'Change alias';
+
+  @override
+  String get aliasHelper => '3–24 letters or numbers, in Bangla or English.';
+
+  @override
+  String get aliasWarning => 'Keep it anonymous: don\'t use your real name, phone or NID.';
+
+  @override
+  String get aliasOncePerWeek => 'You can change it once every 7 days.';
+
+  @override
+  String aliasLockedUntil(String date) {
+    return 'You can change it again on $date.';
+  }
+
+  @override
+  String get suggestAlias => 'Suggest one';
+
+  @override
+  String get errInvalidAlias => 'Use 3–24 letters, numbers or spaces, without long number sequences.';
+
+  @override
+  String get errAliasTaken => 'That alias is taken. Try another.';
+
+  @override
+  String get errAliasCooldown => 'You changed your alias recently. Try again later.';
+
+  @override
+  String get errPhoneTaken => 'That number is already in use.';
+
+  @override
+  String get errWeakPassword => 'Use at least 8 characters with a letter and a number.';
+
+  @override
+  String get errWrongPassword => 'Wrong number or password.';
+
+  @override
+  String get changePhone => 'Change mobile number';
+
+  @override
+  String get newPhoneLabel => 'New mobile number';
+
+  @override
+  String codeSentTo(String phone) {
+    return 'Enter the 6-digit code sent to $phone';
+  }
+
+  @override
+  String get codeLabel => 'Verification code';
+
+  @override
+  String get verifyAndSave => 'Verify and save';
+
+  @override
+  String get phoneChanged => 'Mobile number updated.';
+
+  @override
+  String get updateIdentity => 'Update NID & date of birth';
+
+  @override
+  String get updateIdentityBody => 'Re-enter your full NID number. For your privacy we only keep its last 4 digits.';
+
+  @override
+  String get identityReviewNote => 'If your details need a manual check, posting pauses until they\'re approved.';
+
+  @override
+  String get identityUpdated => 'Identity details updated.';
+
+  @override
+  String get preferences => 'Preferences';
+
+  @override
+  String get helpInfo => 'Help & info';
+
+  @override
+  String get appearance => 'Appearance';
+
+  @override
+  String get themeSystem => 'Auto';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
 }

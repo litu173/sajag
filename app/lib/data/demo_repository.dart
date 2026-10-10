@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -63,6 +64,13 @@ class DemoRepository implements SajagRepository {
   static const _kStage = 'demo.stage';
   static const _kAlias = 'demo.alias';
   static const _kSeed = 'demo.seed';
+  static const _kEmoji = 'demo.emoji';
+  static const _kAliasAt = 'demo.aliasAt';
+  static const _kPhone = 'demo.phone';
+  static const _kNid4 = 'demo.nid4';
+  static const _kDob = 'demo.dob';
+  static const _kPassword = 'demo.password'; // salted SHA-256, never the password itself
+  static const _accountKeys = [_kStage, _kAlias, _kSeed, _kEmoji, _kAliasAt, _kPhone, _kNid4, _kDob, _kPassword];
   static const myId = 'demo-me';
 
   final SharedPreferences _prefs;
@@ -106,8 +114,20 @@ class DemoRepository implements SajagRepository {
     return alias;
   }
 
-  List<Report> get _visible =>
-      _reports.where((r) => r.status != ReportStatus.hidden && r.status != ReportStatus.removed).toList();
+  List<Report> get _visible => _reports
+      .where((r) => r.status != ReportStatus.hidden && r.status != ReportStatus.removed)
+      .map(_withMyLook)
+      .toList();
+
+  /// Like the server's live join: my posts always show my current alias and avatar.
+  Report _withMyLook(Report r) => r.aliasId != myId
+      ? r
+      : r.copyWith(authorAlias: _alias, authorAvatarSeed: _seed, authorAvatarEmoji: _prefs.getString(_kEmoji));
+
+  int get _seed => _prefs.getInt(_kSeed) ?? 7;
+
+  static String _hash(String phone, String password) =>
+      sha256.convert(utf8.encode('sajag-demo:$phone:$password')).toString();
 
   // ---------------------------------------------------------------- auth
   @override
@@ -125,7 +145,24 @@ class DemoRepository implements SajagRepository {
   Future<void> verifyOtp(String phone, String code) async {
     await _delay();
     if (code != AppConfig.demoOtp) throw const SajagException(SajagErrorCode.invalidOtp);
-    _setStage(AuthStage.needsIdentity);
+    if (_prefs.getString(_kPhone) != phone) {
+      // A different number is a different demo account.
+      for (final k in _accountKeys) {
+        await _prefs.remove(k);
+      }
+      await _prefs.setString(_kPhone, phone);
+    }
+    _setStage(_prefs.getString(_kNid4) == null ? AuthStage.needsIdentity : AuthStage.ready);
+  }
+
+  @override
+  Future<void> signInWithPassword(String phone, String password) async {
+    await _delay();
+    final stored = _prefs.getString(_kPassword);
+    if (stored == null || _prefs.getString(_kPhone) != phone || stored != _hash(phone, password)) {
+      throw const SajagException(SajagErrorCode.wrongPassword);
+    }
+    _setStage(_prefs.getString(_kNid4) == null ? AuthStage.needsIdentity : AuthStage.ready);
   }
 
   @override
@@ -137,6 +174,8 @@ class DemoRepository implements SajagRepository {
       throw const SajagException(SajagErrorCode.invalidDob);
     }
     _alias; // assign alias on verification
+    await _prefs.setString(_kNid4, digits.substring(digits.length - 4));
+    await _prefs.setString(_kDob, dob.toIso8601String());
     _setStage(AuthStage.ready);
     _evaluateBadges();
     return AuthStage.ready;
@@ -151,14 +190,93 @@ class DemoRepository implements SajagRepository {
   Future<AuthStage> refreshStage() async => _stage;
 
   // ---------------------------------------------------------------- me
-  List<Report> get _myReports => _reports.where((r) => _mine.contains(r.id)).toList();
+  List<Report> get _myReports => _reports.where((r) => _mine.contains(r.id)).map(_withMyLook).toList();
+
+  // ---------------------------------------------------------------- account settings
+  @override
+  Future<AccountInfo> myAccount() async {
+    await _delay();
+    final dob = _prefs.getString(_kDob);
+    final changed = _prefs.getString(_kAliasAt);
+    return AccountInfo(
+      phone: _prefs.getString(_kPhone) ?? '01700000000',
+      nidLast4: _prefs.getString(_kNid4) ?? '7890',
+      dob: dob == null ? DateTime(1990) : DateTime.parse(dob),
+      verification: _stage == AuthStage.ready ? 'verified' : 'pending',
+      hasPassword: _prefs.getString(_kPassword) != null,
+      aliasChangedAt: changed == null ? null : DateTime.parse(changed),
+    );
+  }
+
+  @override
+  Future<void> updateAvatar({required String? emoji, required int colorIndex}) async {
+    await _delay();
+    emoji == null ? await _prefs.remove(_kEmoji) : await _prefs.setString(_kEmoji, emoji);
+    await _prefs.setInt(_kSeed, colorIndex);
+  }
+
+  @override
+  Future<String> changeAlias(String alias) async {
+    await _delay();
+    final a = alias.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (aliasProblem(a) != null) throw const SajagException(SajagErrorCode.invalidAlias);
+    if ((await myAccount()).aliasLockedUntil != null) throw const SajagException(SajagErrorCode.aliasCooldown);
+    final taken = _reports.any((r) => r.aliasId != myId && r.authorAlias?.toLowerCase() == a.toLowerCase());
+    if (taken) throw const SajagException(SajagErrorCode.aliasTaken);
+    await _prefs.setString(_kAlias, a);
+    await _prefs.setString(_kAliasAt, DateTime.now().toIso8601String());
+    return a;
+  }
+
+  @override
+  Future<void> requestPhoneChange(String newPhone) async {
+    await _delay();
+    if (newPhone == _prefs.getString(_kPhone)) throw const SajagException(SajagErrorCode.phoneTaken);
+  }
+
+  @override
+  Future<void> confirmPhoneChange(String newPhone, String code) async {
+    await _delay();
+    if (code != AppConfig.demoOtp) throw const SajagException(SajagErrorCode.invalidOtp);
+    await _prefs.setString(_kPhone, newPhone);
+    await _prefs.remove(_kPassword); // the hash is tied to the number; set it again
+  }
+
+  @override
+  Future<void> requestSecurityCode() => _delay();
+
+  @override
+  Future<void> setPassword({required String password, required String code}) async {
+    await _delay();
+    if (code != AppConfig.demoOtp) throw const SajagException(SajagErrorCode.invalidOtp);
+    if (!isStrongPassword(password)) throw const SajagException(SajagErrorCode.weakPassword);
+    await _prefs.setString(_kPassword, _hash(_prefs.getString(_kPhone) ?? '', password));
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    await _delay();
+    _reports.removeWhere((r) => _mine.contains(r.id));
+    _mine.clear();
+    _badges.clear();
+    _following.clear();
+    _confirmed.clear();
+    _notifications.clear();
+    _xp = 0;
+    _streak = 0;
+    for (final k in _accountKeys) {
+      await _prefs.remove(k);
+    }
+    _setStage(AuthStage.signedOut);
+  }
 
   Profile _profile() {
     final mine = _myReports.where((r) => r.status != ReportStatus.removed);
     return Profile(
       id: myId,
       alias: _alias,
-      avatarSeed: _prefs.getInt(_kSeed) ?? 7,
+      avatarSeed: _seed,
+      avatarEmoji: _prefs.getString(_kEmoji),
       xp: _xp,
       level: _catalog.levelForXp(_xp).level,
       reportsCount: mine.length,
@@ -284,7 +402,7 @@ class DemoRepository implements SajagRepository {
   Future<Report?> report(String id) async {
     await _delay();
     for (final r in _reports) {
-      if (r.id == id && (r.status != ReportStatus.removed || _mine.contains(id))) return r;
+      if (r.id == id && (r.status != ReportStatus.removed || _mine.contains(id))) return _withMyLook(r);
     }
     return null;
   }
@@ -462,11 +580,12 @@ class DemoRepository implements SajagRepository {
           rank: i + 1,
           aliasId: rows[i].id,
           alias: rows[i].alias,
-          avatarSeed: rows[i].id.hashCode,
+          avatarSeed: rows[i].id == myId ? _seed : rows[i].id.hashCode,
           level: _catalog.levelForXp(rows[i].score).level,
           score: rows[i].score,
           reportsCount: rows[i].reports,
           isMe: rows[i].id == myId,
+          avatarEmoji: rows[i].id == myId ? _prefs.getString(_kEmoji) : null,
         ),
     ];
   }

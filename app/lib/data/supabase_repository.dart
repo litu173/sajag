@@ -68,14 +68,21 @@ class SupabaseRepository implements SajagRepository {
         'rate_limited' => SajagErrorCode.rateLimited,
         'stale_capture' => SajagErrorCode.staleCapture,
         'own_report' => SajagErrorCode.ownReport,
+        'invalid_alias' => SajagErrorCode.invalidAlias,
+        'alias_taken' => SajagErrorCode.aliasTaken,
+        'alias_cooldown' => SajagErrorCode.aliasCooldown,
         _ when e.code == '23505' => SajagErrorCode.alreadyDone,
         _ => SajagErrorCode.unknown,
       }, e.message);
     } on AuthException catch (e) {
-      throw SajagException(
-        e.code == 'otp_expired' || e.statusCode == '403' ? SajagErrorCode.invalidOtp : SajagErrorCode.unknown,
-        e.message,
-      );
+      throw SajagException(switch (e.code) {
+        'invalid_credentials' => SajagErrorCode.wrongPassword,
+        'weak_password' || 'same_password' => SajagErrorCode.weakPassword,
+        'phone_exists' => SajagErrorCode.phoneTaken,
+        'otp_expired' || 'reauthentication_not_valid' || 'reauthentication_needed' => SajagErrorCode.invalidOtp,
+        _ when e.statusCode == '403' => SajagErrorCode.invalidOtp,
+        _ => SajagErrorCode.unknown,
+      }, e.message);
     } on StorageException catch (e) {
       throw SajagException(SajagErrorCode.unknown, e.message);
     } on SocketException {
@@ -104,6 +111,12 @@ class SupabaseRepository implements SajagRepository {
   });
 
   @override
+  Future<void> signInWithPassword(String phone, String password) => _guard(() async {
+    await _db.auth.signInWithPassword(phone: _e164(phone), password: password);
+    await _refreshStage();
+  });
+
+  @override
   Future<AuthStage> submitIdentity({required String nid, required DateTime dob}) => _guard(() async {
     final d =
         '${dob.year.toString().padLeft(4, '0')}-${dob.month.toString().padLeft(2, '0')}-${dob.day.toString().padLeft(2, '0')}';
@@ -116,6 +129,50 @@ class SupabaseRepository implements SajagRepository {
 
   @override
   Future<AuthStage> refreshStage() => _refreshStage();
+
+  // ---------------------------------------------------------------- account settings
+  @override
+  Future<AccountInfo> myAccount() => _guard(() async {
+    final rows = await _db.rpc<List<dynamic>>('my_account');
+    if (rows.isEmpty) return const AccountInfo();
+    final row = Map<String, dynamic>.of(rows.first as Json);
+    // Supabase stores phones as E.164 without "+"; show the familiar local form.
+    final phone = (row['phone'] as String?)?.replaceAll(RegExp(r'\D'), '');
+    if (phone != null) row['phone'] = phone.startsWith('880') ? phone.substring(2) : phone;
+    return AccountInfo.fromRow(row);
+  });
+
+  @override
+  Future<void> updateAvatar({required String? emoji, required int colorIndex}) =>
+      _guard(() => _db.from('profiles').update({'avatar_emoji': emoji, 'avatar_seed': colorIndex}).eq('id', _uid));
+
+  @override
+  Future<String> changeAlias(String alias) => _guard(() => _db.rpc<String>('set_my_alias', params: {'p_alias': alias}));
+
+  @override
+  Future<void> requestPhoneChange(String newPhone) =>
+      _guard(() => _db.auth.updateUser(UserAttributes(phone: _e164(newPhone))));
+
+  @override
+  Future<void> confirmPhoneChange(String newPhone, String code) =>
+      _guard(() => _db.auth.verifyOTP(type: OtpType.phoneChange, phone: _e164(newPhone), token: code));
+
+  @override
+  Future<void> requestSecurityCode() => _guard(() => _db.auth.reauthenticate());
+
+  @override
+  Future<void> setPassword({required String password, required String code}) =>
+      _guard(() => _db.auth.updateUser(UserAttributes(password: password, nonce: code)));
+
+  @override
+  Future<void> deleteAccount() => _guard(() async {
+    final mine = await _db.rpc<List<dynamic>>('my_reports', params: {'p_limit': 1000});
+    final paths = [for (final r in mine) (r as Json)['photo_path'] as String?].whereType<String>().toList();
+    if (paths.isNotEmpty) await _db.storage.from(AppConfig.photoBucket).remove(paths);
+    await _db.rpc<void>('delete_my_account');
+    // The server session no longer exists; just forget it locally.
+    await _db.auth.signOut(scope: SignOutScope.local);
+  });
 
   // ---------------------------------------------------------------- me
   @override

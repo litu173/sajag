@@ -239,7 +239,7 @@ class LevelHeader extends ConsumerWidget {
                         color: const Color(0xFFFFD43B),
                       ),
                     ),
-                    AliasAvatar(alias: profile.alias, seed: profile.avatarSeed, size: 54),
+                    AliasAvatar(alias: profile.alias, seed: profile.avatarSeed, emoji: profile.avatarEmoji, size: 54),
                   ],
                 ),
               ),
@@ -515,7 +515,7 @@ class _LeaderRow extends StatelessWidget {
                           style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                         ),
                 ),
-                AliasAvatar(alias: entry.alias, seed: entry.avatarSeed),
+                AliasAvatar(alias: entry.alias, seed: entry.avatarSeed, emoji: entry.avatarEmoji),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

@@ -217,10 +217,13 @@ class _CategoryArt extends StatelessWidget {
 
 /// Anonymous avatar: the animal in the alias ("Brave Kingfisher 4821") on a seeded colour.
 class AliasAvatar extends StatelessWidget {
-  const AliasAvatar({required this.alias, required this.seed, super.key, this.size = 40});
+  const AliasAvatar({required this.alias, required this.seed, super.key, this.size = 40, this.emoji});
   final String? alias;
   final int seed;
   final double size;
+
+  /// Emoji the citizen picked; falls back to the animal in their alias.
+  final String? emoji;
 
   static const _animals = {
     'Kingfisher': '🐦',
@@ -244,7 +247,9 @@ class AliasAvatar extends StatelessWidget {
     'Mongoose': '🦡',
     'Turtle': '🐢',
   };
-  static const _palette = [
+
+  /// Avatar backgrounds; `avatar_seed` indexes into this list.
+  static const palette = [
     Color(0xFFE3F2EC),
     Color(0xFFFFF1D6),
     Color(0xFFE6EEFB),
@@ -258,14 +263,14 @@ class AliasAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final words = alias?.split(' ') ?? const <String>[];
-    final emoji = words.length >= 2 ? _animals[words[1]] ?? '🙂' : '👤';
+    final shown = emoji ?? (words.length >= 2 ? _animals[words[1]] ?? '🙂' : '👤');
     return Container(
       width: size,
       height: size,
       alignment: Alignment.center,
-      decoration: BoxDecoration(color: _palette[seed.abs() % _palette.length], shape: BoxShape.circle),
+      decoration: BoxDecoration(color: palette[seed.abs() % palette.length], shape: BoxShape.circle),
       child: Text(
-        emoji,
+        shown,
         style: TextStyle(fontSize: size * 0.5),
         textScaler: TextScaler.noScaling,
       ),
@@ -317,30 +322,34 @@ class DemoBanner extends StatelessWidget {
   const DemoBanner({super.key});
 
   @override
-  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
-    value: SystemUiOverlayStyle.dark,
-    child: Material(
-      color: const Color(0xFFFFF4D6),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          child: Row(
-            children: [
-              const Icon(Icons.science_outlined, size: 16, color: Color(0xFF7A5B00)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  context.l10n.demoBanner,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF7A5B00), fontWeight: FontWeight.w600),
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final ink = dark ? const Color(0xFFE9C46A) : const Color(0xFF7A5B00);
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: Material(
+        color: dark ? const Color(0xFF2A2414) : const Color(0xFFFFF4D6),
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: Row(
+              children: [
+                Icon(Icons.science_outlined, size: 16, color: ink),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    context.l10n.demoBanner,
+                    style: TextStyle(fontSize: 12, color: ink, fontWeight: FontWeight.w600),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// Segmented "pill" tabs used instead of underlined tab bars.

@@ -62,6 +62,12 @@ String errorMessage(BuildContext context, Object error) {
     SajagErrorCode.staleCapture => l.errStaleCapture,
     SajagErrorCode.ownReport => l.errOwnReport,
     SajagErrorCode.alreadyDone => l.errAlreadyDone,
+    SajagErrorCode.invalidAlias => l.errInvalidAlias,
+    SajagErrorCode.aliasTaken => l.errAliasTaken,
+    SajagErrorCode.aliasCooldown => l.errAliasCooldown,
+    SajagErrorCode.phoneTaken => l.errPhoneTaken,
+    SajagErrorCode.weakPassword => l.errWeakPassword,
+    SajagErrorCode.wrongPassword => l.errWrongPassword,
     SajagErrorCode.network => l.errorNetwork,
     SajagErrorCode.unknown => l.errorGeneric,
   };

@@ -169,7 +169,12 @@ class AuthorLine extends StatelessWidget {
     final alias = report.authorAlias;
     final row = Row(
       children: [
-        AliasAvatar(alias: alias, seed: report.aliasId?.hashCode ?? 0, size: 28),
+        AliasAvatar(
+          alias: alias,
+          seed: report.authorAvatarSeed ?? report.aliasId?.hashCode ?? 0,
+          emoji: alias == null ? null : report.authorAvatarEmoji,
+          size: 28,
+        ),
         const SizedBox(width: 8),
         Flexible(
           child: Text(

@@ -1399,6 +1399,444 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'App version'**
   String get versionTitle;
+
+  /// No description provided for @accountSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Account settings'**
+  String get accountSettings;
+
+  /// No description provided for @publicProfileSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Public profile'**
+  String get publicProfileSection;
+
+  /// No description provided for @publicProfileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This is all other citizens ever see.'**
+  String get publicProfileHint;
+
+  /// No description provided for @avatarLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile emoji'**
+  String get avatarLabel;
+
+  /// No description provided for @aliasLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Alias'**
+  String get aliasLabel;
+
+  /// No description provided for @identitySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Private identity'**
+  String get identitySection;
+
+  /// No description provided for @identityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Used only to verify you. Never shown to anyone.'**
+  String get identityHint;
+
+  /// No description provided for @idVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get idVerified;
+
+  /// No description provided for @idPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Under review'**
+  String get idPending;
+
+  /// No description provided for @securitySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get securitySection;
+
+  /// No description provided for @passwordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordLabel;
+
+  /// No description provided for @passwordNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set · you sign in with an SMS code'**
+  String get passwordNotSet;
+
+  /// No description provided for @passwordIsSet.
+  ///
+  /// In en, this message translates to:
+  /// **'On · sign in with code or password'**
+  String get passwordIsSet;
+
+  /// No description provided for @setPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Set password'**
+  String get setPassword;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get changePassword;
+
+  /// No description provided for @passwordIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a password to sign in without waiting for an SMS. First we\'ll send a code to {phone}.'**
+  String passwordIntro(String phone);
+
+  /// No description provided for @newPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPassword;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get confirmPassword;
+
+  /// No description provided for @passwordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords don\'t match.'**
+  String get passwordMismatch;
+
+  /// No description provided for @passwordRule.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters, with a letter and a number.'**
+  String get passwordRule;
+
+  /// No description provided for @passwordSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Password saved.'**
+  String get passwordSaved;
+
+  /// No description provided for @showPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
+
+  /// No description provided for @signInWithPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with password'**
+  String get signInWithPassword;
+
+  /// No description provided for @signInWithCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with an SMS code instead'**
+  String get signInWithCode;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signIn;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes your profile, reports and photos for good.'**
+  String get deleteAccountHint;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your alias, XP, badges, reports and photos will be permanently deleted. This can\'t be undone.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @deleteAccountType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type DELETE to confirm'**
+  String get deleteAccountType;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted.'**
+  String get accountDeleted;
+
+  /// No description provided for @chooseEmoji.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your emoji'**
+  String get chooseEmoji;
+
+  /// No description provided for @emojiBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get emojiBackground;
+
+  /// No description provided for @emojiUseAlias.
+  ///
+  /// In en, this message translates to:
+  /// **'Alias animal'**
+  String get emojiUseAlias;
+
+  /// No description provided for @emojiCatAnimals.
+  ///
+  /// In en, this message translates to:
+  /// **'Animals'**
+  String get emojiCatAnimals;
+
+  /// No description provided for @emojiCatNature.
+  ///
+  /// In en, this message translates to:
+  /// **'Nature'**
+  String get emojiCatNature;
+
+  /// No description provided for @emojiCatFaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Faces'**
+  String get emojiCatFaces;
+
+  /// No description provided for @emojiCatFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get emojiCatFood;
+
+  /// No description provided for @emojiCatActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get emojiCatActivity;
+
+  /// No description provided for @emojiCatPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Places'**
+  String get emojiCatPlaces;
+
+  /// No description provided for @emojiCatObjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Objects'**
+  String get emojiCatObjects;
+
+  /// No description provided for @emojiCatSymbols.
+  ///
+  /// In en, this message translates to:
+  /// **'Symbols'**
+  String get emojiCatSymbols;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveChanges;
+
+  /// No description provided for @savedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved.'**
+  String get savedMessage;
+
+  /// No description provided for @changeAlias.
+  ///
+  /// In en, this message translates to:
+  /// **'Change alias'**
+  String get changeAlias;
+
+  /// No description provided for @aliasHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'3–24 letters or numbers, in Bangla or English.'**
+  String get aliasHelper;
+
+  /// No description provided for @aliasWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it anonymous: don\'t use your real name, phone or NID.'**
+  String get aliasWarning;
+
+  /// No description provided for @aliasOncePerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change it once every 7 days.'**
+  String get aliasOncePerWeek;
+
+  /// No description provided for @aliasLockedUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change it again on {date}.'**
+  String aliasLockedUntil(String date);
+
+  /// No description provided for @suggestAlias.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest one'**
+  String get suggestAlias;
+
+  /// No description provided for @errInvalidAlias.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 3–24 letters, numbers or spaces, without long number sequences.'**
+  String get errInvalidAlias;
+
+  /// No description provided for @errAliasTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'That alias is taken. Try another.'**
+  String get errAliasTaken;
+
+  /// No description provided for @errAliasCooldown.
+  ///
+  /// In en, this message translates to:
+  /// **'You changed your alias recently. Try again later.'**
+  String get errAliasCooldown;
+
+  /// No description provided for @errPhoneTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'That number is already in use.'**
+  String get errPhoneTaken;
+
+  /// No description provided for @errWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least 8 characters with a letter and a number.'**
+  String get errWeakPassword;
+
+  /// No description provided for @errWrongPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong number or password.'**
+  String get errWrongPassword;
+
+  /// No description provided for @changePhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Change mobile number'**
+  String get changePhone;
+
+  /// No description provided for @newPhoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New mobile number'**
+  String get newPhoneLabel;
+
+  /// No description provided for @codeSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code sent to {phone}'**
+  String codeSentTo(String phone);
+
+  /// No description provided for @codeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code'**
+  String get codeLabel;
+
+  /// No description provided for @verifyAndSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify and save'**
+  String get verifyAndSave;
+
+  /// No description provided for @phoneChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number updated.'**
+  String get phoneChanged;
+
+  /// No description provided for @updateIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Update NID & date of birth'**
+  String get updateIdentity;
+
+  /// No description provided for @updateIdentityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enter your full NID number. For your privacy we only keep its last 4 digits.'**
+  String get updateIdentityBody;
+
+  /// No description provided for @identityReviewNote.
+  ///
+  /// In en, this message translates to:
+  /// **'If your details need a manual check, posting pauses until they\'re approved.'**
+  String get identityReviewNote;
+
+  /// No description provided for @identityUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity details updated.'**
+  String get identityUpdated;
+
+  /// No description provided for @preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferences;
+
+  /// No description provided for @helpInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & info'**
+  String get helpInfo;
+
+  /// No description provided for @appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearance;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get themeSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -18,6 +18,12 @@ Everything works in demo mode without any of this. Follow these steps to run Saj
 
 Authentication → Providers → **Phone**: enable it and connect an SMS provider (Twilio, MessageBird, Vonage), or use the **Send SMS hook** to call a Bangladeshi gateway (e.g. SSL Wireless, BulkSMSBD) from an Edge Function — usually far cheaper for +880 numbers.
 
+Account settings in the app also rely on these Auth options:
+
+- **Password sign-in (optional for citizens):** keep the Phone provider's password sign-in enabled, and turn on **Secure password change** (Authentication → Providers → Phone/Email settings). The app always sends a re-authentication SMS code before setting a password.
+- **Change mobile number:** works out of the box; Supabase texts a code to the new number and the `on_auth_user_phone_changed` trigger keeps the private identity record in step.
+- **Delete account:** handled by the `delete_my_account()` RPC, which removes the auth user and cascades to the profile, identity and reports (photos are removed by the app first).
+
 ## 3. NID verification
 
 `app_config.nid_auto_verify` (Admin → Settings) controls what happens when a citizen submits their NID:

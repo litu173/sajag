@@ -155,4 +155,79 @@ void main() {
     await again.signOut();
     expect(again.currentStage, AuthStage.signedOut);
   });
+
+  group('account settings', () {
+    test('emoji avatar and alias show on my posts and profile', () async {
+      await signIn();
+      await repo.createReport(newReport());
+      await repo.updateAvatar(emoji: '🦉', colorIndex: 3);
+      final alias = await repo.changeAlias('  নীল   Owl ');
+      expect(alias, 'নীল Owl');
+      final me = await repo.myProfile();
+      expect((me.alias, me.avatarEmoji, me.avatarSeed), ('নীল Owl', '🦉', 3));
+      final mine = (await repo.myReports()).single;
+      expect((mine.authorAlias, mine.authorAvatarEmoji), ('নীল Owl', '🦉'));
+    });
+
+    test('alias rules: format, no phone-like numbers, weekly limit', () async {
+      await signIn();
+      await expectLater(repo.changeAlias('ab'), throwsA(isA<SajagException>()));
+      await expectLater(repo.changeAlias('Call 01712345678'), throwsA(isA<SajagException>()));
+      await repo.changeAlias('Quiet River');
+      expect((await repo.myAccount()).aliasLockedUntil, isNotNull);
+      await expectLater(
+        repo.changeAlias('Another One'),
+        throwsA(isA<SajagException>().having((e) => e.code, 'code', SajagErrorCode.aliasCooldown)),
+      );
+    });
+
+    test('account shows phone, masked NID and date of birth', () async {
+      await signIn();
+      final a = await repo.myAccount();
+      expect(
+        (a.phone, a.nidLast4, a.dob, a.verification, a.hasPassword),
+        ('01712345678', '7890', DateTime(1990), 'verified', false),
+      );
+    });
+
+    test('password: needs the code, strong rules, then signs in', () async {
+      await signIn();
+      await expectLater(repo.setPassword(password: 'abc12345', code: '000000'), throwsA(isA<SajagException>()));
+      await expectLater(repo.setPassword(password: 'short1', code: '123456'), throwsA(isA<SajagException>()));
+      await repo.setPassword(password: 'river2026', code: '123456');
+      expect((await repo.myAccount()).hasPassword, isTrue);
+      await repo.signOut();
+      await expectLater(
+        repo.signInWithPassword('01712345678', 'wrong123'),
+        throwsA(isA<SajagException>().having((e) => e.code, 'code', SajagErrorCode.wrongPassword)),
+      );
+      await repo.signInWithPassword('01712345678', 'river2026');
+      expect(repo.currentStage, AuthStage.ready);
+    });
+
+    test('phone change needs the code sent to the new number', () async {
+      await signIn();
+      await repo.requestPhoneChange('01898765432');
+      await expectLater(repo.confirmPhoneChange('01898765432', '000000'), throwsA(isA<SajagException>()));
+      await repo.confirmPhoneChange('01898765432', '123456');
+      expect((await repo.myAccount()).phone, '01898765432');
+    });
+
+    test('NID and date of birth can be updated', () async {
+      await signIn();
+      await repo.submitIdentity(nid: '9876543210123', dob: DateTime(1988, 5, 4));
+      final a = await repo.myAccount();
+      expect((a.nidLast4, a.dob), ('0123', DateTime(1988, 5, 4)));
+    });
+
+    test('deleting the account removes my reports and signs out', () async {
+      await signIn();
+      final r = await repo.createReport(newReport());
+      await repo.deleteAccount();
+      expect(repo.currentStage, AuthStage.signedOut);
+      expect(await repo.report(r.id), isNull);
+      await repo.verifyOtp('01712345678', '123456');
+      expect(repo.currentStage, AuthStage.needsIdentity, reason: 'identity was erased too');
+    });
+  });
 }

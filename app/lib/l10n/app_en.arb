@@ -12,7 +12,6 @@
   "delete": "Delete",
   "errorGeneric": "Something went wrong. Please try again.",
   "errorNetwork": "No internet connection. Check your network and try again.",
-
   "chooseLanguage": "Choose your language",
   "onboard1Title": "Seen a problem on the street?",
   "onboard1Body": "Open manholes, broken roads, garbage, waterlogging — snap a live photo and let your whole area know.",
@@ -21,7 +20,6 @@
   "onboard3Title": "Together we fix our city",
   "onboard3Body": "Confirm what others report, earn badges, and watch problems get solved on the live map.",
   "getStarted": "Get started",
-
   "phoneTitle": "Enter your mobile number",
   "phoneSubtitle": "We'll send you a 6-digit code by SMS.",
   "phoneLabel": "Mobile number",
@@ -29,10 +27,22 @@
   "sendCode": "Send code",
   "otpTitle": "Enter the code",
   "otpSubtitle": "Sent to {phone}",
-  "@otpSubtitle": { "placeholders": { "phone": { "type": "String" } } },
+  "@otpSubtitle": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
   "otpDemoHint": "Demo code: 123456",
   "resendIn": "Resend code in {seconds}s",
-  "@resendIn": { "placeholders": { "seconds": { "type": "int" } } },
+  "@resendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "resend": "Resend code",
   "verify": "Verify",
   "changeNumber": "Change number",
@@ -47,7 +57,6 @@
   "pendingTitle": "Verification in review",
   "pendingBody": "We'll let you know as soon as your identity is confirmed. This usually takes less than a day.",
   "checkAgain": "Check again",
-
   "errInvalidOtp": "That code is incorrect or has expired.",
   "errInvalidNid": "Enter a valid NID number (10, 13 or 17 digits).",
   "errInvalidDob": "Enter a valid date of birth. You must be at least 13.",
@@ -58,20 +67,17 @@
   "errStaleCapture": "This photo is too old. Please take a new one.",
   "errOwnReport": "You can't confirm your own report.",
   "errAlreadyDone": "You've already done this.",
-
   "locationTitle": "Allow your location",
   "locationBody": "Sajag tags each report with where it happened and shows problems around you. Location is required to use the app.",
   "allowLocation": "Allow location",
   "openSettings": "Open settings",
   "locationServiceOff": "Location is turned off on your phone. Please turn it on to continue.",
   "locationDeniedForever": "Location permission is blocked. Please enable it in Settings to continue.",
-
   "navFeed": "Home",
   "navMap": "Map",
   "navReport": "Report",
   "navAchievements": "Badges",
   "navProfile": "Me",
-
   "feedNearby": "Nearby",
   "feedLatest": "Latest",
   "feedFollowing": "Following",
@@ -82,26 +88,47 @@
   "demoLocationNote": "Demo: showing Dhaka because you're outside Bangladesh",
   "seeItToo": "I see it too",
   "confirmations": "{count, plural, =0{Be the first to confirm} =1{1 person sees this} other{{count} people see this}}",
-  "@confirmations": { "placeholders": { "count": { "type": "int" } } },
+  "@confirmations": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "anonymousCitizen": "Anonymous citizen",
   "awarenessTag": "Awareness",
   "reportAction": "Report a problem",
-
   "statusOpen": "Posted",
   "statusAcknowledged": "Acknowledged",
   "statusInProgress": "In progress",
   "statusResolved": "Resolved",
   "statusHidden": "Flagged",
   "statusRemoved": "Removed",
-
   "timeJustNow": "just now",
   "timeMinutes": "{n}m ago",
-  "@timeMinutes": { "placeholders": { "n": { "type": "int" } } },
+  "@timeMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "timeHours": "{n}h ago",
-  "@timeHours": { "placeholders": { "n": { "type": "int" } } },
+  "@timeHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "timeDays": "{n}d ago",
-  "@timeDays": { "placeholders": { "n": { "type": "int" } } },
-
+  "@timeDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "reportTitle": "Report",
   "follow": "Follow",
   "followingButton": "Following",
@@ -110,13 +137,27 @@
   "openInMaps": "Open in Maps",
   "locationLabel": "Location",
   "shareText": "{category} reported at {place} — via Sajag",
-  "@shareText": { "placeholders": { "category": { "type": "String" }, "place": { "type": "String" } } },
+  "@shareText": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
   "deleteReport": "Delete report",
   "deleteConfirm": "Delete this report? This can't be undone.",
   "reportNotFound": "This report is no longer available.",
   "levelShort": "Lv {level}",
-  "@levelShort": { "placeholders": { "level": { "type": "int" } } },
-
+  "@levelShort": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
   "flagTitle": "What's wrong with this post?",
   "flagFalse": "False or misleading",
   "flagLocation": "Wrong location",
@@ -128,7 +169,6 @@
   "flagNoteHint": "Add details (optional)",
   "flagSubmit": "Send to moderators",
   "flagThanks": "Thanks — our moderators will review it.",
-
   "captureHint": "Point at the problem. Only live photos are allowed — no gallery uploads.",
   "retake": "Retake",
   "usePhoto": "Use photo",
@@ -142,53 +182,104 @@
   "descriptionTooShort": "Please add a few more words.",
   "locating": "Finding your location…",
   "locationAccuracy": "Accurate to about {meters} m",
-  "@locationAccuracy": { "placeholders": { "meters": { "type": "int" } } },
+  "@locationAccuracy": {
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
   "showAlias": "Show my alias",
   "showAliasOn": "Posted as {alias}. Your followers get notified.",
-  "@showAliasOn": { "placeholders": { "alias": { "type": "String" } } },
+  "@showAliasOn": {
+    "placeholders": {
+      "alias": {
+        "type": "String"
+      }
+    }
+  },
   "showAliasOff": "Posted as an anonymous citizen, not linked to your alias.",
   "identityNeverShown": "Your real name, phone and NID are never shown to anyone.",
   "submitReport": "Post report",
   "posted": "Report posted! Thank you for keeping your area safe.",
   "mockLocation": "Fake GPS detected. Turn off mock-location apps to post.",
   "pickCategory": "Choose a category",
-
   "mapLast24h": "24 hours",
   "mapLast7d": "7 days",
   "mapLast30d": "30 days",
   "mapReportsHere": "{count, plural, =1{1 report here} other{{count} reports here}}",
-  "@mapReportsHere": { "placeholders": { "count": { "type": "int" } } },
+  "@mapReportsHere": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "locateMe": "My location",
   "mapLegendFew": "Few",
   "mapLegendMany": "Many",
-
   "achievementsTitle": "Achievements",
   "tabBadges": "Badges",
   "tabLeaderboard": "Leaderboard",
   "levelLabel": "Level {level}",
-  "@levelLabel": { "placeholders": { "level": { "type": "int" } } },
+  "@levelLabel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
   "xpToNext": "{xp} XP to {name}",
-  "@xpToNext": { "placeholders": { "xp": { "type": "int" }, "name": { "type": "String" } } },
+  "@xpToNext": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "maxLevel": "Top level reached — you're a legend!",
   "statReports": "Reports",
   "statResolved": "Resolved",
   "statConfirms": "Confirmed by others",
   "statStreak": "Day streak",
   "badgesEarned": "{earned} of {total} earned",
-  "@badgesEarned": { "placeholders": { "earned": { "type": "int" }, "total": { "type": "int" } } },
+  "@badgesEarned": {
+    "placeholders": {
+      "earned": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "badgeEarned": "Earned",
   "badgeLocked": "Not earned yet",
   "badgeReward": "+{xp} XP",
-  "@badgeReward": { "placeholders": { "xp": { "type": "int" } } },
+  "@badgeReward": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
   "periodWeek": "This week",
   "periodMonth": "This month",
   "periodAll": "All time",
   "leaderboardPrivacy": "Everyone appears by alias only. No one can see who you really are.",
   "you": "You",
   "points": "{n} XP",
-  "@points": { "placeholders": { "n": { "type": "int" } } },
+  "@points": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "emptyLeaderboard": "No one on the board yet — post a report to be first!",
-
   "verifiedCitizen": "Verified citizen",
   "followers": "Followers",
   "followingLabel": "Following",
@@ -209,15 +300,36 @@
   "notificationsTitle": "Notifications",
   "noNotifications": "You're all caught up.",
   "nFollowedPost": "{alias} posted a new report: {category}",
-  "@nFollowedPost": { "placeholders": { "alias": { "type": "String" }, "category": { "type": "String" } } },
+  "@nFollowedPost": {
+    "placeholders": {
+      "alias": {
+        "type": "String"
+      },
+      "category": {
+        "type": "String"
+      }
+    }
+  },
   "nBadge": "You earned the “{badge}” badge!",
-  "@nBadge": { "placeholders": { "badge": { "type": "String" } } },
+  "@nBadge": {
+    "placeholders": {
+      "badge": {
+        "type": "String"
+      }
+    }
+  },
   "nResolved": "Your report was marked resolved 🎉",
   "nConfirmedResolved": "A problem you confirmed has been resolved",
   "nRemoved": "Your report was removed by moderators",
   "nFollower": "A citizen started following you",
   "nMilestone": "{count} people have confirmed your report",
-  "@nMilestone": { "placeholders": { "count": { "type": "int" } } },
+  "@nMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "nVerifyApproved": "Your identity has been verified. You can now post reports.",
   "nVerifyRejected": "Identity verification failed. Please try again.",
   "citizenTitle": "Citizen",
@@ -227,20 +339,56 @@
   "markSolvedNoteHint": "What changed? (optional)",
   "markSolvedDone": "Marked as solved. Thank you!",
   "solvedIn": "Solved in {duration}",
-  "@solvedIn": {"placeholders": {"duration": {"type": "String"}}},
+  "@solvedIn": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "durationHours": "{n, plural, =1{1 hour} other{{n} hours}}",
-  "@durationHours": {"placeholders": {"n": {"type": "int"}}},
+  "@durationHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "durationDays": "{n, plural, =1{1 day} other{{n} days}}",
-  "@durationDays": {"placeholders": {"n": {"type": "int"}}},
+  "@durationDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "markedByReporter": "Marked solved by the reporter",
   "markedByModerator": "Confirmed solved by a moderator",
   "latestVersion": "App version",
   "currentVersion": "You have version {version}",
-  "@currentVersion": {"placeholders": {"version": {"type": "String"}}},
+  "@currentVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "updateAvailable": "Version {version} is available",
-  "@updateAvailable": {"placeholders": {"version": {"type": "String"}}},
+  "@updateAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "upToDate": "You have the latest version ({version})",
-  "@upToDate": {"placeholders": {"version": {"type": "String"}}},
+  "@upToDate": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "checkingUpdate": "Checking for updates…",
   "updateCheckFailed": "Couldn't check for updates. Check your internet.",
   "downloadLatest": "Download latest version",
@@ -255,7 +403,110 @@
   "allCategoriesTitle": "All categories",
   "clearCategory": "All categories",
   "earnedInPeriod": "{count} earned · {period}",
-  "@earnedInPeriod": {"placeholders": {"count": {"type": "int"}, "period": {"type": "String"}}},
+  "@earnedInPeriod": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
   "newBadge": "New",
-  "versionTitle": "App version"
+  "versionTitle": "App version",
+  "accountSettings": "Account settings",
+  "publicProfileSection": "Public profile",
+  "publicProfileHint": "This is all other citizens ever see.",
+  "avatarLabel": "Profile emoji",
+  "aliasLabel": "Alias",
+  "identitySection": "Private identity",
+  "identityHint": "Used only to verify you. Never shown to anyone.",
+  "idVerified": "Verified",
+  "idPending": "Under review",
+  "securitySection": "Security",
+  "passwordLabel": "Password",
+  "passwordNotSet": "Not set · you sign in with an SMS code",
+  "passwordIsSet": "On · sign in with code or password",
+  "setPassword": "Set password",
+  "changePassword": "Change password",
+  "passwordIntro": "Add a password to sign in without waiting for an SMS. First we'll send a code to {phone}.",
+  "@passwordIntro": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "newPassword": "New password",
+  "confirmPassword": "Confirm password",
+  "passwordMismatch": "Passwords don't match.",
+  "passwordRule": "At least 8 characters, with a letter and a number.",
+  "passwordSaved": "Password saved.",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "signInWithPassword": "Sign in with password",
+  "signInWithCode": "Sign in with an SMS code instead",
+  "signIn": "Sign in",
+  "deleteAccount": "Delete account",
+  "deleteAccountHint": "Removes your profile, reports and photos for good.",
+  "deleteAccountConfirm": "Delete your account?",
+  "deleteAccountBody": "Your alias, XP, badges, reports and photos will be permanently deleted. This can't be undone.",
+  "deleteAccountType": "Type DELETE to confirm",
+  "accountDeleted": "Your account has been deleted.",
+  "chooseEmoji": "Choose your emoji",
+  "emojiBackground": "Background",
+  "emojiUseAlias": "Alias animal",
+  "emojiCatAnimals": "Animals",
+  "emojiCatNature": "Nature",
+  "emojiCatFaces": "Faces",
+  "emojiCatFood": "Food",
+  "emojiCatActivity": "Activity",
+  "emojiCatPlaces": "Places",
+  "emojiCatObjects": "Objects",
+  "emojiCatSymbols": "Symbols",
+  "saveChanges": "Save",
+  "savedMessage": "Saved.",
+  "changeAlias": "Change alias",
+  "aliasHelper": "3–24 letters or numbers, in Bangla or English.",
+  "aliasWarning": "Keep it anonymous: don't use your real name, phone or NID.",
+  "aliasOncePerWeek": "You can change it once every 7 days.",
+  "aliasLockedUntil": "You can change it again on {date}.",
+  "@aliasLockedUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "suggestAlias": "Suggest one",
+  "errInvalidAlias": "Use 3–24 letters, numbers or spaces, without long number sequences.",
+  "errAliasTaken": "That alias is taken. Try another.",
+  "errAliasCooldown": "You changed your alias recently. Try again later.",
+  "errPhoneTaken": "That number is already in use.",
+  "errWeakPassword": "Use at least 8 characters with a letter and a number.",
+  "errWrongPassword": "Wrong number or password.",
+  "changePhone": "Change mobile number",
+  "newPhoneLabel": "New mobile number",
+  "codeSentTo": "Enter the 6-digit code sent to {phone}",
+  "@codeSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "codeLabel": "Verification code",
+  "verifyAndSave": "Verify and save",
+  "phoneChanged": "Mobile number updated.",
+  "updateIdentity": "Update NID & date of birth",
+  "updateIdentityBody": "Re-enter your full NID number. For your privacy we only keep its last 4 digits.",
+  "identityReviewNote": "If your details need a manual check, posting pauses until they're approved.",
+  "identityUpdated": "Identity details updated.",
+  "preferences": "Preferences",
+  "helpInfo": "Help & info",
+  "appearance": "Appearance",
+  "themeSystem": "Auto",
+  "themeLight": "Light",
+  "themeDark": "Dark"
 }

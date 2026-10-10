@@ -11,12 +11,35 @@ abstract interface class SajagRepository {
   Future<void> requestOtp(String phone);
   Future<void> verifyOtp(String phone, String code);
 
+  /// Optional password sign-in, for citizens who set one in account settings.
+  Future<void> signInWithPassword(String phone, String password);
+
   /// Returns the resulting stage: [AuthStage.ready] or [AuthStage.pendingReview].
   Future<AuthStage> submitIdentity({required String nid, required DateTime dob});
   Future<void> signOut();
 
   /// Re-reads the verification status from the backend (e.g. while awaiting review).
   Future<AuthStage> refreshStage();
+
+  // ---- account settings
+  Future<AccountInfo> myAccount();
+
+  /// [colorIndex] picks the avatar background; [emoji] null restores the alias animal.
+  Future<void> updateAvatar({required String? emoji, required int colorIndex});
+
+  /// Returns the alias as stored (trimmed, spaces collapsed).
+  Future<String> changeAlias(String alias);
+
+  /// Sends a code to [newPhone]; [confirmPhoneChange] completes the switch.
+  Future<void> requestPhoneChange(String newPhone);
+  Future<void> confirmPhoneChange(String newPhone, String code);
+
+  /// Sends a one-time code to the current phone, required to set or change the password.
+  Future<void> requestSecurityCode();
+  Future<void> setPassword({required String password, required String code});
+
+  /// Permanently deletes the account, its reports and photos.
+  Future<void> deleteAccount();
 
   // ---- me
   Future<Profile> myProfile();

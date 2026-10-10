@@ -52,6 +52,7 @@ class SajagApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
+      themeMode: settings.themeMode,
       locale: settings.locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [

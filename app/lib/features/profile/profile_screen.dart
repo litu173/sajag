@@ -9,9 +9,12 @@ import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../core/updates.dart';
+import '../../core/widgets/settings.dart';
 import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
+import '../account/account_screen.dart';
+import '../account/account_sheets.dart';
 import '../shell/home_shell.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -36,31 +39,36 @@ class ProfileScreen extends ConsumerWidget {
               data: (p) => _ProfileHero(profile: p),
             ),
             const SizedBox(height: 32),
-            _SectionTitle(l.myReports),
+            SectionTitle(l.myReports),
             const SizedBox(height: 14),
             reports.when(
               loading: () => Shimmer(
-                child: Row(
-                  children: [
-                    for (var i = 0; i < 3; i++)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 12),
-                        child: SkeletonBox(width: 112, height: 150, radius: 20),
-                      ),
-                  ],
+                child: SizedBox(
+                  height: 150,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 4,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (_, _) => const SkeletonBox(width: 112, height: 150, radius: 20),
+                  ),
                 ),
               ),
               error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(myReportsProvider)),
               data: (list) => list.isEmpty ? const _NoReports() : _ReportStrip(reports: list),
             ),
             const SizedBox(height: 32),
-            _SectionTitle(l.settings),
+            SectionTitle(l.preferences),
             const SizedBox(height: 14),
-            const _Settings(),
+            const _Preferences(),
+            const SizedBox(height: 32),
+            SectionTitle(l.helpInfo),
+            const SizedBox(height: 14),
+            const _HelpInfo(),
             const SizedBox(height: 18),
-            _Group(
+            SettingsGroup(
               children: [
-                _Row(
+                SettingsRow(
                   icon: Icons.logout_rounded,
                   tint: SajagColors.accent,
                   title: l.signOut,
@@ -115,7 +123,7 @@ class _ProfileHero extends ConsumerWidget {
     final progress = next == null ? 1.0 : ((profile.xp - level.minXp) / (next.minXp - level.minXp)).clamp(0.0, 1.0);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(22, 26, 22, 22),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 22),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: SajagColors.heroGradient,
@@ -137,66 +145,126 @@ class _ProfileHero extends ConsumerWidget {
               decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.07)),
             ),
           ),
-          Column(
-            children: [
-              SizedBox(
-                width: 108,
-                height: 108,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox.expand(
-                      child: CircularProgressIndicator(
-                        value: progress.toDouble(),
-                        strokeWidth: 4,
-                        strokeCap: StrokeCap.round,
-                        backgroundColor: Colors.white.withValues(alpha: 0.18),
-                        color: const Color(0xFFF0CF95),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 10, 6, 0),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: 108,
+                  height: 108,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox.expand(
+                        child: CircularProgressIndicator(
+                          value: progress.toDouble(),
+                          strokeWidth: 4,
+                          strokeCap: StrokeCap.round,
+                          backgroundColor: Colors.white.withValues(alpha: 0.18),
+                          color: const Color(0xFFF0CF95),
+                        ),
+                      ),
+                      EditableAvatar(
+                        profile: profile,
+                        ring: Colors.white.withValues(alpha: 0.9),
+                        onTap: () => showAccountSheet<void>(context, EmojiAvatarSheet(profile: profile)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Semantics(
+                  button: true,
+                  hint: l.changeAlias,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () => showAccountSheet<void>(
+                      context,
+                      AliasSheet(
+                        current: profile.alias,
+                        lockedUntil: ref.read(myAccountProvider).value?.aliasLockedUntil,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.9)),
-                      child: AliasAvatar(alias: profile.alias, seed: profile.avatarSeed, size: 84),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              profile.alias,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(Icons.edit_rounded, size: 17, color: Colors.white.withValues(alpha: 0.7)),
+                        ],
+                      ),
                     ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    _GlassPill(
+                      icon: Icons.auto_awesome_rounded,
+                      text: localDigits(context, '${l.levelLabel(level.level)} · ${level.name(context)}'),
+                    ),
+                    if (profile.verified) _GlassPill(icon: Icons.verified_rounded, text: l.verifiedCitizen),
                   ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                profile.alias,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
-                children: [
-                  _GlassPill(
-                    icon: Icons.auto_awesome_rounded,
-                    text: localDigits(context, '${l.levelLabel(level.level)} · ${level.name(context)}'),
-                  ),
-                  if (profile.verified) _GlassPill(icon: Icons.verified_rounded, text: l.verifiedCitizen),
-                ],
-              ),
-              const SizedBox(height: 22),
-              Row(
-                children: [
-                  _GlassStat(value: profile.reportsCount, label: l.statReports),
-                  const SizedBox(width: 10),
-                  _GlassStat(value: profile.followersCount, label: l.followers),
-                  const SizedBox(width: 10),
-                  _GlassStat(value: profile.followingCount, label: l.followingLabel),
-                ],
-              ),
-            ],
+                const SizedBox(height: 22),
+                Row(
+                  children: [
+                    _GlassStat(value: profile.reportsCount, label: l.statReports),
+                    const SizedBox(width: 10),
+                    _GlassStat(value: profile.followersCount, label: l.followers),
+                    const SizedBox(width: 10),
+                    _GlassStat(value: profile.followingCount, label: l.followingLabel),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: _GlassIconButton(
+              key: const Key('account-settings'),
+              icon: Icons.settings_rounded,
+              tooltip: l.accountSettings,
+              onTap: () => context.push('/account'),
+            ),
           ),
         ],
       ),
     );
   }
+}
+
+class _GlassIconButton extends StatelessWidget {
+  const _GlassIconButton({required this.icon, required this.tooltip, required this.onTap, super.key});
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: tooltip,
+    child: Material(
+      color: Colors.white.withValues(alpha: 0.16),
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: SizedBox.square(dimension: 44, child: Icon(icon, color: Colors.white, size: 22)),
+      ),
+    ),
+  );
 }
 
 class _GlassPill extends StatelessWidget {
@@ -330,9 +398,9 @@ class _NoReports extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return _Group(
+    return SettingsGroup(
       children: [
-        _Row(
+        SettingsRow(
           icon: Icons.photo_camera_rounded,
           tint: SajagColors.accent,
           title: l.noReportsYet,
@@ -345,8 +413,8 @@ class _NoReports extends StatelessWidget {
 }
 
 // ------------------------------------------------------------------ settings
-class _Settings extends ConsumerWidget {
-  const _Settings();
+class _Preferences extends ConsumerWidget {
+  const _Preferences();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -354,23 +422,38 @@ class _Settings extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
 
-    return _Group(
+    return SettingsGroup(
       children: [
-        _Row(
+        SettingsRow(
           icon: Icons.translate_rounded,
           tint: const Color(0xFF3A6EA5),
           title: l.language,
-          trailing: _PillToggle<String>(
+          trailing: PillToggle<String>(
             value: settings.locale.languageCode,
             options: const {'bn': 'বাংলা', 'en': 'EN'},
             onChanged: (v) => notifier.setLocale(Locale(v)),
           ),
         ),
-        _Row(
+        SettingsRow(
+          icon: Icons.contrast_rounded,
+          tint: const Color(0xFF5A4FCF),
+          title: l.appearance,
+          trailing: PillToggle<ThemeMode>(
+            value: settings.themeMode,
+            options: {ThemeMode.system: l.themeSystem, ThemeMode.light: l.themeLight, ThemeMode.dark: l.themeDark},
+            icons: const {
+              ThemeMode.system: Icons.brightness_auto_rounded,
+              ThemeMode.light: Icons.light_mode_rounded,
+              ThemeMode.dark: Icons.dark_mode_rounded,
+            },
+            onChanged: notifier.setThemeMode,
+          ),
+        ),
+        SettingsRow(
           icon: Icons.format_size_rounded,
           tint: SajagColors.gold,
           title: l.textSize,
-          trailing: _PillToggle<double>(
+          trailing: PillToggle<double>(
             value: settings.textScale,
             options: {1.0: 'অ', 1.2: 'অ', 1.4: 'অ'},
             optionStyle: (v) => TextStyle(fontSize: 13 + (v - 1) * 20, fontWeight: FontWeight.w600),
@@ -378,7 +461,20 @@ class _Settings extends ConsumerWidget {
             onChanged: notifier.setTextScale,
           ),
         ),
-        _Row(
+      ],
+    );
+  }
+}
+
+class _HelpInfo extends StatelessWidget {
+  const _HelpInfo();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return SettingsGroup(
+      children: [
+        SettingsRow(
           icon: Icons.shield_rounded,
           tint: SajagColors.brand,
           title: l.privacy,
@@ -450,7 +546,7 @@ class _AboutRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final available = ref.watch(updateStatusProvider).value?.available ?? false;
-    return _Row(
+    return SettingsRow(
       icon: Icons.info_rounded,
       tint: const Color(0xFF8338EC),
       title: l.about,
@@ -533,157 +629,6 @@ class _VersionPanel extends ConsumerWidget {
             label: Text(l.downloadLatest),
           ),
           if (isIos) ...[const SizedBox(height: 10), Text(l.iosInstallNote, style: theme.textTheme.bodySmall)],
-        ],
-      ),
-    );
-  }
-}
-
-// ------------------------------------------------------------------ building blocks
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: 4),
-    child: Text(text, style: Theme.of(context).textTheme.titleLarge),
-  );
-}
-
-/// A rounded panel of rows, separated by spacing instead of divider lines.
-class _Group extends StatelessWidget {
-  const _Group({required this.children});
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: theme.cardTheme.color,
-        borderRadius: BorderRadius.circular(26),
-        boxShadow: SajagColors.softShadow(theme.brightness),
-      ),
-      child: Column(children: children),
-    );
-  }
-}
-
-class _Row extends StatelessWidget {
-  const _Row({
-    required this.icon,
-    required this.tint,
-    required this.title,
-    this.subtitle,
-    this.trailing,
-    this.onTap,
-    this.titleColor,
-  });
-
-  final IconData icon;
-  final Color tint;
-  final String title;
-  final String? subtitle;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-  final Color? titleColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(color: tint.withValues(alpha: 0.13), borderRadius: BorderRadius.circular(13)),
-              child: Icon(icon, color: tint, size: 21),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: theme.textTheme.titleSmall?.copyWith(color: titleColor)),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(subtitle!, style: theme.textTheme.bodySmall),
-                  ],
-                ],
-              ),
-            ),
-            if (trailing != null)
-              trailing!
-            else if (onTap != null)
-              Icon(Icons.chevron_right_rounded, color: theme.textTheme.bodySmall?.color),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Compact segmented pill used for language and text size.
-class _PillToggle<T> extends StatelessWidget {
-  const _PillToggle({
-    required this.value,
-    required this.options,
-    required this.onChanged,
-    this.optionStyle,
-    this.semanticLabels,
-  });
-
-  final T value;
-  final Map<T, String> options;
-  final ValueChanged<T> onChanged;
-  final TextStyle Function(T)? optionStyle;
-  final Map<T, String>? semanticLabels;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final e in options.entries)
-            Semantics(
-              button: true,
-              selected: e.key == value,
-              label: semanticLabels?[e.key] ?? e.value,
-              child: GestureDetector(
-                onTap: () => onChanged(e.key),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  constraints: const BoxConstraints(minWidth: 40, minHeight: 34),
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: e.key == value ? theme.cardTheme.color : Colors.transparent,
-                    borderRadius: BorderRadius.circular(17),
-                    boxShadow: e.key == value ? SajagColors.softShadow(theme.brightness) : null,
-                  ),
-                  child: ExcludeSemantics(
-                    child: Text(
-                      e.value,
-                      style: (optionStyle?.call(e.key) ?? const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))
-                          .copyWith(color: e.key == value ? theme.colorScheme.primary : null),
-                    ),
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );

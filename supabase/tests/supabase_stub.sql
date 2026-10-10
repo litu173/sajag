@@ -10,6 +10,7 @@ create table auth.users (
   id uuid primary key default gen_random_uuid(),
   email text,
   phone text,
+  encrypted_password text,
   created_at timestamptz not null default now()
 );
 create function auth.uid() returns uuid language sql stable as $$

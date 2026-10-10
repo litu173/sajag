@@ -51,7 +51,7 @@ class PublicProfileScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      AliasAvatar(alias: p.alias, seed: p.avatarSeed, size: 80),
+                      AliasAvatar(alias: p.alias, seed: p.avatarSeed, emoji: p.avatarEmoji, size: 80),
                       const SizedBox(height: 12),
                       Text(p.alias, style: theme.textTheme.titleLarge, textAlign: TextAlign.center),
                       Text(

@@ -137,6 +137,8 @@ class Report {
     this.aliasId,
     this.authorAlias,
     this.authorLevel,
+    this.authorAvatarSeed,
+    this.authorAvatarEmoji,
     this.photoUrl,
     this.localPhotoPath,
     this.address,
@@ -152,6 +154,8 @@ class Report {
     aliasId: r['alias_id'] as String?,
     authorAlias: r['author_alias'] as String?,
     authorLevel: r['author_level'] as int?,
+    authorAvatarSeed: r['author_avatar_seed'] as int?,
+    authorAvatarEmoji: r['author_avatar_emoji'] as String?,
     categoryId: r['category_id'] as String,
     description: (r['description'] ?? '') as String,
     photoUrl: r['photo_path'] == null ? null : photoUrl(r['photo_path'] as String),
@@ -174,6 +178,8 @@ class Report {
   final String? aliasId;
   final String? authorAlias;
   final int? authorLevel;
+  final int? authorAvatarSeed;
+  final String? authorAvatarEmoji;
   final String categoryId;
   final String description;
   final String? photoUrl;
@@ -198,11 +204,13 @@ class Report {
 
   String get place => [areaName, city].whereType<String>().where((s) => s.isNotEmpty).join(', ');
 
-  Report copyWith({required int confirmCount}) => Report(
+  Report copyWith({int? confirmCount, String? authorAlias, int? authorAvatarSeed, String? authorAvatarEmoji}) => Report(
     id: id,
     aliasId: aliasId,
-    authorAlias: authorAlias,
+    authorAlias: authorAlias ?? this.authorAlias,
     authorLevel: authorLevel,
+    authorAvatarSeed: authorAvatarSeed ?? this.authorAvatarSeed,
+    authorAvatarEmoji: authorAvatarEmoji ?? this.authorAvatarEmoji,
     categoryId: categoryId,
     description: description,
     photoUrl: photoUrl,
@@ -214,7 +222,7 @@ class Report {
     city: city,
     status: status,
     statusNote: statusNote,
-    confirmCount: confirmCount,
+    confirmCount: confirmCount ?? this.confirmCount,
     createdAt: createdAt,
     resolvedAt: resolvedAt,
     resolvedBy: resolvedBy,
@@ -254,6 +262,7 @@ class Profile {
     required this.id,
     required this.alias,
     required this.avatarSeed,
+    this.avatarEmoji,
     this.xp = 0,
     this.level = 1,
     this.reportsCount = 0,
@@ -272,6 +281,7 @@ class Profile {
     id: r['id'] as String,
     alias: r['alias'] as String,
     avatarSeed: (r['avatar_seed'] ?? 0) as int,
+    avatarEmoji: r['avatar_emoji'] as String?,
     xp: (r['xp'] ?? 0) as int,
     level: (r['level'] ?? 1) as int,
     reportsCount: (r['reports_count'] ?? 0) as int,
@@ -289,6 +299,9 @@ class Profile {
   final String id;
   final String alias;
   final int avatarSeed;
+
+  /// Emoji the citizen picked for their avatar; null shows the alias animal.
+  final String? avatarEmoji;
   final int xp;
   final int level;
   final int reportsCount;
@@ -321,6 +334,7 @@ class LeaderboardEntry {
     required this.score,
     required this.reportsCount,
     required this.isMe,
+    this.avatarEmoji,
   });
 
   factory LeaderboardEntry.fromRow(Json r) => LeaderboardEntry(
@@ -332,6 +346,7 @@ class LeaderboardEntry {
     score: r['score'] as int,
     reportsCount: r['reports_count'] as int,
     isMe: r['is_me'] as bool,
+    avatarEmoji: r['avatar_emoji'] as String?,
   );
 
   final int rank;
@@ -342,6 +357,7 @@ class LeaderboardEntry {
   final int score;
   final int reportsCount;
   final bool isMe;
+  final String? avatarEmoji;
 }
 
 class AppNotification {
@@ -418,6 +434,58 @@ enum FeedScope { nearby, latest, following }
 
 enum AuthStage { signedOut, needsIdentity, pendingReview, ready }
 
+/// The signed-in citizen's private account details. Only ever shown to themselves.
+class AccountInfo {
+  const AccountInfo({
+    this.phone,
+    this.nidLast4,
+    this.dob,
+    this.verification,
+    this.hasPassword = false,
+    this.aliasChangedAt,
+  });
+
+  factory AccountInfo.fromRow(Json r) => AccountInfo(
+    phone: r['phone'] as String?,
+    nidLast4: r['nid_last4'] as String?,
+    dob: r['dob'] == null ? null : DateTime.parse(r['dob'] as String),
+    verification: r['status'] as String?,
+    hasPassword: (r['has_password'] ?? false) as bool,
+    aliasChangedAt: r['alias_changed_at'] == null ? null : DateTime.parse(r['alias_changed_at'] as String),
+  );
+
+  /// Local 11-digit form (01XXXXXXXXX) when the number is Bangladeshi, else as stored.
+  final String? phone;
+  final String? nidLast4;
+  final DateTime? dob;
+
+  /// 'verified', 'pending' or 'rejected'.
+  final String? verification;
+  final bool hasPassword;
+  final DateTime? aliasChangedAt;
+
+  static const aliasCooldown = Duration(days: 7);
+
+  /// When the alias may next be changed, or null if it can be changed now.
+  DateTime? get aliasLockedUntil {
+    final next = aliasChangedAt?.add(aliasCooldown);
+    return next != null && next.isAfter(DateTime.now()) ? next : null;
+  }
+}
+
+/// Same rules as `set_my_alias` on the server.
+String? aliasProblem(String raw) {
+  final a = raw.trim().replaceAll(RegExp(r'\s+'), ' ');
+  if (a.length < 3 || a.length > 24) return 'length';
+  if (!RegExp(r'^[A-Za-z0-9\u0980-\u09FF ._-]+$').hasMatch(a)) return 'chars';
+  if (RegExp(r'[0-9০-৯]{6,}').hasMatch(a)) return 'digits';
+  return null;
+}
+
+/// At least 8 characters with a letter and a digit.
+bool isStrongPassword(String p) =>
+    p.length >= 8 && RegExp(r'[A-Za-z\u0980-\u09FF]').hasMatch(p) && RegExp(r'[0-9০-৯]').hasMatch(p);
+
 /// Errors the UI knows how to explain; mapped from server hints in the repositories.
 enum SajagErrorCode {
   invalidOtp,
@@ -430,6 +498,12 @@ enum SajagErrorCode {
   staleCapture,
   ownReport,
   alreadyDone,
+  invalidAlias,
+  aliasTaken,
+  aliasCooldown,
+  phoneTaken,
+  weakPassword,
+  wrongPassword,
   network,
   unknown,
 }

@@ -199,7 +199,8 @@ class _ComposePageState extends ConsumerState<_ComposePage> {
     final l = context.l10n;
     final theme = Theme.of(context);
     final categories = ref.watch(catalogProvider).categories;
-    final alias = ref.watch(myProfileProvider).value?.alias ?? '';
+    final me = ref.watch(myProfileProvider).value;
+    final alias = me?.alias ?? '';
 
     return FutureBuilder<(Fix, Place)>(
       future: widget.location,
@@ -275,7 +276,11 @@ class _ComposePageState extends ConsumerState<_ComposePage> {
                   onChanged: (v) => setState(() => _showAlias = v),
                   title: Text(l.showAlias),
                   subtitle: Text(_showAlias ? l.showAliasOn(alias) : l.showAliasOff),
-                  secondary: AliasAvatar(alias: _showAlias ? alias : null, seed: alias.hashCode),
+                  secondary: AliasAvatar(
+                    alias: _showAlias ? alias : null,
+                    seed: me?.avatarSeed ?? 0,
+                    emoji: _showAlias ? me?.avatarEmoji : null,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),

@@ -732,4 +732,230 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get versionTitle => 'অ্যাপ সংস্করণ';
+
+  @override
+  String get accountSettings => 'অ্যাকাউন্ট সেটিংস';
+
+  @override
+  String get publicProfileSection => 'পাবলিক প্রোফাইল';
+
+  @override
+  String get publicProfileHint => 'অন্য নাগরিকেরা শুধু এটুকুই দেখতে পান।';
+
+  @override
+  String get avatarLabel => 'প্রোফাইল ইমোজি';
+
+  @override
+  String get aliasLabel => 'ছদ্মনাম';
+
+  @override
+  String get identitySection => 'ব্যক্তিগত পরিচয়';
+
+  @override
+  String get identityHint => 'শুধু আপনাকে যাচাই করতে ব্যবহৃত হয়। কাউকে কখনো দেখানো হয় না।';
+
+  @override
+  String get idVerified => 'যাচাইকৃত';
+
+  @override
+  String get idPending => 'যাচাই চলছে';
+
+  @override
+  String get securitySection => 'নিরাপত্তা';
+
+  @override
+  String get passwordLabel => 'পাসওয়ার্ড';
+
+  @override
+  String get passwordNotSet => 'সেট করা নেই · এসএমএস কোড দিয়ে সাইন ইন করেন';
+
+  @override
+  String get passwordIsSet => 'চালু · কোড বা পাসওয়ার্ড দিয়ে সাইন ইন';
+
+  @override
+  String get setPassword => 'পাসওয়ার্ড সেট করুন';
+
+  @override
+  String get changePassword => 'পাসওয়ার্ড পরিবর্তন করুন';
+
+  @override
+  String passwordIntro(String phone) {
+    return 'এসএমএসের অপেক্ষা ছাড়াই সাইন ইন করতে পাসওয়ার্ড যোগ করুন। প্রথমে $phone নম্বরে একটি কোড পাঠাব।';
+  }
+
+  @override
+  String get newPassword => 'নতুন পাসওয়ার্ড';
+
+  @override
+  String get confirmPassword => 'পাসওয়ার্ড নিশ্চিত করুন';
+
+  @override
+  String get passwordMismatch => 'পাসওয়ার্ড মেলেনি।';
+
+  @override
+  String get passwordRule => 'অন্তত ৮ অক্ষর, একটি বর্ণ ও একটি সংখ্যাসহ।';
+
+  @override
+  String get passwordSaved => 'পাসওয়ার্ড সংরক্ষিত হয়েছে।';
+
+  @override
+  String get showPassword => 'পাসওয়ার্ড দেখুন';
+
+  @override
+  String get hidePassword => 'পাসওয়ার্ড লুকান';
+
+  @override
+  String get signInWithPassword => 'পাসওয়ার্ড দিয়ে সাইন ইন';
+
+  @override
+  String get signInWithCode => 'এর বদলে এসএমএস কোড দিয়ে সাইন ইন';
+
+  @override
+  String get signIn => 'সাইন ইন';
+
+  @override
+  String get deleteAccount => 'অ্যাকাউন্ট মুছে ফেলুন';
+
+  @override
+  String get deleteAccountHint => 'আপনার প্রোফাইল, রিপোর্ট ও ছবি স্থায়ীভাবে মুছে যাবে।';
+
+  @override
+  String get deleteAccountConfirm => 'অ্যাকাউন্ট মুছে ফেলবেন?';
+
+  @override
+  String get deleteAccountBody =>
+      'আপনার ছদ্মনাম, এক্সপি, ব্যাজ, রিপোর্ট ও ছবি স্থায়ীভাবে মুছে যাবে। এটি আর ফেরানো যাবে না।';
+
+  @override
+  String get deleteAccountType => 'নিশ্চিত করতে DELETE লিখুন';
+
+  @override
+  String get accountDeleted => 'আপনার অ্যাকাউন্ট মুছে ফেলা হয়েছে।';
+
+  @override
+  String get chooseEmoji => 'আপনার ইমোজি বেছে নিন';
+
+  @override
+  String get emojiBackground => 'পটভূমি';
+
+  @override
+  String get emojiUseAlias => 'ছদ্মনামের প্রাণী';
+
+  @override
+  String get emojiCatAnimals => 'প্রাণী';
+
+  @override
+  String get emojiCatNature => 'প্রকৃতি';
+
+  @override
+  String get emojiCatFaces => 'মুখ';
+
+  @override
+  String get emojiCatFood => 'খাবার';
+
+  @override
+  String get emojiCatActivity => 'খেলাধুলা';
+
+  @override
+  String get emojiCatPlaces => 'স্থান';
+
+  @override
+  String get emojiCatObjects => 'বস্তু';
+
+  @override
+  String get emojiCatSymbols => 'প্রতীক';
+
+  @override
+  String get saveChanges => 'সংরক্ষণ করুন';
+
+  @override
+  String get savedMessage => 'সংরক্ষিত হয়েছে।';
+
+  @override
+  String get changeAlias => 'ছদ্মনাম পরিবর্তন করুন';
+
+  @override
+  String get aliasHelper => 'বাংলা বা ইংরেজিতে ৩–২৪টি অক্ষর বা সংখ্যা।';
+
+  @override
+  String get aliasWarning => 'বেনামি রাখুন: আসল নাম, ফোন নম্বর বা এনআইডি ব্যবহার করবেন না।';
+
+  @override
+  String get aliasOncePerWeek => 'প্রতি ৭ দিনে একবার বদলানো যায়।';
+
+  @override
+  String aliasLockedUntil(String date) {
+    return 'আবার বদলাতে পারবেন $date তারিখে।';
+  }
+
+  @override
+  String get suggestAlias => 'একটি প্রস্তাব দিন';
+
+  @override
+  String get errInvalidAlias => '৩–২৪টি অক্ষর, সংখ্যা বা স্পেস দিন; লম্বা সংখ্যার ধারা নয়।';
+
+  @override
+  String get errAliasTaken => 'এই ছদ্মনাম আগেই নেওয়া। অন্যটি চেষ্টা করুন।';
+
+  @override
+  String get errAliasCooldown => 'আপনি সম্প্রতি ছদ্মনাম বদলেছেন। পরে চেষ্টা করুন।';
+
+  @override
+  String get errPhoneTaken => 'এই নম্বর ইতিমধ্যে ব্যবহৃত হচ্ছে।';
+
+  @override
+  String get errWeakPassword => 'অন্তত ৮ অক্ষর, একটি বর্ণ ও একটি সংখ্যা দিন।';
+
+  @override
+  String get errWrongPassword => 'নম্বর বা পাসওয়ার্ড ভুল।';
+
+  @override
+  String get changePhone => 'মোবাইল নম্বর পরিবর্তন করুন';
+
+  @override
+  String get newPhoneLabel => 'নতুন মোবাইল নম্বর';
+
+  @override
+  String codeSentTo(String phone) {
+    return '$phone নম্বরে পাঠানো ৬ সংখ্যার কোড দিন';
+  }
+
+  @override
+  String get codeLabel => 'যাচাই কোড';
+
+  @override
+  String get verifyAndSave => 'যাচাই করে সংরক্ষণ করুন';
+
+  @override
+  String get phoneChanged => 'মোবাইল নম্বর হালনাগাদ হয়েছে।';
+
+  @override
+  String get updateIdentity => 'এনআইডি ও জন্মতারিখ হালনাগাদ';
+
+  @override
+  String get updateIdentityBody => 'পুরো এনআইডি নম্বর আবার দিন। গোপনীয়তার জন্য আমরা শুধু শেষ ৪ সংখ্যা রাখি।';
+
+  @override
+  String get identityReviewNote => 'তথ্য হাতে যাচাই করতে হলে অনুমোদন না হওয়া পর্যন্ত পোস্ট করা বন্ধ থাকবে।';
+
+  @override
+  String get identityUpdated => 'পরিচয়ের তথ্য হালনাগাদ হয়েছে।';
+
+  @override
+  String get preferences => 'পছন্দসমূহ';
+
+  @override
+  String get helpInfo => 'সহায়তা ও তথ্য';
+
+  @override
+  String get appearance => 'থিম';
+
+  @override
+  String get themeSystem => 'অটো';
+
+  @override
+  String get themeLight => 'লাইট';
+
+  @override
+  String get themeDark => 'ডার্ক';
 }

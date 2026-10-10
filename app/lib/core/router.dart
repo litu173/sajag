@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/models.dart';
+import '../features/account/account_screen.dart';
 import '../features/achievements/achievements_screen.dart';
 import '../features/auth/identity_screen.dart';
 import '../features/auth/otp_screen.dart';
@@ -126,6 +127,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => PublicProfileScreen(aliasId: state.pathParameters['aliasId']!),
       ),
       GoRoute(path: '/notifications', builder: (_, _) => const NotificationsScreen()),
+      GoRoute(path: '/account', builder: (_, _) => const AccountScreen()),
     ],
   );
   ref.onDispose(() {
