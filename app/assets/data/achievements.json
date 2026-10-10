@@ -1,0 +1,70 @@
+{
+  "xp": {
+    "report_created": 10,
+    "confirmation_received": 2,
+    "report_resolved": 25,
+    "flag_upheld": 5,
+    "report_removed": -30
+  },
+  "levels": [
+    { "level": 1, "xp": 0,     "en": "Newcomer",  "bn": "নবাগত" },
+    { "level": 2, "xp": 50,    "en": "Observer",  "bn": "পর্যবেক্ষক" },
+    { "level": 3, "xp": 150,   "en": "Watcher",   "bn": "প্রহরী" },
+    { "level": 4, "xp": 400,   "en": "Guardian",  "bn": "অভিভাবক" },
+    { "level": 5, "xp": 900,   "en": "Sentinel",  "bn": "সজাগ সেনা" },
+    { "level": 6, "xp": 2000,  "en": "Champion",  "bn": "চ্যাম্পিয়ন" },
+    { "level": 7, "xp": 4000,  "en": "Hero",      "bn": "নায়ক" },
+    { "level": 8, "xp": 8000,  "en": "Legend",    "bn": "কিংবদন্তি" }
+  ],
+  "groups": [
+    { "id": "milestone", "en": "Reporting milestones", "bn": "রিপোর্টের মাইলফলক" },
+    { "id": "impact",    "en": "Real impact",          "bn": "বাস্তব পরিবর্তন" },
+    { "id": "community", "en": "Community trust",      "bn": "কমিউনিটির আস্থা" },
+    { "id": "habit",     "en": "Consistency",          "bn": "নিয়মিততা" },
+    { "id": "explorer",  "en": "Explorer",             "bn": "অনুসন্ধানী" },
+    { "id": "specialist","en": "Specialist",           "bn": "বিশেষজ্ঞ" },
+    { "id": "special",   "en": "Special",              "bn": "বিশেষ" }
+  ],
+  "badges": [
+    { "id": "first_report",    "group": "milestone", "tier": "bronze",   "emoji": "📸", "metric": "reports", "threshold": 1,    "xp": 10,  "en": "First Snap",        "bn": "প্রথম ছবি",        "desc_en": "Post your first report",                    "desc_bn": "প্রথম রিপোর্ট পোস্ট করুন" },
+    { "id": "reports_5",       "group": "milestone", "tier": "bronze",   "emoji": "👀", "metric": "reports", "threshold": 5,    "xp": 20,  "en": "Keen Eye",          "bn": "তীক্ষ্ণ দৃষ্টি",      "desc_en": "Post 5 reports",                            "desc_bn": "৫টি রিপোর্ট পোস্ট করুন" },
+    { "id": "reports_25",      "group": "milestone", "tier": "silver",   "emoji": "🧭", "metric": "reports", "threshold": 25,   "xp": 50,  "en": "Street Scout",      "bn": "পথের স্কাউট",       "desc_en": "Post 25 reports",                           "desc_bn": "২৫টি রিপোর্ট পোস্ট করুন" },
+    { "id": "reports_100",     "group": "milestone", "tier": "gold",     "emoji": "🛡️", "metric": "reports", "threshold": 100,  "xp": 150, "en": "City Guardian",     "bn": "নগর অভিভাবক",       "desc_en": "Post 100 reports",                          "desc_bn": "১০০টি রিপোর্ট পোস্ট করুন" },
+    { "id": "reports_500",     "group": "milestone", "tier": "platinum", "emoji": "🏛️", "metric": "reports", "threshold": 500,  "xp": 500, "en": "Pillar of the City","bn": "নগরের স্তম্ভ",       "desc_en": "Post 500 reports",                          "desc_bn": "৫০০টি রিপোর্ট পোস্ট করুন" },
+
+    { "id": "resolved_1",      "group": "impact",    "tier": "bronze",   "emoji": "✅", "metric": "resolved", "threshold": 1,   "xp": 25,  "en": "Fixed!",            "bn": "সমাধান হয়েছে!",      "desc_en": "One of your reports was resolved",          "desc_bn": "আপনার একটি রিপোর্টের সমাধান হয়েছে" },
+    { "id": "resolved_10",     "group": "impact",    "tier": "silver",   "emoji": "🔧", "metric": "resolved", "threshold": 10,  "xp": 75,  "en": "Change Maker",      "bn": "পরিবর্তনের কারিগর",   "desc_en": "10 of your reports were resolved",          "desc_bn": "আপনার ১০টি রিপোর্টের সমাধান হয়েছে" },
+    { "id": "resolved_50",     "group": "impact",    "tier": "gold",     "emoji": "🌟", "metric": "resolved", "threshold": 50,  "xp": 250, "en": "City Fixer",        "bn": "নগর মেরামতকারী",     "desc_en": "50 of your reports were resolved",          "desc_bn": "আপনার ৫০টি রিপোর্টের সমাধান হয়েছে" },
+
+    { "id": "confirmed_10",    "group": "community", "tier": "bronze",   "emoji": "🤝", "metric": "confirms_received", "threshold": 10,   "xp": 15,  "en": "Trusted Voice",   "bn": "বিশ্বস্ত কণ্ঠ",      "desc_en": "Others confirmed your reports 10 times",   "desc_bn": "অন্যরা ১০ বার আপনার রিপোর্ট নিশ্চিত করেছে" },
+    { "id": "confirmed_100",   "group": "community", "tier": "silver",   "emoji": "📣", "metric": "confirms_received", "threshold": 100,  "xp": 60,  "en": "Loud & Clear",    "bn": "স্পষ্ট আওয়াজ",       "desc_en": "Others confirmed your reports 100 times",  "desc_bn": "অন্যরা ১০০ বার আপনার রিপোর্ট নিশ্চিত করেছে" },
+    { "id": "confirmed_1000",  "group": "community", "tier": "gold",     "emoji": "🏆", "metric": "confirms_received", "threshold": 1000, "xp": 300, "en": "People's Choice", "bn": "জনতার পছন্দ",        "desc_en": "Others confirmed your reports 1,000 times","desc_bn": "অন্যরা ১,০০০ বার আপনার রিপোর্ট নিশ্চিত করেছে" },
+    { "id": "confirmer_10",    "group": "community", "tier": "bronze",   "emoji": "👍", "metric": "confirms_given",    "threshold": 10,   "xp": 10,  "en": "Good Neighbour",  "bn": "ভালো প্রতিবেশী",     "desc_en": "Confirm 10 reports from others",           "desc_bn": "অন্যদের ১০টি রিপোর্ট নিশ্চিত করুন" },
+    { "id": "confirmer_100",   "group": "community", "tier": "silver",   "emoji": "🫶", "metric": "confirms_given",    "threshold": 100,  "xp": 50,  "en": "Community Pillar","bn": "কমিউনিটির ভরসা",     "desc_en": "Confirm 100 reports from others",          "desc_bn": "অন্যদের ১০০টি রিপোর্ট নিশ্চিত করুন" },
+    { "id": "truth_keeper",    "group": "community", "tier": "silver",   "emoji": "⚖️", "metric": "accurate_flags",    "threshold": 5,    "xp": 40,  "en": "Truth Keeper",    "bn": "সত্যের রক্ষক",       "desc_en": "5 of your flags on false posts were upheld","desc_bn": "ভুল পোস্টে আপনার ৫টি অভিযোগ সঠিক প্রমাণিত" },
+    { "id": "followed_25",     "group": "community", "tier": "silver",   "emoji": "⭐", "metric": "followers",         "threshold": 25,   "xp": 40,  "en": "Followed",        "bn": "অনুসৃত",            "desc_en": "Get 25 followers",                         "desc_bn": "২৫ জন অনুসারী পান" },
+
+    { "id": "streak_3",        "group": "habit",     "tier": "bronze",   "emoji": "🔥", "metric": "streak", "threshold": 3,  "xp": 15,  "en": "On a Roll",        "bn": "ধারাবাহিক",          "desc_en": "Report 3 days in a row",                   "desc_bn": "টানা ৩ দিন রিপোর্ট করুন" },
+    { "id": "streak_7",        "group": "habit",     "tier": "silver",   "emoji": "📅", "metric": "streak", "threshold": 7,  "xp": 40,  "en": "Week Warrior",     "bn": "সপ্তাহের যোদ্ধা",     "desc_en": "Report 7 days in a row",                   "desc_bn": "টানা ৭ দিন রিপোর্ট করুন" },
+    { "id": "streak_30",       "group": "habit",     "tier": "gold",     "emoji": "💎", "metric": "streak", "threshold": 30, "xp": 200, "en": "Unstoppable",      "bn": "অদম্য",             "desc_en": "Report 30 days in a row",                  "desc_bn": "টানা ৩০ দিন রিপোর্ট করুন" },
+    { "id": "early_bird",      "group": "habit",     "tier": "bronze",   "emoji": "🌅", "metric": "early_bird", "threshold": 3, "xp": 15, "en": "Early Bird",     "bn": "ভোরের পাখি",         "desc_en": "Post 3 reports between 5 and 8 am",        "desc_bn": "ভোর ৫টা থেকে ৮টার মধ্যে ৩টি রিপোর্ট" },
+    { "id": "night_owl",       "group": "habit",     "tier": "bronze",   "emoji": "🦉", "metric": "night_owl",  "threshold": 3, "xp": 15, "en": "Night Watch",    "bn": "রাতের প্রহরী",        "desc_en": "Post 3 reports between 10 pm and 4 am",    "desc_bn": "রাত ১০টা থেকে ভোর ৪টার মধ্যে ৩টি রিপোর্ট" },
+
+    { "id": "areas_3",         "group": "explorer",  "tier": "bronze",   "emoji": "🗺️", "metric": "areas", "threshold": 3,  "xp": 15,  "en": "Wanderer",          "bn": "ভ্রমণকারী",          "desc_en": "Report in 3 different areas",              "desc_bn": "৩টি ভিন্ন এলাকায় রিপোর্ট করুন" },
+    { "id": "areas_10",        "group": "explorer",  "tier": "silver",   "emoji": "🚲", "metric": "areas", "threshold": 10, "xp": 50,  "en": "Explorer",          "bn": "অনুসন্ধানী",          "desc_en": "Report in 10 different areas",             "desc_bn": "১০টি ভিন্ন এলাকায় রিপোর্ট করুন" },
+    { "id": "areas_25",        "group": "explorer",  "tier": "gold",     "emoji": "🧳", "metric": "areas", "threshold": 25, "xp": 150, "en": "Nationwide",        "bn": "দেশজুড়ে",            "desc_en": "Report in 25 different areas",             "desc_bn": "২৫টি ভিন্ন এলাকায় রিপোর্ট করুন" },
+
+    { "id": "manhole_hunter",  "group": "specialist","tier": "silver",   "emoji": "🕳️", "metric": "category:open_manhole",  "threshold": 10, "xp": 50, "en": "Manhole Hunter",   "bn": "ম্যানহোল শিকারি",    "desc_en": "Report 10 open manholes",                  "desc_bn": "১০টি খোলা ম্যানহোল রিপোর্ট করুন" },
+    { "id": "pothole_patrol",  "group": "specialist","tier": "silver",   "emoji": "🚧", "metric": "category:road_damage",   "threshold": 10, "xp": 50, "en": "Pothole Patrol",   "bn": "গর্ত টহলদার",        "desc_en": "Report 10 broken roads",                   "desc_bn": "১০টি ভাঙা রাস্তা রিপোর্ট করুন" },
+    { "id": "flood_watcher",   "group": "specialist","tier": "silver",   "emoji": "🌊", "metric": "category:waterlogging",  "threshold": 10, "xp": 50, "en": "Flood Watcher",    "bn": "জলাবদ্ধতা পর্যবেক্ষক", "desc_en": "Report 10 waterlogging spots",            "desc_bn": "১০টি জলাবদ্ধতা রিপোর্ট করুন" },
+    { "id": "green_guardian",  "group": "specialist","tier": "silver",   "emoji": "🌳", "metric": "category:garbage",       "threshold": 10, "xp": 50, "en": "Green Guardian",   "bn": "সবুজ রক্ষক",         "desc_en": "Report 10 garbage dumping spots",          "desc_bn": "১০টি ময়লা ফেলার স্থান রিপোর্ট করুন" },
+    { "id": "light_bringer",   "group": "specialist","tier": "silver",   "emoji": "💡", "metric": "category:streetlight",   "threshold": 10, "xp": 50, "en": "Light Bringer",    "bn": "আলোর দূত",           "desc_en": "Report 10 broken streetlights",            "desc_bn": "১০টি নষ্ট স্ট্রিটলাইট রিপোর্ট করুন" },
+    { "id": "spark_spotter",   "group": "specialist","tier": "silver",   "emoji": "⚡", "metric": "category:exposed_wire",  "threshold": 5,  "xp": 50, "en": "Spark Spotter",    "bn": "বিপদ সংকেতদাতা",     "desc_en": "Report 5 exposed electric wires",          "desc_bn": "৫টি খোলা বিদ্যুতের তার রিপোর্ট করুন" },
+    { "id": "path_keeper",     "group": "specialist","tier": "silver",   "emoji": "🚶", "metric": "category:footpath",      "threshold": 10, "xp": 50, "en": "Path Keeper",      "bn": "ফুটপাত রক্ষক",        "desc_en": "Report 10 footpath encroachments",         "desc_bn": "১০টি ফুটপাত দখল রিপোর্ট করুন" },
+    { "id": "clean_air",       "group": "specialist","tier": "silver",   "emoji": "🌬️", "metric": "category:air_pollution", "threshold": 10, "xp": 50, "en": "Clean Air Ally",   "bn": "নির্মল বাতাসের বন্ধু", "desc_en": "Report 10 smoke or burning-waste cases",   "desc_bn": "১০টি ধোঁয়া/ময়লা পোড়ানো রিপোর্ট করুন" },
+
+    { "id": "founding_member", "group": "special",   "tier": "gold",     "emoji": "🎖️", "metric": "signup_rank_max", "threshold": 1000, "xp": 100, "en": "Founding Member", "bn": "প্রতিষ্ঠাতা সদস্য", "desc_en": "One of the first 1,000 verified citizens", "desc_bn": "প্রথম ১,০০০ যাচাইকৃত নাগরিকের একজন" },
+    { "id": "monsoon_sentinel","group": "special",   "tier": "gold",     "emoji": "☔", "metric": "monsoon", "threshold": 10, "xp": 100, "en": "Monsoon Sentinel", "bn": "বর্ষার প্রহরী",       "desc_en": "Report 10 waterlogging or drain issues in June–September", "desc_bn": "জুন–সেপ্টেম্বরে ১০টি জলাবদ্ধতা/ড্রেন রিপোর্ট" },
+    { "id": "all_rounder",     "group": "special",   "tier": "platinum", "emoji": "🎯", "metric": "distinct_categories", "threshold": 10, "xp": 200, "en": "All-Rounder",  "bn": "সব্যসাচী",            "desc_en": "Report issues in 10 different categories", "desc_bn": "১০টি ভিন্ন ক্যাটাগরিতে রিপোর্ট করুন" }
+  ]
+}

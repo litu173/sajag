@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "আপনি যে সমস্যাটি রিপোর্ট করছেন তার সরাসরি ছবি তুলতে সজাগ ক্যামেরা ব্যবহার করে।";
+"NSLocationWhenInUseUsageDescription" = "সজাগ প্রতিটি রিপোর্টে ঘটনার স্থান যুক্ত করে এবং আপনার আশেপাশের সমস্যা দেখায়।";
+"CFBundleDisplayName" = "সজাগ";

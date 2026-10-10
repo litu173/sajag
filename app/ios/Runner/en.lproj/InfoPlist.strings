@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Sajag uses the camera to take a live photo of the problem you are reporting.";
+"NSLocationWhenInUseUsageDescription" = "Sajag tags each report with where it happened and shows problems near you.";
+"CFBundleDisplayName" = "Sajag";

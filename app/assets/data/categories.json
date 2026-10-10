@@ -1,0 +1,19 @@
+[
+  { "id": "open_manhole",      "en": "Open manhole",            "bn": "খোলা ম্যানহোল",          "icon": "manhole",      "color": "#D62839", "severity": 3, "awareness": false },
+  { "id": "road_damage",       "en": "Broken road / pothole",   "bn": "ভাঙা রাস্তা / গর্ত",       "icon": "road",         "color": "#E76F51", "severity": 2, "awareness": false },
+  { "id": "waterlogging",      "en": "Waterlogging",            "bn": "জলাবদ্ধতা",              "icon": "water",        "color": "#1D7FD8", "severity": 2, "awareness": false },
+  { "id": "drain_blocked",     "en": "Blocked drain",           "bn": "ড্রেন বন্ধ",               "icon": "drain",        "color": "#3A6EA5", "severity": 2, "awareness": false },
+  { "id": "garbage",           "en": "Garbage dumping",         "bn": "যত্রতত্র ময়লা",           "icon": "trash",        "color": "#6A994E", "severity": 2, "awareness": true },
+  { "id": "exposed_wire",      "en": "Exposed electric wire",   "bn": "খোলা বিদ্যুতের তার",        "icon": "bolt",         "color": "#F4A261", "severity": 3, "awareness": false },
+  { "id": "streetlight",       "en": "Broken streetlight",      "bn": "নষ্ট স্ট্রিটলাইট",          "icon": "light",        "color": "#E9C46A", "severity": 1, "awareness": false },
+  { "id": "footpath",          "en": "Footpath encroachment",   "bn": "ফুটপাত দখল",              "icon": "walk",         "color": "#9C6644", "severity": 1, "awareness": true },
+  { "id": "illegal_parking",   "en": "Illegal parking",         "bn": "অবৈধ পার্কিং",             "icon": "parking",      "color": "#5E548E", "severity": 1, "awareness": true },
+  { "id": "traffic_signal",    "en": "Traffic signal problem",  "bn": "ট্রাফিক সিগন্যাল সমস্যা",    "icon": "traffic",      "color": "#C1121F", "severity": 2, "awareness": false },
+  { "id": "construction",      "en": "Construction material on road", "bn": "রাস্তায় নির্মাণসামগ্রী", "icon": "construction", "color": "#B08968", "severity": 2, "awareness": true },
+  { "id": "air_pollution",     "en": "Smoke / burning waste",   "bn": "ধোঁয়া / ময়লা পোড়ানো",      "icon": "smoke",        "color": "#6C757D", "severity": 2, "awareness": true },
+  { "id": "noise",             "en": "Noise pollution",         "bn": "শব্দ দূষণ",               "icon": "noise",        "color": "#8338EC", "severity": 1, "awareness": true },
+  { "id": "tree_cutting",      "en": "Illegal tree cutting",    "bn": "অবৈধ গাছ কাটা",           "icon": "tree",         "color": "#2D6A4F", "severity": 2, "awareness": true },
+  { "id": "water_supply",      "en": "Water pipe leak",         "bn": "পানির পাইপ ফাটা",          "icon": "tap",          "color": "#0096C7", "severity": 1, "awareness": false },
+  { "id": "sanitation",        "en": "Public toilet / sanitation", "bn": "গণশৌচাগার / স্যানিটেশন", "icon": "toilet",      "color": "#7F5539", "severity": 1, "awareness": false },
+  { "id": "other",             "en": "Other",                   "bn": "অন্যান্য",                 "icon": "other",        "color": "#495057", "severity": 1, "awareness": false }
+]

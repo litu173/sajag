@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 128">
+  <rect width="128" height="128" rx="28" fill="#0B7A57"/>
+  <g transform="translate(64 68) scale(0.1) translate(-512 -540)">
+    <path d="M512 880C430 776 252 612 252 430a260 260 0 1 1 520 0c0 182-178 346-260 450z" fill="#FFFFFF"/>
+    <circle cx="512" cy="430" r="132" fill="#F42A41"/>
+  </g>
+  <text x="152" y="88" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="76" font-weight="800" letter-spacing="-2" fill="#0B3B2C">Sajag</text>
+</svg>
