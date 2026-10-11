@@ -1,4 +1,4 @@
-import { ArrowRight, Camera, CheckCircle2, MapPin, Search, Send } from 'lucide-react';
+import { ArrowRight, Camera, CheckCircle2, Download, MapPin, Search, Send, ShieldCheck, Smartphone } from 'lucide-react';
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -6,6 +6,7 @@ import {
   categoryName,
   CategoryIcon,
   compact,
+  config,
   digits,
   district as findDistrict,
   districts,
@@ -110,6 +111,69 @@ export default function Home() {
                 <span>{t(key)}</span>
               </div>
             ))}
+          </Reveal>
+        </section>
+
+        {/* ---------------------------------------------------------------- how it works + app only */}
+        <section className="section" id="how">
+          <Reveal>
+            <SectionHead eyebrow="Sajag" title={t('howTitle')} />
+          </Reveal>
+          <Reveal className="app-only">
+            <span className="ic">
+              <Smartphone size={26} aria-hidden="true" />
+            </span>
+            <div>
+              <strong>{t('appOnlyTitle')}</strong>
+              <p>{t('appOnlyBody')}</p>
+            </div>
+            <div className="actions">
+              <a className="btn brand" href={config.downloads.android} download>
+                <Download size={16} aria-hidden="true" /> Android
+              </a>
+              <a className="btn ghost" href={config.downloads.ios} download>
+                <Download size={16} aria-hidden="true" /> iPhone
+              </a>
+            </div>
+          </Reveal>
+          <div className="how">
+            {(
+              [
+                [Download, 'step0Title', 'step0Body'],
+                [Camera, 'step1Title', 'step1Body'],
+                [Send, 'step2Title', 'step2Body'],
+                [MapPin, 'step3Title', 'step3Body'],
+              ] as const
+            ).map(([Icon, title, body], i) => (
+              <Reveal key={title} delay={i * 110} className="step">
+                <span className="n">
+                  <Icon size={24} />
+                </span>
+                <h3>{t(title)}</h3>
+                <p>{t(body)}</p>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- community rules (highlighted) */}
+        <section className="section rules-band-wrap">
+          <Reveal className="rules-band">
+            <div className="head">
+              <ShieldCheck size={30} aria-hidden="true" />
+              <div>
+                <span className="eyebrow">{t('communityRules')}</span>
+                <h2 className="display">{t('rulesBandTitle')}</h2>
+              </div>
+            </div>
+            <ul>
+              {(['rule2', 'rule3', 'rule7', 'rule6'] as const).map((k) => (
+                <li key={k}>{t(k)}</li>
+              ))}
+            </ul>
+            <Link to="/rules" className="btn light">
+              {t('readAllRules')} <ArrowRight size={16} aria-hidden="true" />
+            </Link>
           </Reveal>
         </section>
 
@@ -260,33 +324,6 @@ export default function Home() {
             </div>
           </section>
         )}
-
-        {/* ---------------------------------------------------------------- how it works */}
-        <section className="section">
-          <Reveal>
-            <SectionHead eyebrow="Sajag" title={t('howTitle')} />
-          </Reveal>
-          <div className="how">
-            {(
-              [
-                [Camera, 'step1Title', 'step1Body'],
-                [Send, 'step2Title', 'step2Body'],
-                [MapPin, 'step3Title', 'step3Body'],
-              ] as const
-            ).map(([Icon, title, body], i) => (
-              <Reveal key={title} delay={i * 110} className="step">
-                <span className="n">
-                  <Icon size={24} />
-                </span>
-                <h3>{t(title)}</h3>
-                <p>{t(body)}</p>
-              </Reveal>
-            ))}
-          </div>
-          <p className="rules-line">
-            {t('rulesShort')} <Link to="/rules">{t('communityRules')}</Link>
-          </p>
-        </section>
 
         {/* ---------------------------------------------------------------- app + leaderboard */}
         <section className="section">

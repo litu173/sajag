@@ -33,7 +33,11 @@ export default function Hero({ slides }: { slides: Report[] }) {
       last = now;
       const track = trackRef.current;
       if (track) {
-        const loop = track.scrollWidth / 2; // the photos are rendered twice for a seamless loop
+        // The photos are rendered twice. One loop is the distance from a photo to its own copy,
+        // so wrapping by exactly that is invisible (padding and gaps are accounted for).
+        const copy = track.children[items.length] as HTMLElement | undefined;
+        const first = track.children[0] as HTMLElement | undefined;
+        const loop = copy && first ? copy.offsetLeft - first.offsetLeft : 0;
         if (!m.dragging) {
           // Ease towards the target speed so boosts and drag releases feel smooth.
           m.velocity += (m.target - m.velocity) * Math.min(1, dt * 4);

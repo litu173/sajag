@@ -202,6 +202,12 @@ const strings = {
   rulesHowBody: { bn: 'প্রতিটি পোস্ট প্রকাশের আগে স্বয়ংক্রিয়ভাবে পরীক্ষা করা হয়। কোনো ব্যক্তি, রাজনীতি, তারকা বা ব্যক্তিগত স্বার্থের ইঙ্গিত থাকলে পোস্টটি আটকে মডারেটরের কাছে যায়। নিয়ম ভাঙলে পোস্ট বাতিল হয় এবং লেখক একটি সতর্কতা পান।', en: 'Every post is checked automatically before it goes public. Anything that points to a person, politics, a celebrity or personal gain is held for a moderator. If it breaks the rules it is rejected and the author gets a warning.' },
   platePrivate: { bn: 'নম্বরপ্লেট ও অন্য যেকোনো ব্যক্তিগত তথ্য কখনো প্রকাশ্যে দেখানো হয় না — শুধু ট্রাফিক বিভাগ দেখতে পায়, যাতে সজাগের মাধ্যমে কাউকে নিশানা বা আক্রমণ করা না যায়।', en: 'Number plates and any other personal details are never shown publicly — only the traffic division can see them, so no one can be targeted or attacked through Sajag.' },
   rule7: { bn: 'ব্যক্তিগত তথ্য — নাম, মুখ, ফোন নম্বর ও নম্বরপ্লেট — কখনো প্রকাশ্যে দেখানো হয় না। নম্বরপ্লেট যায় শুধু ট্রাফিক বিভাগের কাছে।', en: 'Personal details — names, faces, phone numbers and number plates — are never shown publicly. Plates go only to the traffic division.' },
+  appOnlyTitle: { bn: 'রিপোর্ট করা যায় শুধু সজাগ অ্যাপ থেকে', en: 'Reporting happens only in the Sajag app' },
+  appOnlyBody: { bn: 'এই ওয়েবসাইটে রিপোর্ট দেখা ও খোঁজা যায়, কিন্তু নতুন রিপোর্ট করা যায় না। সমস্যা বা ট্রাফিক আইন ভঙ্গের রিপোর্ট করতে অ্যাপটি ডাউনলোড করুন — মোবাইল ও এনআইডি দিয়ে যাচাই করে সরাসরি ছবি তুলে পোস্ট করুন।', en: 'This website is for viewing and searching reports — you can’t post from here. To report a hazard or a traffic violation, download the app, verify with your mobile number and NID, and post a live photo.' },
+  step0Title: { bn: 'অ্যাপ নিন', en: 'Get the app' },
+  step0Body: { bn: 'Android বা iPhone-এ সজাগ অ্যাপ ইনস্টল করে মোবাইল ও এনআইডি দিয়ে যাচাই করুন। পরিচয় কখনো প্রকাশ হয় না।', en: 'Install Sajag on Android or iPhone and verify with your mobile number and NID. Your identity is never shown.' },
+  rulesBandTitle: { bn: 'মানুষ নয়, সমস্যার কথা বলুন', en: 'Report problems, never people' },
+  readAllRules: { bn: 'সব নিয়ম পড়ুন', en: 'Read all the rules' },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type StringKey = keyof typeof strings;
