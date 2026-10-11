@@ -6,7 +6,6 @@ import {
   categoryName,
   CategoryIcon,
   compact,
-  config,
   digits,
   district as findDistrict,
   districts,
@@ -128,12 +127,10 @@ export default function Home() {
               <p>{t('appOnlyBody')}</p>
             </div>
             <div className="actions">
-              <a className="btn brand" href={config.downloads.android} download>
-                <Download size={16} aria-hidden="true" /> Android
-              </a>
-              <a className="btn ghost" href={config.downloads.ios} download>
-                <Download size={16} aria-hidden="true" /> iPhone
-              </a>
+              {/* Same button as the header: goes to the download section with install steps for both phones. */}
+              <button type="button" className="btn" onClick={() => scrollToId('download')}>
+                <Download size={16} aria-hidden="true" /> {t('getApp')}
+              </button>
             </div>
           </Reveal>
           <div className="how">
