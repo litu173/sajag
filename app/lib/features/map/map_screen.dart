@@ -168,33 +168,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Material(
-                      elevation: 2,
-                      borderRadius: BorderRadius.circular(16),
-                      color: Theme.of(context).colorScheme.surface,
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: SegmentedButton<int>(
-                          showSelectedIcon: false,
-                          style: const ButtonStyle(side: WidgetStatePropertyAll(BorderSide.none)),
-                          segments: [
-                            ButtonSegment(value: 1, label: Text(l.mapLast24h)),
-                            ButtonSegment(value: 7, label: Text(l.mapLast7d)),
-                            ButtonSegment(value: 30, label: Text(l.mapLast30d)),
-                          ],
-                          selected: {_days},
-                          onSelectionChanged: (s) {
-                            setState(() => _days = s.first);
-                            _updateQuery(_map.camera);
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: Align(
+                alignment: Alignment.topRight,
+                child: _RangeMenu(
+                  days: _days,
+                  onChanged: (d) {
+                    setState(() => _days = d);
+                    _updateQuery(_map.camera);
+                  },
+                ),
               ),
             ),
           ),
@@ -319,6 +301,66 @@ class _ClusterSheet extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// "Last 7 days ▾" — time range of the map, as a compact dropdown at the top right.
+class _RangeMenu extends StatelessWidget {
+  const _RangeMenu({required this.days, required this.onChanged});
+  final int days;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final options = {1: l.mapLast24h, 7: l.mapLast7d, 30: l.mapLast30d};
+    return PopupMenuButton<int>(
+      key: const Key('map-range'),
+      tooltip: options[days],
+      position: PopupMenuPosition.under,
+      offset: const Offset(0, 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      onSelected: onChanged,
+      itemBuilder: (_) => [
+        for (final e in options.entries)
+          PopupMenuItem(
+            value: e.key,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    e.value,
+                    style: TextStyle(
+                      fontWeight: e.key == days ? FontWeight.w600 : FontWeight.w400,
+                      color: e.key == days ? theme.colorScheme.primary : null,
+                    ),
+                  ),
+                ),
+                if (e.key == days) Icon(Icons.check_rounded, size: 18, color: theme.colorScheme.primary),
+              ],
+            ),
+          ),
+      ],
+      child: Material(
+        elevation: 3,
+        shadowColor: Colors.black26,
+        color: theme.colorScheme.surface,
+        shape: const StadiumBorder(),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.schedule_rounded, size: 18, color: theme.colorScheme.primary),
+              const SizedBox(width: 6),
+              Text(options[days]!, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary)),
+              Icon(Icons.expand_more_rounded, size: 20, color: theme.colorScheme.primary),
+            ],
+          ),
+        ),
       ),
     );
   }

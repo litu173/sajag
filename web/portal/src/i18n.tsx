@@ -208,6 +208,7 @@ const strings = {
   step0Body: { bn: 'Android বা iPhone-এ সজাগ অ্যাপ ইনস্টল করে মোবাইল ও এনআইডি দিয়ে যাচাই করুন। পরিচয় কখনো প্রকাশ হয় না।', en: 'Install Sajag on Android or iPhone and verify with your mobile number and NID. Your identity is never shown.' },
   rulesBandTitle: { bn: 'মানুষ নয়, সমস্যার কথা বলুন', en: 'Report problems, never people' },
   readAllRules: { bn: 'সব নিয়ম পড়ুন', en: 'Read all the rules' },
+  statActionRate: { bn: 'ব্যবস্থা নেওয়ার হার', en: 'Action rate' },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type StringKey = keyof typeof strings;

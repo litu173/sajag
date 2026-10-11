@@ -95,6 +95,23 @@ export default function TrafficPage() {
         </div>
       </section>
 
+      {/* Same stats row as the district pages, right under the banner. */}
+      <section className="stats district-stats" aria-live="polite">
+        {(
+          [
+            ['statReported90', stats?.total, (n: number) => compact(n, lang)],
+            ['statVerifying', stats?.verifying, (n: number) => compact(n, lang)],
+            ['statActioned', stats?.actioned, (n: number) => compact(n, lang)],
+            ['statActionRate', stats ? (stats.total ? Math.round((stats.actioned / stats.total) * 100) : 0) : undefined, (n: number) => `${digits(n, lang)}%`],
+          ] as const
+        ).map(([k, v, format]) => (
+          <div key={k}>
+            <strong>{v === undefined ? '—' : <CountUp value={v} format={format} />}</strong>
+            <span>{t(k)}</span>
+          </div>
+        ))}
+      </section>
+
       <section className="traffic-intro">
         <Reveal>
           <p className="lede">{t('trafficLede')}</p>
@@ -102,20 +119,6 @@ export default function TrafficPage() {
             <Lock size={16} aria-hidden="true" /> {t('platePrivate')}
           </p>
         </Reveal>
-        <div className="stats district-stats">
-          {(
-            [
-              ['statReported90', stats?.total],
-              ['statVerifying', stats?.verifying],
-              ['statActioned', stats?.actioned],
-            ] as const
-          ).map(([k, v]) => (
-            <div key={k}>
-              <strong>{v === undefined ? '—' : <CountUp value={v} format={(n) => compact(n, lang)} />}</strong>
-              <span>{t(k)}</span>
-            </div>
-          ))}
-        </div>
       </section>
 
       <section className="section" style={{ paddingTop: 'clamp(48px, 6vw, 80px)' }}>
