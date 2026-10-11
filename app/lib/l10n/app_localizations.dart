@@ -1484,12 +1484,6 @@ abstract class AppLocalizations {
   /// **'Change password'**
   String get changePassword;
 
-  /// No description provided for @passwordIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'Add a password to sign in without waiting for an SMS. First we\'ll send a code to {phone}.'**
-  String passwordIntro(String phone);
-
   /// No description provided for @newPassword.
   ///
   /// In en, this message translates to:
@@ -1844,29 +1838,11 @@ abstract class AppLocalizations {
   /// **'For your security, enter your password to continue.'**
   String get verifyPasswordBody;
 
-  /// No description provided for @verifyCodeBody.
-  ///
-  /// In en, this message translates to:
-  /// **'For your security, we’ll text a 6-digit code to {phone}.'**
-  String verifyCodeBody(String phone);
-
   /// No description provided for @currentPassword.
   ///
   /// In en, this message translates to:
   /// **'Current password'**
   String get currentPassword;
-
-  /// No description provided for @useCodeInstead.
-  ///
-  /// In en, this message translates to:
-  /// **'Use an SMS code instead'**
-  String get useCodeInstead;
-
-  /// No description provided for @usePasswordInstead.
-  ///
-  /// In en, this message translates to:
-  /// **'Use my password instead'**
-  String get usePasswordInstead;
 
   /// No description provided for @verifyContinue.
   ///
@@ -2185,6 +2161,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Personal details — names, faces, phone numbers and number plates — are never shown publicly. Plates go only to the traffic division, so no one can be targeted or attacked through Sajag.'**
   String get rule7;
+
+  /// No description provided for @createPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a password'**
+  String get createPasswordTitle;
+
+  /// No description provided for @createPasswordBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes to your mobile number, NID, date of birth or password are confirmed with your password. Set one now — at least 8 characters with a letter and a number.'**
+  String get createPasswordBody;
+
+  /// No description provided for @forgotPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot your password? Sign out and sign in again with your mobile number; for the next 10 minutes you can set a new one from here.'**
+  String get forgotPasswordHint;
+
+  /// No description provided for @setNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot it? Set a new password'**
+  String get setNewPassword;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -109,12 +109,14 @@ class SupabaseRepository implements SajagRepository {
   @override
   Future<void> verifyOtp(String phone, String code) => _guard(() async {
     await _db.auth.verifyOTP(type: OtpType.sms, phone: _e164(phone), token: code);
+    _signedInAt = DateTime.now();
     await _refreshStage();
   });
 
   @override
   Future<void> signInWithPassword(String phone, String password) => _guard(() async {
     await _db.auth.signInWithPassword(phone: _e164(phone), password: password);
+    _signedInAt = DateTime.now();
     await _refreshStage();
   });
 
@@ -127,7 +129,11 @@ class SupabaseRepository implements SajagRepository {
   });
 
   @override
-  Future<void> signOut() => _guard(() => _db.auth.signOut());
+  Future<void> signOut() => _guard(() async {
+    _verifiedAt = null;
+    _signedInAt = null;
+    await _db.auth.signOut();
+  });
 
   @override
   Future<AuthStage> refreshStage() => _refreshStage();
@@ -162,6 +168,11 @@ class SupabaseRepository implements SajagRepository {
       _guard(() => _db.auth.verifyOTP(type: OtpType.phoneChange, phone: _e164(newPhone), token: code));
 
   DateTime? _verifiedAt;
+  DateTime? _signedInAt;
+
+  @override
+  bool get recentlySignedIn =>
+      _signedInAt != null && DateTime.now().difference(_signedInAt!) < const Duration(minutes: 10);
 
   /// The signed-in user's phone in E.164 form (Supabase stores it without the "+").
   String get _currentPhone {
@@ -182,18 +193,17 @@ class SupabaseRepository implements SajagRepository {
   });
 
   @override
-  Future<void> sendVerificationCode() =>
-      _guard(() => _db.auth.signInWithOtp(phone: _currentPhone, shouldCreateUser: false));
-
-  @override
-  Future<void> verifyCode(String code) => _guard(() async {
-    await _db.auth.verifyOTP(type: OtpType.sms, phone: _currentPhone, token: code);
+  Future<void> createPassword(String password) => _guard(() async {
+    if ((await myAccount()).hasPassword) throw const SajagException(SajagErrorCode.reauthRequired);
+    await _db.auth.updateUser(UserAttributes(password: password));
+    // Signing in with it refreshes the session's sign-in time, which the server checks.
+    await _db.auth.signInWithPassword(phone: _currentPhone, password: password);
     _verifiedAt = DateTime.now();
   });
 
   @override
   Future<void> setPassword(String password) => _guard(() async {
-    if (!recentlyVerified) throw const SajagException(SajagErrorCode.reauthRequired);
+    if (!recentlyVerified && !recentlySignedIn) throw const SajagException(SajagErrorCode.reauthRequired);
     await _db.auth.updateUser(UserAttributes(password: password));
   });
 

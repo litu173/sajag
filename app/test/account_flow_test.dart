@@ -103,14 +103,15 @@ void main() {
     expect((await repo.myProfile()).alias, 'Quiet River');
     expect(find.textContaining('Quiet River'), findsWidgets);
 
-    // Changing the phone first asks the person to confirm it's them (no password yet → SMS code).
+    // Changing the phone first asks for the password (never an SMS code).
     await tester.tap(find.text('Mobile number'));
     await tester.pumpAndSettle();
-    expect(find.text('Confirm it’s you'), findsOneWidget);
+    // No password yet: create one first (that is the verification), then the editor opens.
+    expect(find.text('Create a password'), findsOneWidget);
     expect(find.text('Change mobile number'), findsNothing);
-    await tester.tap(find.byKey(const Key('verify-continue')));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '123456');
+    await tester.enterText(find.byType(TextField).at(0), 'river2026');
+    await tester.enterText(find.byType(TextField).at(1), 'river2026');
+    await tester.tap(find.byKey(const Key('create-password')));
     await tester.pumpAndSettle();
     expect(find.text('Change mobile number'), findsOneWidget, reason: 'verified, so the editor opens');
     await tester.tapAt(const Offset(20, 40)); // dismiss the sheet

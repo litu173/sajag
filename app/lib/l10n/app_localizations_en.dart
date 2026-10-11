@@ -782,11 +782,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changePassword => 'Change password';
 
   @override
-  String passwordIntro(String phone) {
-    return 'Add a password to sign in without waiting for an SMS. First we\'ll send a code to $phone.';
-  }
-
-  @override
   String get newPassword => 'New password';
 
   @override
@@ -969,18 +964,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verifyPasswordBody => 'For your security, enter your password to continue.';
 
   @override
-  String verifyCodeBody(String phone) {
-    return 'For your security, we’ll text a 6-digit code to $phone.';
-  }
-
-  @override
   String get currentPassword => 'Current password';
-
-  @override
-  String get useCodeInstead => 'Use an SMS code instead';
-
-  @override
-  String get usePasswordInstead => 'Use my password instead';
 
   @override
   String get verifyContinue => 'Verify and continue';
@@ -1151,4 +1135,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get rule7 =>
       'Personal details — names, faces, phone numbers and number plates — are never shown publicly. Plates go only to the traffic division, so no one can be targeted or attacked through Sajag.';
+
+  @override
+  String get createPasswordTitle => 'Create a password';
+
+  @override
+  String get createPasswordBody =>
+      'Changes to your mobile number, NID, date of birth or password are confirmed with your password. Set one now — at least 8 characters with a letter and a number.';
+
+  @override
+  String get forgotPasswordHint =>
+      'Forgot your password? Sign out and sign in again with your mobile number; for the next 10 minutes you can set a new one from here.';
+
+  @override
+  String get setNewPassword => 'Forgot it? Set a new password';
 }

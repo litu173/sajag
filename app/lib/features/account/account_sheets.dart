@@ -671,17 +671,21 @@ class _IdentitySheetState extends ConsumerState<IdentitySheet> {
 }
 
 // ================================================================ confirm it's you
-/// Asks for proof the person is present before a sensitive change. Skipped when they verified in
-/// the last few minutes. Returns true once verified.
+/// Asks for the password before a sensitive change (no SMS). Accounts without a password create
+/// one first, which also counts. Skipped when verified in the last few minutes. True once verified.
 Future<bool> ensureVerified(BuildContext context, WidgetRef ref, AccountInfo account) async {
   if (ref.read(repositoryProvider).recentlyVerified) return true;
-  final ok = await showAccountSheet<bool>(context, VerifySheet(account: account));
-  return ok ?? false;
+  if (!account.hasPassword) return await showAccountSheet<bool>(context, const CreatePasswordSheet()) ?? false;
+  final result = await showAccountSheet<String>(context, const VerifySheet());
+  if (result == 'reset' && context.mounted) {
+    // Forgot the password just after signing in: set a new one, then try the change again.
+    await showAccountSheet<void>(context, const PasswordSheet(hasPassword: true));
+  }
+  return result == 'ok';
 }
 
 class VerifySheet extends ConsumerStatefulWidget {
-  const VerifySheet({required this.account, super.key});
-  final AccountInfo account;
+  const VerifySheet({super.key});
 
   @override
   ConsumerState<VerifySheet> createState() => _VerifySheetState();
@@ -689,9 +693,6 @@ class VerifySheet extends ConsumerStatefulWidget {
 
 class _VerifySheetState extends ConsumerState<VerifySheet> {
   final _password = TextEditingController();
-  final _code = TextEditingController();
-  late bool _usePassword = widget.account.hasPassword;
-  bool _codeSent = false;
   bool _obscure = true;
   bool _busy = false;
   String? _error;
@@ -699,17 +700,18 @@ class _VerifySheetState extends ConsumerState<VerifySheet> {
   @override
   void dispose() {
     _password.dispose();
-    _code.dispose();
     super.dispose();
   }
 
-  Future<void> _run(Future<void> Function() body) async {
+  Future<void> _submit() async {
+    if (_password.text.isEmpty || _busy) return;
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      await body();
+      await ref.read(repositoryProvider).verifyPassword(_password.text);
+      if (mounted) Navigator.pop(context, 'ok');
     } catch (e) {
       if (mounted) setState(() => _error = errorMessage(context, e));
     } finally {
@@ -717,87 +719,150 @@ class _VerifySheetState extends ConsumerState<VerifySheet> {
     }
   }
 
-  Future<void> _submit() async {
-    final repo = ref.read(repositoryProvider);
-    if (_usePassword) {
-      if (_password.text.isEmpty) return;
-      await _run(() async {
-        await repo.verifyPassword(_password.text);
-        if (mounted) Navigator.pop(context, true);
-      });
-    } else if (!_codeSent) {
-      await _run(() async {
-        await repo.sendVerificationCode();
-        if (mounted) setState(() => _codeSent = true);
-      });
-    } else {
-      if (_code.text.length != 6) return;
-      await _run(() async {
-        await repo.verifyCode(_code.text);
-        if (mounted) Navigator.pop(context, true);
-      });
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return _SheetFrame(
+      title: l.verifyTitle,
+      subtitle: l.verifyPasswordBody,
+      action: FilledButton(
+        key: const Key('verify-continue'),
+        onPressed: _busy ? null : _submit,
+        child: BusyLabel(busy: _busy, label: l.verifyContinue),
+      ),
+      children: [
+        TextField(
+          key: const Key('verify-password'),
+          controller: _password,
+          autofocus: true,
+          obscureText: _obscure,
+          autofillHints: const [AutofillHints.password],
+          onSubmitted: (_) => _submit(),
+          onChanged: (_) => _error != null ? setState(() => _error = null) : null,
+          decoration: InputDecoration(
+            labelText: l.currentPassword,
+            prefixIcon: const Icon(Icons.lock_rounded),
+            errorText: _error,
+            errorMaxLines: 2,
+            suffixIcon: IconButton(
+              tooltip: _obscure ? l.showPassword : l.hidePassword,
+              onPressed: () => setState(() => _obscure = !_obscure),
+              icon: Icon(_obscure ? Icons.visibility_rounded : Icons.visibility_off_rounded),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (ref.read(repositoryProvider).recentlySignedIn)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const Key('reset-password'),
+              onPressed: () => Navigator.pop(context, 'reset'),
+              icon: const Icon(Icons.key_rounded, size: 18),
+              label: Text(l.setNewPassword),
+            ),
+          )
+        else
+          _Note(icon: Icons.help_outline_rounded, text: l.forgotPasswordHint),
+      ],
+    );
+  }
+}
+
+/// First password for an account that signs in with SMS codes only. Returns true when created.
+class CreatePasswordSheet extends ConsumerStatefulWidget {
+  const CreatePasswordSheet({super.key});
+
+  @override
+  ConsumerState<CreatePasswordSheet> createState() => _CreatePasswordSheetState();
+}
+
+class _CreatePasswordSheetState extends ConsumerState<CreatePasswordSheet> {
+  final _password = TextEditingController();
+  final _confirm = TextEditingController();
+  bool _obscure = true;
+  bool _busy = false;
+  bool _showErrors = false;
+
+  @override
+  void dispose() {
+    _password.dispose();
+    _confirm.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (!isStrongPassword(_password.text) || _password.text != _confirm.text) {
+      setState(() => _showErrors = true);
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await ref.read(repositoryProvider).createPassword(_password.text);
+      refreshMe(ref);
+      if (mounted) {
+        showMessage(context, context.l10n.passwordSaved);
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (mounted) showError(context, e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    final phone = formatPhone(context, widget.account.phone);
+    final toggle = IconButton(
+      tooltip: _obscure ? l.showPassword : l.hidePassword,
+      onPressed: () => setState(() => _obscure = !_obscure),
+      icon: Icon(_obscure ? Icons.visibility_rounded : Icons.visibility_off_rounded),
+    );
     return _SheetFrame(
-      title: l.verifyTitle,
-      subtitle: _usePassword ? l.verifyPasswordBody : (_codeSent ? l.codeSentTo(phone) : l.verifyCodeBody(phone)),
+      title: l.createPasswordTitle,
+      subtitle: l.createPasswordBody,
       action: FilledButton(
-        key: const Key('verify-continue'),
-        onPressed: _busy ? null : _submit,
-        child: BusyLabel(busy: _busy, label: !_usePassword && !_codeSent ? l.sendCode : l.verifyContinue),
+        key: const Key('create-password'),
+        onPressed: _busy ? null : _save,
+        child: BusyLabel(busy: _busy, label: l.saveChanges),
       ),
       children: [
-        if (_usePassword)
-          TextField(
-            controller: _password,
-            autofocus: true,
-            obscureText: _obscure,
-            autofillHints: const [AutofillHints.password],
-            onSubmitted: (_) => _submit(),
-            onChanged: (_) => _error != null ? setState(() => _error = null) : null,
-            decoration: InputDecoration(
-              labelText: l.currentPassword,
-              prefixIcon: const Icon(Icons.lock_rounded),
-              errorText: _error,
-              suffixIcon: IconButton(
-                tooltip: _obscure ? l.showPassword : l.hidePassword,
-                onPressed: () => setState(() => _obscure = !_obscure),
-                icon: Icon(_obscure ? Icons.visibility_rounded : Icons.visibility_off_rounded),
+        AutofillGroup(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _password,
+                autofocus: true,
+                obscureText: _obscure,
+                autofillHints: const [AutofillHints.newPassword],
+                onChanged: (_) => _showErrors ? setState(() {}) : null,
+                decoration: InputDecoration(
+                  labelText: l.newPassword,
+                  helperText: l.passwordRule,
+                  prefixIcon: const Icon(Icons.lock_rounded),
+                  suffixIcon: toggle,
+                  errorText: _showErrors && !isStrongPassword(_password.text) ? l.errWeakPassword : null,
+                  errorMaxLines: 2,
+                ),
               ),
-            ),
-          )
-        else if (_codeSent)
-          _CodeField(
-            controller: _code,
-            label: l.codeLabel,
-            error: _error,
-            onChanged: (v) => v.length == 6 ? _submit() : null,
-          )
-        else
-          _Note(
-            icon: Icons.shield_rounded,
-            text: _error ?? l.identityHint,
-            color: _error == null ? null : SajagColors.accent,
+              const SizedBox(height: 14),
+              TextField(
+                controller: _confirm,
+                obscureText: _obscure,
+                autofillHints: const [AutofillHints.newPassword],
+                onChanged: (_) => _showErrors ? setState(() {}) : null,
+                onSubmitted: (_) => _save(),
+                decoration: InputDecoration(
+                  labelText: l.confirmPassword,
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                  errorText: _showErrors && _password.text != _confirm.text ? l.passwordMismatch : null,
+                ),
+              ),
+            ],
           ),
-        if (widget.account.hasPassword)
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: _busy
-                  ? null
-                  : () => setState(() {
-                      _usePassword = !_usePassword;
-                      _error = null;
-                    }),
-              icon: Icon(_usePassword ? Icons.sms_rounded : Icons.password_rounded, size: 18),
-              label: Text(_usePassword ? l.useCodeInstead : l.usePasswordInstead),
-            ),
-          ),
+        ),
       ],
     );
   }

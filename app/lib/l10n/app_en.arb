@@ -429,14 +429,6 @@
   "passwordIsSet": "On · sign in with code or password",
   "setPassword": "Set password",
   "changePassword": "Change password",
-  "passwordIntro": "Add a password to sign in without waiting for an SMS. First we'll send a code to {phone}.",
-  "@passwordIntro": {
-    "placeholders": {
-      "phone": {
-        "type": "String"
-      }
-    }
-  },
   "newPassword": "New password",
   "confirmPassword": "Confirm password",
   "passwordMismatch": "Passwords don't match.",
@@ -510,17 +502,7 @@
   "themeDark": "Dark",
   "verifyTitle": "Confirm it’s you",
   "verifyPasswordBody": "For your security, enter your password to continue.",
-  "verifyCodeBody": "For your security, we’ll text a 6-digit code to {phone}.",
-  "@verifyCodeBody": {
-    "placeholders": {
-      "phone": {
-        "type": "String"
-      }
-    }
-  },
   "currentPassword": "Current password",
-  "useCodeInstead": "Use an SMS code instead",
-  "usePasswordInstead": "Use my password instead",
   "verifyContinue": "Verify and continue",
   "errReauthRequired": "Please confirm it’s you first.",
   "passwordChooseIntro": "Choose a password so you can sign in without waiting for an SMS.",
@@ -583,5 +565,9 @@
   "verifiedAction": "Verified",
   "verifyExplain": "Saw this too? Verify it so authorities know it’s real.",
   "moreActions": "More",
-  "rule7": "Personal details — names, faces, phone numbers and number plates — are never shown publicly. Plates go only to the traffic division, so no one can be targeted or attacked through Sajag."
+  "rule7": "Personal details — names, faces, phone numbers and number plates — are never shown publicly. Plates go only to the traffic division, so no one can be targeted or attacked through Sajag.",
+  "createPasswordTitle": "Create a password",
+  "createPasswordBody": "Changes to your mobile number, NID, date of birth or password are confirmed with your password. Set one now — at least 8 characters with a letter and a number.",
+  "forgotPasswordHint": "Forgot your password? Sign out and sign in again with your mobile number; for the next 10 minutes you can set a new one from here.",
+  "setNewPassword": "Forgot it? Set a new password"
 }

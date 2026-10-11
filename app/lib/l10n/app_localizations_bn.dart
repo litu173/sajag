@@ -776,11 +776,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String get changePassword => 'পাসওয়ার্ড পরিবর্তন করুন';
 
   @override
-  String passwordIntro(String phone) {
-    return 'এসএমএসের অপেক্ষা ছাড়াই সাইন ইন করতে পাসওয়ার্ড যোগ করুন। প্রথমে $phone নম্বরে একটি কোড পাঠাব।';
-  }
-
-  @override
   String get newPassword => 'নতুন পাসওয়ার্ড';
 
   @override
@@ -963,18 +958,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get verifyPasswordBody => 'নিরাপত্তার জন্য, চালিয়ে যেতে আপনার পাসওয়ার্ড দিন।';
 
   @override
-  String verifyCodeBody(String phone) {
-    return 'নিরাপত্তার জন্য, $phone নম্বরে ৬ সংখ্যার একটি কোড পাঠানো হবে।';
-  }
-
-  @override
   String get currentPassword => 'বর্তমান পাসওয়ার্ড';
-
-  @override
-  String get useCodeInstead => 'এর বদলে এসএমএস কোড ব্যবহার করুন';
-
-  @override
-  String get usePasswordInstead => 'এর বদলে পাসওয়ার্ড ব্যবহার করুন';
 
   @override
   String get verifyContinue => 'যাচাই করে এগিয়ে যান';
@@ -1144,4 +1128,18 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get rule7 =>
       'ব্যক্তিগত তথ্য — নাম, মুখ, ফোন নম্বর ও নম্বরপ্লেট — কখনো প্রকাশ্যে দেখানো হয় না। নম্বরপ্লেট যায় শুধু ট্রাফিক বিভাগের কাছে, যাতে সজাগের মাধ্যমে কাউকে নিশানা বা আক্রমণ করা না যায়।';
+
+  @override
+  String get createPasswordTitle => 'পাসওয়ার্ড তৈরি করুন';
+
+  @override
+  String get createPasswordBody =>
+      'মোবাইল নম্বর, এনআইডি, জন্মতারিখ বা পাসওয়ার্ড পরিবর্তন পাসওয়ার্ড দিয়ে নিশ্চিত করা হয়। এখনই একটি সেট করুন — অন্তত ৮ অক্ষর, একটি বর্ণ ও একটি সংখ্যাসহ।';
+
+  @override
+  String get forgotPasswordHint =>
+      'পাসওয়ার্ড ভুলে গেছেন? সাইন আউট করে মোবাইল নম্বর দিয়ে আবার সাইন ইন করুন; পরের ১০ মিনিটের মধ্যে এখান থেকে নতুন পাসওয়ার্ড দিতে পারবেন।';
+
+  @override
+  String get setNewPassword => 'ভুলে গেছেন? নতুন পাসওয়ার্ড দিন';
 }

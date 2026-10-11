@@ -155,7 +155,9 @@ class _Body extends ConsumerWidget {
               tint: const Color(0xFF2A9D8F),
               title: account.hasPassword ? l.changePassword : l.setPassword,
               subtitle: account.hasPassword ? l.passwordIsSet : l.passwordNotSet,
-              onTap: () => guarded(PasswordSheet(hasPassword: account.hasPassword)),
+              onTap: () => account.hasPassword
+                  ? guarded(PasswordSheet(hasPassword: account.hasPassword))
+                  : showAccountSheet<void>(context, const CreatePasswordSheet()),
             ),
           ],
         ),

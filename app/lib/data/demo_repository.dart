@@ -155,6 +155,7 @@ class DemoRepository implements SajagRepository {
       }
       await _prefs.setString(_kPhone, phone);
     }
+    _signedInAt = DateTime.now();
     _setStage(_prefs.getString(_kNid4) == null ? AuthStage.needsIdentity : AuthStage.ready);
   }
 
@@ -165,6 +166,7 @@ class DemoRepository implements SajagRepository {
     if (stored == null || _prefs.getString(_kPhone) != phone || stored != _hash(phone, password)) {
       throw const SajagException(SajagErrorCode.wrongPassword);
     }
+    _signedInAt = DateTime.now();
     _setStage(_prefs.getString(_kNid4) == null ? AuthStage.needsIdentity : AuthStage.ready);
   }
 
@@ -188,6 +190,8 @@ class DemoRepository implements SajagRepository {
 
   @override
   Future<void> signOut() async {
+    _verifiedAt = null;
+    _signedInAt = null;
     _setStage(AuthStage.signedOut);
   }
 
@@ -234,6 +238,11 @@ class DemoRepository implements SajagRepository {
   }
 
   DateTime? _verifiedAt;
+  DateTime? _signedInAt;
+
+  @override
+  bool get recentlySignedIn =>
+      _signedInAt != null && DateTime.now().difference(_signedInAt!) < const Duration(minutes: 10);
 
   @override
   bool get recentlyVerified =>
@@ -254,12 +263,11 @@ class DemoRepository implements SajagRepository {
   }
 
   @override
-  Future<void> sendVerificationCode() => _delay();
-
-  @override
-  Future<void> verifyCode(String code) async {
+  Future<void> createPassword(String password) async {
     await _delay();
-    if (code != AppConfig.demoOtp) throw const SajagException(SajagErrorCode.invalidOtp);
+    if (_prefs.getString(_kPassword) != null) throw const SajagException(SajagErrorCode.reauthRequired);
+    if (!isStrongPassword(password)) throw const SajagException(SajagErrorCode.weakPassword);
+    await _prefs.setString(_kPassword, _hash(_prefs.getString(_kPhone) ?? '', password));
     _verifiedAt = DateTime.now();
   }
 
@@ -281,7 +289,7 @@ class DemoRepository implements SajagRepository {
   @override
   Future<void> setPassword(String password) async {
     await _delay();
-    _requireVerified();
+    if (!recentlySignedIn) _requireVerified();
     if (!isStrongPassword(password)) throw const SajagException(SajagErrorCode.weakPassword);
     await _prefs.setString(_kPassword, _hash(_prefs.getString(_kPhone) ?? '', password));
   }
