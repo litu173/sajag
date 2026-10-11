@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/widgets/entrance.dart';
 import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
@@ -15,21 +16,6 @@ final leaderboardProvider = FutureProvider.autoDispose.family<List<LeaderboardEn
   (ref, period) => ref.watch(repositoryProvider).leaderboard(period),
 );
 
-/// Period shown on the achievements page (leaderboard ranking and "earned in period" count).
-class PeriodNotifier extends Notifier<LeaderboardPeriod> {
-  @override
-  LeaderboardPeriod build() => LeaderboardPeriod.week;
-  void set(LeaderboardPeriod p) => state = p;
-}
-
-final achievementsPeriodProvider = NotifierProvider<PeriodNotifier, LeaderboardPeriod>(PeriodNotifier.new);
-
-String periodLabel(BuildContext context, LeaderboardPeriod p) => switch (p) {
-  LeaderboardPeriod.week => context.l10n.periodWeek,
-  LeaderboardPeriod.month => context.l10n.periodMonth,
-  LeaderboardPeriod.all => context.l10n.periodAll,
-};
-
 class AchievementsScreen extends StatelessWidget {
   const AchievementsScreen({super.key});
 
@@ -41,57 +27,9 @@ class AchievementsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l.achievementsTitle),
-          actions: const [_PeriodMenu(), SizedBox(width: 12)],
           bottom: PillTabBar(labels: [l.tabBadges, l.tabLeaderboard]),
         ),
-        body: const TabBarView(children: [_BadgesTab(), _LeaderboardTab()]),
-      ),
-    );
-  }
-}
-
-/// "This week ▾" dropdown beside the page title.
-class _PeriodMenu extends ConsumerWidget {
-  const _PeriodMenu();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final period = ref.watch(achievementsPeriodProvider);
-    return PopupMenuButton<LeaderboardPeriod>(
-      initialValue: period,
-      position: PopupMenuPosition.under,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      onSelected: ref.read(achievementsPeriodProvider.notifier).set,
-      itemBuilder: (_) => [
-        for (final p in LeaderboardPeriod.values)
-          PopupMenuItem(
-            value: p,
-            child: Row(
-              children: [
-                Expanded(child: Text(periodLabel(context, p))),
-                if (p == period) Icon(Icons.check_rounded, size: 18, color: theme.colorScheme.primary),
-              ],
-            ),
-          ),
-      ],
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
-        decoration: BoxDecoration(
-          color: theme.cardTheme.color,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: SajagColors.softShadow(theme.brightness),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              periodLabel(context, period),
-              style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
-            ),
-            Icon(Icons.expand_more_rounded, size: 20, color: theme.colorScheme.primary),
-          ],
-        ),
+        body: const PageEntrance(child: TabBarView(children: [_BadgesTab(), _LeaderboardTab()])),
       ),
     );
   }
@@ -107,13 +45,6 @@ class _BadgesTab extends ConsumerWidget {
     final earnedList = ref.watch(myBadgesProvider).value ?? const <EarnedBadge>[];
     final earned = {for (final b in earnedList) b.badgeId};
     final catalog = ref.watch(catalogProvider);
-    final period = ref.watch(achievementsPeriodProvider);
-    final since = switch (period) {
-      LeaderboardPeriod.week => DateTime.now().subtract(const Duration(days: 7)),
-      LeaderboardPeriod.month => DateTime.now().subtract(const Duration(days: 30)),
-      LeaderboardPeriod.all => DateTime(2000),
-    };
-    final earnedInPeriod = earnedList.where((b) => b.awardedAt.isAfter(since)).length;
 
     return profile.when(
       loading: () => const _BadgesSkeleton(),
@@ -134,11 +65,6 @@ class _BadgesTab extends ConsumerWidget {
                       Text(
                         localDigits(context, context.l10n.badgesEarned(earned.length, catalog.badges.length)),
                         style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        localDigits(context, context.l10n.earnedInPeriod(earnedInPeriod, periodLabel(context, period))),
-                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
                   ),
@@ -443,7 +369,7 @@ class _LeaderboardTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final theme = Theme.of(context);
-    final period = ref.watch(achievementsPeriodProvider);
+    const period = LeaderboardPeriod.all;
     final board = ref.watch(leaderboardProvider(period));
 
     return Column(

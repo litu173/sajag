@@ -85,3 +85,51 @@ describe('admin (demo)', () => {
     await adminSource.signOut();
   });
 });
+
+describe('districts', () => {
+  it('has 64 districts in 8 divisions', async () => {
+    const { districts, divisions } = await import('./districts');
+    expect(districts).toHaveLength(64);
+    expect(divisions).toHaveLength(8);
+    expect(new Set(districts.map((d) => d.division)).size).toBe(8);
+  });
+
+  it('nearest district headquarters', async () => {
+    const { nearestDistrict, matchesDistrict, district } = await import('./districts');
+    expect(nearestDistrict(22.36, 91.8).id).toBe('chattogram');
+    expect(nearestDistrict(25.75, 89.25).id).toBe('rangpur');
+    expect(matchesDistrict(district('jashore')!, 'যশোর')).toBe(true);
+    expect(matchesDistrict(district('jashore')!, 'khulna')).toBe(true); // by division
+    expect(matchesDistrict(district('jashore')!, 'sylhet')).toBe(false);
+  });
+});
+
+describe('district search (demo source)', () => {
+  it('filters by district, status, text and pages results', async () => {
+    const { portalSource } = await import('./portal-source');
+    const all = await portalSource.search({ districtId: 'dhaka', limit: 1000 });
+    expect(all.total).toBeGreaterThan(50);
+    expect(all.items.every((r) => r.districtId === 'dhaka')).toBe(true);
+
+    const solved = await portalSource.search({ districtId: 'dhaka', status: 'resolved', limit: 1000 });
+    expect(solved.items.every((r) => r.status === 'resolved')).toBe(true);
+    expect(solved.total).toBeLessThan(all.total);
+
+    const text = await portalSource.search({ districtId: 'dhaka', text: 'manhole', limit: 1000 });
+    expect(text.items.every((r) => /manhole|ম্যানহোল/i.test(r.description) || /manhole/i.test(r.areaName ?? ''))).toBe(true);
+
+    const page = await portalSource.search({ districtId: 'dhaka', limit: 5, offset: 5 });
+    expect(page.items).toHaveLength(5);
+    expect(page.items[0]!.id).toBe(all.items[5]!.id);
+  });
+
+  it('summarises a district', async () => {
+    const { portalSource } = await import('./portal-source');
+    const s = await portalSource.districtStats('rajshahi');
+    expect(s.total).toBeGreaterThan(0);
+    expect(s.open + s.resolved).toBeLessThanOrEqual(s.total);
+    expect(s.areas[0]!.area).toBe('Shaheb Bazar');
+    const summary = await portalSource.districtSummary();
+    expect(summary.find((x) => x.districtId === 'rajshahi')!.total).toBe(s.total);
+  });
+});

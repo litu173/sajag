@@ -242,6 +242,7 @@ class NewReport {
     this.address,
     this.areaName,
     this.city,
+    this.districtId,
   });
 
   final String photoPath;
@@ -255,6 +256,7 @@ class NewReport {
   final String? address;
   final String? areaName;
   final String? city;
+  final String? districtId;
 }
 
 class Profile {
@@ -504,6 +506,7 @@ enum SajagErrorCode {
   phoneTaken,
   weakPassword,
   wrongPassword,
+  reauthRequired,
   network,
   unknown,
 }

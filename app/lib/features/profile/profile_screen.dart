@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/widgets/entrance.dart';
 import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
@@ -13,8 +14,6 @@ import '../../core/widgets/settings.dart';
 import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
-import '../account/account_screen.dart';
-import '../account/account_sheets.dart';
 import '../shell/home_shell.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -28,58 +27,60 @@ class ProfileScreen extends ConsumerWidget {
     final reports = ref.watch(myReportsProvider);
 
     return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: () async => refreshMe(ref),
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 12, 20, navClearance(context)),
-          children: [
-            profile.when(
-              loading: () => const HeroSkeleton(),
-              error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(myProfileProvider)),
-              data: (p) => _ProfileHero(profile: p),
-            ),
-            const SizedBox(height: 32),
-            SectionTitle(l.myReports),
-            const SizedBox(height: 14),
-            reports.when(
-              loading: () => Shimmer(
-                child: SizedBox(
-                  height: 150,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: 4,
-                    separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    itemBuilder: (_, _) => const SkeletonBox(width: 112, height: 150, radius: 20),
+      body: PageEntrance(
+        child: RefreshIndicator(
+          onRefresh: () async => refreshMe(ref),
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 12, 20, navClearance(context)),
+            children: [
+              profile.when(
+                loading: () => const HeroSkeleton(),
+                error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(myProfileProvider)),
+                data: (p) => _ProfileHero(profile: p),
+              ),
+              const SizedBox(height: 32),
+              SectionTitle(l.myReports),
+              const SizedBox(height: 14),
+              reports.when(
+                loading: () => Shimmer(
+                  child: SizedBox(
+                    height: 150,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: 4,
+                      separatorBuilder: (_, _) => const SizedBox(width: 12),
+                      itemBuilder: (_, _) => const SkeletonBox(width: 112, height: 150, radius: 20),
+                    ),
                   ),
                 ),
+                error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(myReportsProvider)),
+                data: (list) => list.isEmpty ? const _NoReports() : _ReportStrip(reports: list),
               ),
-              error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(myReportsProvider)),
-              data: (list) => list.isEmpty ? const _NoReports() : _ReportStrip(reports: list),
-            ),
-            const SizedBox(height: 32),
-            SectionTitle(l.preferences),
-            const SizedBox(height: 14),
-            const _Preferences(),
-            const SizedBox(height: 32),
-            SectionTitle(l.helpInfo),
-            const SizedBox(height: 14),
-            const _HelpInfo(),
-            const SizedBox(height: 18),
-            SettingsGroup(
-              children: [
-                SettingsRow(
-                  icon: Icons.logout_rounded,
-                  tint: SajagColors.accent,
-                  title: l.signOut,
-                  titleColor: SajagColors.accent,
-                  onTap: () => _signOut(context, ref),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Center(child: Text('Sajag · সজাগ', style: theme.textTheme.bodySmall)),
-          ],
+              const SizedBox(height: 32),
+              SectionTitle(l.preferences),
+              const SizedBox(height: 14),
+              const _Preferences(),
+              const SizedBox(height: 32),
+              SectionTitle(l.helpInfo),
+              const SizedBox(height: 14),
+              const _HelpInfo(),
+              const SizedBox(height: 18),
+              SettingsGroup(
+                children: [
+                  SettingsRow(
+                    icon: Icons.logout_rounded,
+                    tint: SajagColors.accent,
+                    title: l.signOut,
+                    titleColor: SajagColors.accent,
+                    onTap: () => _signOut(context, ref),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Center(child: Text('Sajag · সজাগ', style: theme.textTheme.bodySmall)),
+            ],
+          ),
         ),
       ),
     );
@@ -164,45 +165,24 @@ class _ProfileHero extends ConsumerWidget {
                           color: const Color(0xFFF0CF95),
                         ),
                       ),
-                      EditableAvatar(
-                        profile: profile,
-                        ring: Colors.white.withValues(alpha: 0.9),
-                        onTap: () => showAccountSheet<void>(context, EmojiAvatarSheet(profile: profile)),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.9)),
+                        child: AliasAvatar(
+                          alias: profile.alias,
+                          seed: profile.avatarSeed,
+                          emoji: profile.avatarEmoji,
+                          size: 84,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                Semantics(
-                  button: true,
-                  hint: l.changeAlias,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () => showAccountSheet<void>(
-                      context,
-                      AliasSheet(
-                        current: profile.alias,
-                        lockedUntil: ref.read(myAccountProvider).value?.aliasLockedUntil,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              profile.alias,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(Icons.edit_rounded, size: 17, color: Colors.white.withValues(alpha: 0.7)),
-                        ],
-                      ),
-                    ),
-                  ),
+                Text(
+                  profile.alias,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 10),
                 Wrap(
@@ -438,16 +418,7 @@ class _Preferences extends ConsumerWidget {
           icon: Icons.contrast_rounded,
           tint: const Color(0xFF5A4FCF),
           title: l.appearance,
-          trailing: PillToggle<ThemeMode>(
-            value: settings.themeMode,
-            options: {ThemeMode.system: l.themeSystem, ThemeMode.light: l.themeLight, ThemeMode.dark: l.themeDark},
-            icons: const {
-              ThemeMode.system: Icons.brightness_auto_rounded,
-              ThemeMode.light: Icons.light_mode_rounded,
-              ThemeMode.dark: Icons.dark_mode_rounded,
-            },
-            onChanged: notifier.setThemeMode,
-          ),
+          trailing: _ThemeMenu(value: settings.themeMode, onChanged: notifier.setThemeMode),
         ),
         SettingsRow(
           icon: Icons.format_size_rounded,
@@ -462,6 +433,71 @@ class _Preferences extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Auto / Light / Dark as a compact dropdown at the end of the row.
+class _ThemeMenu extends StatelessWidget {
+  const _ThemeMenu({required this.value, required this.onChanged});
+  final ThemeMode value;
+  final ValueChanged<ThemeMode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final options = [
+      (ThemeMode.system, Icons.brightness_auto_rounded, l.themeSystem),
+      (ThemeMode.light, Icons.light_mode_rounded, l.themeLight),
+      (ThemeMode.dark, Icons.dark_mode_rounded, l.themeDark),
+    ];
+    final current = options.firstWhere((o) => o.$1 == value);
+    return PopupMenuButton<ThemeMode>(
+      key: const Key('theme-menu'),
+      tooltip: l.appearance,
+      position: PopupMenuPosition.under,
+      offset: const Offset(0, 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      onSelected: onChanged,
+      itemBuilder: (_) => [
+        for (final (mode, icon, label) in options)
+          PopupMenuItem(
+            value: mode,
+            child: Row(
+              children: [
+                Icon(icon, size: 20, color: mode == value ? theme.colorScheme.primary : null),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontWeight: mode == value ? FontWeight.w600 : FontWeight.w400,
+                      color: mode == value ? theme.colorScheme.primary : null,
+                    ),
+                  ),
+                ),
+                if (mode == value) Icon(Icons.check_rounded, size: 18, color: theme.colorScheme.primary),
+              ],
+            ),
+          ),
+      ],
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 7, 8, 7),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(current.$2, size: 17, color: theme.colorScheme.primary),
+            const SizedBox(width: 6),
+            Text(current.$3, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary)),
+            Icon(Icons.expand_more_rounded, size: 20, color: theme.colorScheme.primary),
+          ],
+        ),
+      ),
     );
   }
 }

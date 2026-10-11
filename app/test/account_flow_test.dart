@@ -61,9 +61,9 @@ void main() {
     // Theme: Preferences → Appearance → Dark.
     await tester.ensureVisible(find.text('Appearance'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byIcon(Icons.dark_mode_rounded));
+    await tester.tap(find.byKey(const Key('theme-menu')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.dark_mode_rounded));
+    await tester.tap(find.text('Dark').last);
     await tester.pumpAndSettle();
     expect(Theme.of(tester.element(find.text('Appearance'))).brightness, Brightness.dark);
     expect(prefs.getString('settings.theme'), 'dark');
@@ -102,6 +102,19 @@ void main() {
     await tester.pumpAndSettle();
     expect((await repo.myProfile()).alias, 'Quiet River');
     expect(find.textContaining('Quiet River'), findsWidgets);
+
+    // Changing the phone first asks the person to confirm it's them (no password yet → SMS code).
+    await tester.tap(find.text('Mobile number'));
+    await tester.pumpAndSettle();
+    expect(find.text('Confirm it’s you'), findsOneWidget);
+    expect(find.text('Change mobile number'), findsNothing);
+    await tester.tap(find.byKey(const Key('verify-continue')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '123456');
+    await tester.pumpAndSettle();
+    expect(find.text('Change mobile number'), findsOneWidget, reason: 'verified, so the editor opens');
+    await tester.tapAt(const Offset(20, 40)); // dismiss the sheet
+    await tester.pumpAndSettle();
 
     // Delete account needs DELETE typed.
     await tester.dragUntilVisible(find.text('Delete account'), find.byType(Scrollable).first, const Offset(0, -200));

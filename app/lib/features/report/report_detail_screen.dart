@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/widgets/entrance.dart';
 import '../../core/config.dart';
 import '../../core/format.dart';
 import '../../core/providers.dart';
@@ -135,161 +136,166 @@ class _Detail extends ConsumerWidget {
     final count = report.confirmCount + confirmations.delta(report.id);
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: MediaQuery.sizeOf(context).width * 0.75,
-            leading: Padding(
-              padding: const EdgeInsets.all(6),
-              child: IconButton(
-                style: _overPhoto,
-                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: const Icon(Icons.arrow_back),
-              ),
-            ),
-            actions: [
-              IconButton(
-                style: _overPhoto,
-                tooltip: l.share,
-                onPressed: () => shareReport(context, ref, report),
-                icon: const Icon(Icons.share_outlined),
-              ),
-              const SizedBox(width: 4),
-              if (mine)
-                IconButton(
+      body: PageEntrance(
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              expandedHeight: MediaQuery.sizeOf(context).width * 0.75,
+              leading: Padding(
+                padding: const EdgeInsets.all(6),
+                child: IconButton(
                   style: _overPhoto,
-                  tooltip: l.deleteReport,
-                  onPressed: () => _delete(context, ref),
-                  icon: const Icon(Icons.delete_outline),
-                )
-              else
-                IconButton(
-                  style: _overPhoto,
-                  tooltip: l.flagReport,
-                  onPressed: () => flagReport(context, ref, report),
-                  icon: const Icon(Icons.outlined_flag),
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Icons.arrow_back),
                 ),
-              const SizedBox(width: 8),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: GestureDetector(
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    fullscreenDialog: true,
-                    builder: (_) => Scaffold(
-                      backgroundColor: Colors.black,
-                      appBar: AppBar(backgroundColor: Colors.black, foregroundColor: Colors.white),
-                      body: InteractiveViewer(
-                        maxScale: 5,
-                        child: Center(
-                          child: ReportPhoto(report: report, category: category),
+              ),
+              actions: [
+                IconButton(
+                  style: _overPhoto,
+                  tooltip: l.share,
+                  onPressed: () => shareReport(context, ref, report),
+                  icon: const Icon(Icons.share_outlined),
+                ),
+                const SizedBox(width: 4),
+                if (mine)
+                  IconButton(
+                    style: _overPhoto,
+                    tooltip: l.deleteReport,
+                    onPressed: () => _delete(context, ref),
+                    icon: const Icon(Icons.delete_outline),
+                  )
+                else
+                  IconButton(
+                    style: _overPhoto,
+                    tooltip: l.flagReport,
+                    onPressed: () => flagReport(context, ref, report),
+                    icon: const Icon(Icons.outlined_flag),
+                  ),
+                const SizedBox(width: 8),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: GestureDetector(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      fullscreenDialog: true,
+                      builder: (_) => Scaffold(
+                        backgroundColor: Colors.black,
+                        appBar: AppBar(backgroundColor: Colors.black, foregroundColor: Colors.white),
+                        body: InteractiveViewer(
+                          maxScale: 5,
+                          child: Center(
+                            child: ReportPhoto(report: report, category: category),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                child: Hero(
-                  tag: 'photo-${report.id}',
-                  child: ReportPhoto(report: report, category: category, iconSize: 72),
+                  child: Hero(
+                    tag: 'photo-${report.id}',
+                    child: ReportPhoto(report: report, category: category, iconSize: 72),
+                  ),
                 ),
               ),
             ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-            sliver: SliverList.list(
-              children: [
-                Wrap(spacing: 8, runSpacing: 8, children: [CategoryChip(category), StatusChip(report.status)]),
-                const SizedBox(height: 14),
-                Text(report.description, style: theme.textTheme.titleLarge?.copyWith(height: 1.35)),
-                const SizedBox(height: 10),
-                Text(
-                  [
-                    if (report.areaName != null || report.city != null)
-                      ref.watch(catalogProvider).place(context, report),
-                    timeAgo(context, report.createdAt),
-                  ].join(' · '),
-                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: AuthorLine(report: report)),
-                    if (report.aliasId != null && !mine) _FollowButton(aliasId: report.aliasId!),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+              sliver: SliverList.list(
+                children: [
+                  Wrap(spacing: 8, runSpacing: 8, children: [CategoryChip(category), StatusChip(report.status)]),
+                  const SizedBox(height: 14),
+                  Text(report.description, style: theme.textTheme.titleLarge?.copyWith(height: 1.35)),
+                  const SizedBox(height: 10),
+                  Text(
+                    [
+                      if (report.areaName != null || report.city != null)
+                        ref.watch(catalogProvider).place(context, report),
+                      timeAgo(context, report.createdAt),
+                    ].join(' · '),
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(child: AuthorLine(report: report)),
+                      if (report.aliasId != null && !mine) _FollowButton(aliasId: report.aliasId!),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (!mine) ...[
+                    SizedBox(height: 56, child: ConfirmButton(report: report, expanded: true)),
+                    const SizedBox(height: 6),
                   ],
-                ),
-                const SizedBox(height: 16),
-                if (!mine) ...[
-                  SizedBox(height: 56, child: ConfirmButton(report: report, expanded: true)),
-                  const SizedBox(height: 6),
-                ],
-                Text(
-                  localDigits(context, l.confirmations(count)),
-                  textAlign: mine ? TextAlign.start : TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                ),
-                const SizedBox(height: 24),
-                _StatusTimeline(report: report),
-                if (solvedIn != null) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: SajagColors.resolved.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check_circle, color: SajagColors.resolved, size: 28),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(solvedIn, style: theme.textTheme.titleMedium),
-                              Text(
-                                report.resolvedBy == 'reporter' ? l.markedByReporter : l.markedByModerator,
-                                style: theme.textTheme.bodySmall,
-                              ),
-                            ],
+                  Text(
+                    localDigits(context, l.confirmations(count)),
+                    textAlign: mine ? TextAlign.start : TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 24),
+                  _StatusTimeline(report: report),
+                  if (solvedIn != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: SajagColors.resolved.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle, color: SajagColors.resolved, size: 28),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(solvedIn, style: theme.textTheme.titleMedium),
+                                Text(
+                                  report.resolvedBy == 'reporter' ? l.markedByReporter : l.markedByModerator,
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-                if (mine && report.canBeMarkedSolved) ...[
+                  ],
+                  if (mine && report.canBeMarkedSolved) ...[
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: SajagColors.resolved,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () => _markSolved(context, ref),
+                      icon: const Icon(Icons.task_alt),
+                      label: Text(l.markSolved),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  Text(l.locationLabel, style: theme.textTheme.titleMedium),
                   const SizedBox(height: 12),
-                  FilledButton.icon(
-                    style: FilledButton.styleFrom(backgroundColor: SajagColors.resolved, foregroundColor: Colors.white),
-                    onPressed: () => _markSolved(context, ref),
-                    icon: const Icon(Icons.task_alt),
-                    label: Text(l.markSolved),
-                  ),
-                ],
-                const SizedBox(height: 24),
-                Text(l.locationLabel, style: theme.textTheme.titleMedium),
-                const SizedBox(height: 12),
-                _MiniMap(report: report, color: category.color),
-                if (report.address != null) ...[
+                  _MiniMap(report: report, color: category.color),
+                  if (report.address != null) ...[
+                    const SizedBox(height: 8),
+                    Text(report.address!, style: theme.textTheme.bodySmall),
+                  ],
                   const SizedBox(height: 8),
-                  Text(report.address!, style: theme.textTheme.bodySmall),
-                ],
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  onPressed: () => launchUrl(
-                    Uri.parse('https://www.google.com/maps/search/?api=1&query=${report.lat},${report.lng}'),
-                    mode: LaunchMode.externalApplication,
+                  OutlinedButton.icon(
+                    onPressed: () => launchUrl(
+                      Uri.parse('https://www.google.com/maps/search/?api=1&query=${report.lat},${report.lng}'),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    icon: const Icon(Icons.directions),
+                    label: Text(l.openInMaps),
                   ),
-                  icon: const Icon(Icons.directions),
-                  label: Text(l.openInMaps),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

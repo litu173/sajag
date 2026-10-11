@@ -34,28 +34,42 @@ const rand = rng(20261010);
 const pick = (a) => a[Math.floor(rand() * a.length)];
 
 const areas = [
-  ['Dhanmondi', 'ধানমন্ডি', 23.7465, 90.376, 'Dhaka', 3],
-  ['Mirpur 10', 'মিরপুর ১০', 23.8069, 90.3687, 'Dhaka', 3],
-  ['Gulshan 1', 'গুলশান ১', 23.7808, 90.4161, 'Dhaka', 2],
-  ['Banani', 'বনানী', 23.7937, 90.4066, 'Dhaka', 1],
-  ['Mohammadpur', 'মোহাম্মদপুর', 23.7662, 90.3589, 'Dhaka', 3],
-  ['Uttara Sector 7', 'উত্তরা সেক্টর ৭', 23.8759, 90.3795, 'Dhaka', 2],
-  ['Motijheel', 'মতিঝিল', 23.733, 90.4172, 'Dhaka', 2],
-  ['Lalbagh', 'লালবাগ', 23.7189, 90.3883, 'Dhaka', 3],
-  ['Farmgate', 'ফার্মগেট', 23.7577, 90.3894, 'Dhaka', 3],
-  ['Badda', 'বাড্ডা', 23.7806, 90.4265, 'Dhaka', 3],
-  ['Jatrabari', 'যাত্রাবাড়ী', 23.7104, 90.4349, 'Dhaka', 3],
-  ['Rampura', 'রামপুরা', 23.7612, 90.4214, 'Dhaka', 2],
-  ['Bashundhara', 'বসুন্ধরা', 23.8193, 90.4526, 'Dhaka', 1],
-  ['Shyamoli', 'শ্যামলী', 23.7746, 90.3657, 'Dhaka', 2],
-  ['Khilgaon', 'খিলগাঁও', 23.7516, 90.4292, 'Dhaka', 2],
-  ['Tejgaon', 'তেজগাঁও', 23.7639, 90.3935, 'Dhaka', 2],
-  ['Mohakhali', 'মহাখালী', 23.7781, 90.4007, 'Dhaka', 2],
-  ['Shahbag', 'শাহবাগ', 23.7383, 90.3958, 'Dhaka', 1],
-  ['Azimpur', 'আজিমপুর', 23.7286, 90.3854, 'Dhaka', 2],
-  ['GEC Circle', 'জিইসি মোড়', 22.359, 91.8213, 'Chattogram', 2],
-  ['Agrabad', 'আগ্রাবাদ', 22.3245, 91.812, 'Chattogram', 2],
-  ['Zindabazar', 'জিন্দাবাজার', 24.8949, 91.8687, 'Sylhet', 1],
+  ['Dhanmondi', 'ধানমন্ডি', 23.7465, 90.376, 'Dhaka', 3, 'dhaka'],
+  ['Mirpur 10', 'মিরপুর ১০', 23.8069, 90.3687, 'Dhaka', 3, 'dhaka'],
+  ['Gulshan 1', 'গুলশান ১', 23.7808, 90.4161, 'Dhaka', 2, 'dhaka'],
+  ['Banani', 'বনানী', 23.7937, 90.4066, 'Dhaka', 1, 'dhaka'],
+  ['Mohammadpur', 'মোহাম্মদপুর', 23.7662, 90.3589, 'Dhaka', 3, 'dhaka'],
+  ['Uttara Sector 7', 'উত্তরা সেক্টর ৭', 23.8759, 90.3795, 'Dhaka', 2, 'dhaka'],
+  ['Motijheel', 'মতিঝিল', 23.733, 90.4172, 'Dhaka', 2, 'dhaka'],
+  ['Lalbagh', 'লালবাগ', 23.7189, 90.3883, 'Dhaka', 3, 'dhaka'],
+  ['Farmgate', 'ফার্মগেট', 23.7577, 90.3894, 'Dhaka', 3, 'dhaka'],
+  ['Badda', 'বাড্ডা', 23.7806, 90.4265, 'Dhaka', 3, 'dhaka'],
+  ['Jatrabari', 'যাত্রাবাড়ী', 23.7104, 90.4349, 'Dhaka', 3, 'dhaka'],
+  ['Rampura', 'রামপুরা', 23.7612, 90.4214, 'Dhaka', 2, 'dhaka'],
+  ['Bashundhara', 'বসুন্ধরা', 23.8193, 90.4526, 'Dhaka', 1, 'dhaka'],
+  ['Shyamoli', 'শ্যামলী', 23.7746, 90.3657, 'Dhaka', 2, 'dhaka'],
+  ['Khilgaon', 'খিলগাঁও', 23.7516, 90.4292, 'Dhaka', 2, 'dhaka'],
+  ['Tejgaon', 'তেজগাঁও', 23.7639, 90.3935, 'Dhaka', 2, 'dhaka'],
+  ['Mohakhali', 'মহাখালী', 23.7781, 90.4007, 'Dhaka', 2, 'dhaka'],
+  ['Shahbag', 'শাহবাগ', 23.7383, 90.3958, 'Dhaka', 1, 'dhaka'],
+  ['Azimpur', 'আজিমপুর', 23.7286, 90.3854, 'Dhaka', 2, 'dhaka'],
+  ['GEC Circle', 'জিইসি মোড়', 22.359, 91.8213, 'Chattogram', 2, 'chattogram'],
+  ['Agrabad', 'আগ্রাবাদ', 22.3245, 91.812, 'Chattogram', 2, 'chattogram'],
+  ['Zindabazar', 'জিন্দাবাজার', 24.8949, 91.8687, 'Sylhet', 1, 'sylhet'],
+  ['Joydebpur', 'জয়দেবপুর', 23.999, 90.418, 'Gazipur', 2, 'gazipur'],
+  ['Chashara', 'চাষাড়া', 23.6231, 90.4998, 'Narayanganj', 2, 'narayanganj'],
+  ['Narsingdi Sadar', 'নরসিংদী সদর', 23.922, 90.717, 'Narsingdi', 1, 'narsingdi'],
+  ['Tangail Sadar', 'টাঙ্গাইল সদর', 24.25, 89.92, 'Tangail', 1, 'tangail'],
+  ['Kandirpar', 'কান্দিরপাড়', 23.461, 91.185, 'Cumilla', 2, 'cumilla'],
+  ['Kolatoli', 'কলাতলী', 21.4205, 91.979, "Cox's Bazar", 1, 'coxs-bazar'],
+  ['Shaheb Bazar', 'সাহেব বাজার', 24.366, 88.598, 'Rajshahi', 2, 'rajshahi'],
+  ['Satmatha', 'সাতমাথা', 24.848, 89.372, 'Bogura', 1, 'bogura'],
+  ['Shibbari', 'শিববাড়ী', 22.815, 89.552, 'Khulna', 2, 'khulna'],
+  ['Doratana', 'দড়াটানা', 23.168, 89.21, 'Jashore', 1, 'jashore'],
+  ['Sadar Road', 'সদর রোড', 22.702, 90.37, 'Barishal', 2, 'barishal'],
+  ['Amberkhana', 'আম্বরখানা', 24.905, 91.87, 'Sylhet', 1, 'sylhet'],
+  ['Jahaj Company', 'জাহাজ কোম্পানি মোড়', 25.747, 89.25, 'Rangpur', 2, 'rangpur'],
+  ['Ganginar Par', 'গাঙ্গিনারপাড়', 24.755, 90.406, 'Mymensingh', 2, 'mymensingh'],
 ];
 
 const descriptions = {
@@ -98,8 +112,8 @@ const nextPhoto = (category) => {
   return list[i % list.length];
 };
 
-const reports = Array.from({ length: 220 }, (_, i) => {
-  const [area, areaBn, lat, lng, city] = pick(weightedAreas);
+const reports = Array.from({ length: 320 }, (_, i) => {
+  const [area, areaBn, lat, lng, city, , district] = pick(weightedAreas);
   const category = pick(catWeights);
   const author = pick(authors);
   const hoursAgo = Math.round(Math.pow(rand(), 1.8) * 24 * 45 * 10) / 10; // skew towards recent
@@ -118,6 +132,7 @@ const reports = Array.from({ length: 220 }, (_, i) => {
     area,
     area_bn: areaBn,
     city,
+    district,
     status,
     author_id: anonymous ? null : author.id,
     author_alias: anonymous ? null : author.alias,

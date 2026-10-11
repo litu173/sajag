@@ -177,6 +177,7 @@ class _ComposePageState extends ConsumerState<_ComposePage> {
               showAlias: _showAlias,
               address: place.address,
               areaName: place.area,
+              districtId: place.districtId,
               city: place.city,
             ),
           );

@@ -71,6 +71,7 @@ class SupabaseRepository implements SajagRepository {
         'invalid_alias' => SajagErrorCode.invalidAlias,
         'alias_taken' => SajagErrorCode.aliasTaken,
         'alias_cooldown' => SajagErrorCode.aliasCooldown,
+        'reauth_required' => SajagErrorCode.reauthRequired,
         _ when e.code == '23505' => SajagErrorCode.alreadyDone,
         _ => SajagErrorCode.unknown,
       }, e.message);
@@ -79,7 +80,8 @@ class SupabaseRepository implements SajagRepository {
         'invalid_credentials' => SajagErrorCode.wrongPassword,
         'weak_password' || 'same_password' => SajagErrorCode.weakPassword,
         'phone_exists' => SajagErrorCode.phoneTaken,
-        'otp_expired' || 'reauthentication_not_valid' || 'reauthentication_needed' => SajagErrorCode.invalidOtp,
+        'otp_expired' || 'reauthentication_not_valid' => SajagErrorCode.invalidOtp,
+        'reauthentication_needed' => SajagErrorCode.reauthRequired,
         _ when e.statusCode == '403' => SajagErrorCode.invalidOtp,
         _ => SajagErrorCode.unknown,
       }, e.message);
@@ -150,19 +152,50 @@ class SupabaseRepository implements SajagRepository {
   Future<String> changeAlias(String alias) => _guard(() => _db.rpc<String>('set_my_alias', params: {'p_alias': alias}));
 
   @override
-  Future<void> requestPhoneChange(String newPhone) =>
-      _guard(() => _db.auth.updateUser(UserAttributes(phone: _e164(newPhone))));
+  Future<void> requestPhoneChange(String newPhone) => _guard(() async {
+    if (!recentlyVerified) throw const SajagException(SajagErrorCode.reauthRequired);
+    await _db.auth.updateUser(UserAttributes(phone: _e164(newPhone)));
+  });
 
   @override
   Future<void> confirmPhoneChange(String newPhone, String code) =>
       _guard(() => _db.auth.verifyOTP(type: OtpType.phoneChange, phone: _e164(newPhone), token: code));
 
-  @override
-  Future<void> requestSecurityCode() => _guard(() => _db.auth.reauthenticate());
+  DateTime? _verifiedAt;
+
+  /// The signed-in user's phone in E.164 form (Supabase stores it without the "+").
+  String get _currentPhone {
+    final p = _db.auth.currentUser?.phone;
+    if (p == null || p.isEmpty) throw const SajagException(SajagErrorCode.notVerified);
+    return p.startsWith('+') ? p : '+$p';
+  }
 
   @override
-  Future<void> setPassword({required String password, required String code}) =>
-      _guard(() => _db.auth.updateUser(UserAttributes(password: password, nonce: code)));
+  bool get recentlyVerified =>
+      _verifiedAt != null && DateTime.now().difference(_verifiedAt!) < const Duration(minutes: 10);
+
+  // A fresh sign-in refreshes the JWT's `amr` timestamp, which is what the database checks.
+  @override
+  Future<void> verifyPassword(String password) => _guard(() async {
+    await _db.auth.signInWithPassword(phone: _currentPhone, password: password);
+    _verifiedAt = DateTime.now();
+  });
+
+  @override
+  Future<void> sendVerificationCode() =>
+      _guard(() => _db.auth.signInWithOtp(phone: _currentPhone, shouldCreateUser: false));
+
+  @override
+  Future<void> verifyCode(String code) => _guard(() async {
+    await _db.auth.verifyOTP(type: OtpType.sms, phone: _currentPhone, token: code);
+    _verifiedAt = DateTime.now();
+  });
+
+  @override
+  Future<void> setPassword(String password) => _guard(() async {
+    if (!recentlyVerified) throw const SajagException(SajagErrorCode.reauthRequired);
+    await _db.auth.updateUser(UserAttributes(password: password));
+  });
 
   @override
   Future<void> deleteAccount() => _guard(() async {
@@ -302,6 +335,7 @@ class SupabaseRepository implements SajagRepository {
             'address': input.address,
             'area_name': input.areaName,
             'city': input.city,
+            'district_id': input.districtId,
             'captured_at': input.capturedAt.toUtc().toIso8601String(),
             'show_alias': input.showAlias,
           })

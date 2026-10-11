@@ -958,4 +958,33 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get themeDark => 'ডার্ক';
+
+  @override
+  String get verifyTitle => 'আপনার পরিচয় নিশ্চিত করুন';
+
+  @override
+  String get verifyPasswordBody => 'নিরাপত্তার জন্য, চালিয়ে যেতে আপনার পাসওয়ার্ড দিন।';
+
+  @override
+  String verifyCodeBody(String phone) {
+    return 'নিরাপত্তার জন্য, $phone নম্বরে ৬ সংখ্যার একটি কোড পাঠানো হবে।';
+  }
+
+  @override
+  String get currentPassword => 'বর্তমান পাসওয়ার্ড';
+
+  @override
+  String get useCodeInstead => 'এর বদলে এসএমএস কোড ব্যবহার করুন';
+
+  @override
+  String get usePasswordInstead => 'এর বদলে পাসওয়ার্ড ব্যবহার করুন';
+
+  @override
+  String get verifyContinue => 'যাচাই করে এগিয়ে যান';
+
+  @override
+  String get errReauthRequired => 'প্রথমে আপনার পরিচয় নিশ্চিত করুন।';
+
+  @override
+  String get passwordChooseIntro => 'একটি পাসওয়ার্ড বেছে নিন, যাতে এসএমএসের অপেক্ষা ছাড়াই সাইন ইন করতে পারেন।';
 }

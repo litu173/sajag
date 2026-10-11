@@ -173,6 +173,8 @@ class DemoRepository implements SajagRepository {
     if (dob.isAfter(DateTime.now().subtract(const Duration(days: 365 * 13)))) {
       throw const SajagException(SajagErrorCode.invalidDob);
     }
+    // Changing an identity that's already on file needs a fresh verification, like the server.
+    if (_prefs.getString(_kNid4) != null && _stage == AuthStage.ready) _requireVerified();
     _alias; // assign alias on verification
     await _prefs.setString(_kNid4, digits.substring(digits.length - 4));
     await _prefs.setString(_kDob, dob.toIso8601String());
@@ -228,9 +230,40 @@ class DemoRepository implements SajagRepository {
     return a;
   }
 
+  DateTime? _verifiedAt;
+
+  @override
+  bool get recentlyVerified =>
+      _verifiedAt != null && DateTime.now().difference(_verifiedAt!) < const Duration(minutes: 10);
+
+  void _requireVerified() {
+    if (!recentlyVerified) throw const SajagException(SajagErrorCode.reauthRequired);
+  }
+
+  @override
+  Future<void> verifyPassword(String password) async {
+    await _delay();
+    final stored = _prefs.getString(_kPassword);
+    if (stored == null || stored != _hash(_prefs.getString(_kPhone) ?? '', password)) {
+      throw const SajagException(SajagErrorCode.wrongPassword);
+    }
+    _verifiedAt = DateTime.now();
+  }
+
+  @override
+  Future<void> sendVerificationCode() => _delay();
+
+  @override
+  Future<void> verifyCode(String code) async {
+    await _delay();
+    if (code != AppConfig.demoOtp) throw const SajagException(SajagErrorCode.invalidOtp);
+    _verifiedAt = DateTime.now();
+  }
+
   @override
   Future<void> requestPhoneChange(String newPhone) async {
     await _delay();
+    _requireVerified();
     if (newPhone == _prefs.getString(_kPhone)) throw const SajagException(SajagErrorCode.phoneTaken);
   }
 
@@ -243,12 +276,9 @@ class DemoRepository implements SajagRepository {
   }
 
   @override
-  Future<void> requestSecurityCode() => _delay();
-
-  @override
-  Future<void> setPassword({required String password, required String code}) async {
+  Future<void> setPassword(String password) async {
     await _delay();
-    if (code != AppConfig.demoOtp) throw const SajagException(SajagErrorCode.invalidOtp);
+    _requireVerified();
     if (!isStrongPassword(password)) throw const SajagException(SajagErrorCode.weakPassword);
     await _prefs.setString(_kPassword, _hash(_prefs.getString(_kPhone) ?? '', password));
   }
@@ -256,6 +286,7 @@ class DemoRepository implements SajagRepository {
   @override
   Future<void> deleteAccount() async {
     await _delay();
+    _requireVerified();
     _reports.removeWhere((r) => _mine.contains(r.id));
     _mine.clear();
     _badges.clear();

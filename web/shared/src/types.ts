@@ -47,6 +47,8 @@ export interface Report {
   address: string | null;
   areaName: string | null;
   city: string | null;
+  /** One of the 64 districts (see districts.ts). */
+  districtId: string | null;
   status: ReportStatus;
   statusNote: string | null;
   confirmCount: number;
@@ -88,4 +90,46 @@ export interface FeedQuery {
   status?: ReportStatus;
   limit?: number;
   sort?: 'recent' | 'confirmed';
+}
+
+/** Status groups people actually filter by. */
+export type StatusFilter = 'all' | 'unsolved' | 'in_progress' | 'resolved';
+
+/** Filters for the district reports page. */
+export interface ReportQuery {
+  districtId?: string;
+  categoryId?: string;
+  status?: StatusFilter;
+  /** Free text, matched against the description and area name. */
+  text?: string;
+  area?: string;
+  /** Only reports from the last N days. */
+  days?: number;
+  sort?: 'recent' | 'confirmed' | 'oldest_open';
+  offset?: number;
+  limit?: number;
+}
+
+export interface ReportPage {
+  items: Report[];
+  total: number;
+}
+
+export interface DistrictSummary {
+  districtId: string;
+  total: number;
+  open: number;
+  resolved: number;
+  last30: number;
+}
+
+export interface DistrictStats {
+  total: number;
+  open: number;
+  resolved: number;
+  /** Average days from posting to solved, over solved reports. */
+  avgDaysToFix: number | null;
+  /** Areas inside the district, most reported first. */
+  areas: { area: string; count: number }[];
+  categories: { id: string; count: number }[];
 }

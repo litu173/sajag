@@ -1,5 +1,17 @@
 import { isDemo, photoUrl, supabase } from './config';
-import type { AwarenessPost, FeedQuery, LeaderboardEntry, PortalStats, Report, ReportStatus } from './types';
+import type {
+  AwarenessPost,
+  DistrictStats,
+  DistrictSummary,
+  FeedQuery,
+  LeaderboardEntry,
+  PortalStats,
+  Report,
+  ReportPage,
+  ReportQuery,
+  ReportStatus,
+  StatusFilter,
+} from './types';
 
 export interface PortalSource {
   feed(query: FeedQuery): Promise<Report[]>;
@@ -9,6 +21,44 @@ export interface PortalSource {
   awareness(): Promise<AwarenessPost[]>;
   /** Visible reports from the last `days` days (for the heat map and area rankings). */
   recent(days: number): Promise<Report[]>;
+  /** Filtered, paged reports (district page). */
+  search(query: ReportQuery): Promise<ReportPage>;
+  /** Report counts for every district that has reports. */
+  districtSummary(): Promise<DistrictSummary[]>;
+  districtStats(districtId: string): Promise<DistrictStats>;
+}
+
+const statusGroups: Record<Exclude<StatusFilter, 'all'>, ReportStatus[]> = {
+  unsolved: ['open', 'acknowledged', 'in_progress'],
+  in_progress: ['acknowledged', 'in_progress'],
+  resolved: ['resolved'],
+};
+
+/** Strips characters that have meaning in PostgREST filter strings. */
+const cleanText = (s: string) => s.replace(/[%,()*\\]/g, ' ').trim();
+
+/** Shared by both sources: summary numbers from a district's reports. */
+export function summarise(reports: Pick<Report, 'status' | 'categoryId' | 'areaName' | 'createdAt' | 'resolvedAt'>[]): DistrictStats {
+  const solved = reports.filter((r) => r.status === 'resolved' && r.resolvedAt);
+  const avg = solved.length
+    ? solved.reduce((s, r) => s + (r.resolvedAt!.getTime() - r.createdAt.getTime()) / 86_400_000, 0) / solved.length
+    : null;
+  const tally = (key: (r: (typeof reports)[number]) => string | null) => {
+    const m = new Map<string, number>();
+    for (const r of reports) {
+      const k = key(r);
+      if (k) m.set(k, (m.get(k) ?? 0) + 1);
+    }
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  };
+  return {
+    total: reports.length,
+    open: reports.filter((r) => statusGroups.unsolved.includes(r.status as ReportStatus)).length,
+    resolved: reports.filter((r) => r.status === 'resolved').length,
+    avgDaysToFix: avg,
+    areas: tally((r) => r.areaName).map(([area, count]) => ({ area, count })),
+    categories: tally((r) => r.categoryId).map(([id, count]) => ({ id, count })),
+  };
 }
 
 const visible = (r: Report) => r.status !== 'hidden' && r.status !== 'removed';
@@ -79,6 +129,47 @@ class DemoPortalSource implements PortalSource {
     const from = Date.now() - days * 86_400_000;
     return (await this.data).reports.filter((r) => r.createdAt.getTime() > from);
   }
+
+  async search({ districtId, categoryId, status = 'all', text, area, days, sort = 'recent', offset = 0, limit = 24 }: ReportQuery) {
+    const q = text ? cleanText(text).toLowerCase() : '';
+    const from = days ? Date.now() - days * 86_400_000 : 0;
+    const items = (await this.data).reports.filter(
+      (r) =>
+        (!districtId || r.districtId === districtId) &&
+        (!categoryId || r.categoryId === categoryId) &&
+        (status === 'all' || statusGroups[status].includes(r.status)) &&
+        (!area || r.areaName === area) &&
+        r.createdAt.getTime() >= from &&
+        (!q || r.description.toLowerCase().includes(q) || (r.areaName ?? '').toLowerCase().includes(q)),
+    );
+    items.sort((a, b) =>
+      sort === 'confirmed'
+        ? b.confirmCount - a.confirmCount
+        : sort === 'oldest_open'
+          ? a.createdAt.getTime() - b.createdAt.getTime()
+          : b.createdAt.getTime() - a.createdAt.getTime(),
+    );
+    return { items: items.slice(offset, offset + limit), total: items.length };
+  }
+
+  async districtSummary() {
+    const month = Date.now() - 30 * 86_400_000;
+    const m = new Map<string, DistrictSummary>();
+    for (const r of (await this.data).reports) {
+      if (!r.districtId) continue;
+      const s = m.get(r.districtId) ?? { districtId: r.districtId, total: 0, open: 0, resolved: 0, last30: 0 };
+      s.total++;
+      if (statusGroups.unsolved.includes(r.status)) s.open++;
+      if (r.status === 'resolved') s.resolved++;
+      if (r.createdAt.getTime() > month) s.last30++;
+      m.set(r.districtId, s);
+    }
+    return [...m.values()];
+  }
+
+  async districtStats(districtId: string) {
+    return summarise((await this.data).reports.filter((r) => r.districtId === districtId));
+  }
 }
 
 function levelFor(xp: number): number {
@@ -99,6 +190,7 @@ export interface FeedRow {
   address: string | null;
   area_name: string | null;
   city: string | null;
+  district_id: string | null;
   status: ReportStatus;
   status_note: string | null;
   confirm_count: number;
@@ -122,6 +214,7 @@ export function rowToReport(r: FeedRow): Report {
     address: r.address,
     areaName: r.area_name,
     city: r.city,
+    districtId: r.district_id ?? null,
     status: r.status,
     statusNote: r.status_note,
     confirmCount: r.confirm_count,
@@ -213,6 +306,59 @@ class SupabasePortalSource implements PortalSource {
         .limit(2000),
     );
     return rows.map((r) => rowToReport(r as FeedRow));
+  }
+
+  async search({ districtId, categoryId, status = 'all', text, area, days, sort = 'recent', offset = 0, limit = 24 }: ReportQuery) {
+    const db = await supabase();
+    let q = db.from('report_feed').select('*', { count: 'exact' }).not('status', 'in', '(hidden,removed)');
+    if (districtId) q = q.eq('district_id', districtId);
+    if (categoryId) q = q.eq('category_id', categoryId);
+    if (status !== 'all') q = q.in('status', statusGroups[status]);
+    if (area) q = q.eq('area_name', area);
+    if (days) q = q.gte('created_at', new Date(Date.now() - days * 86_400_000).toISOString());
+    const t = text ? cleanText(text) : '';
+    if (t) q = q.or(`description.ilike.%${t}%,area_name.ilike.%${t}%`);
+    q =
+      sort === 'confirmed'
+        ? q.order('confirm_count', { ascending: false })
+        : q.order('created_at', { ascending: sort === 'oldest_open' });
+    const res = await q.range(offset, offset + limit - 1);
+    if (res.error) throw new Error(res.error.message);
+    return { items: (res.data as FeedRow[]).map(rowToReport), total: res.count ?? 0 };
+  }
+
+  async districtSummary() {
+    const db = await supabase();
+    const rows = check(await db.rpc('district_summary')) as {
+      district_id: string;
+      total: number;
+      open: number;
+      resolved: number;
+      last_30_days: number;
+    }[];
+    return rows.map((r) => ({ districtId: r.district_id, total: r.total, open: r.open, resolved: r.resolved, last30: r.last_30_days }));
+  }
+
+  async districtStats(districtId: string) {
+    const db = await supabase();
+    const rows = check(
+      await db
+        .from('report_feed')
+        .select('status,category_id,area_name,created_at,resolved_at')
+        .eq('district_id', districtId)
+        .not('status', 'in', '(hidden,removed)')
+        .order('created_at', { ascending: false })
+        .limit(5000),
+    ) as { status: ReportStatus; category_id: string; area_name: string | null; created_at: string; resolved_at: string | null }[];
+    return summarise(
+      rows.map((r) => ({
+        status: r.status,
+        categoryId: r.category_id,
+        areaName: r.area_name,
+        createdAt: new Date(r.created_at),
+        resolvedAt: r.resolved_at ? new Date(r.resolved_at) : null,
+      })),
+    );
   }
 }
 

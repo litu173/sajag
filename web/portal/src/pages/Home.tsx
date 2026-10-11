@@ -1,12 +1,15 @@
-import { ArrowRight, Camera, CheckCircle2, MapPin, Send } from 'lucide-react';
-import { lazy, Suspense, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { ArrowRight, Camera, CheckCircle2, MapPin, Search, Send } from 'lucide-react';
+import { lazy, Suspense, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   category,
   categoryName,
   CategoryIcon,
   compact,
   digits,
+  district as findDistrict,
+  districts,
+  matchesDistrict,
   levelName,
   portalSource,
   type Report,
@@ -97,6 +100,8 @@ export default function Home() {
             ))}
           </Reveal>
         </section>
+
+        <DistrictGateway />
 
         {/* ---------------------------------------------------------------- latest mosaic */}
         <section className="section" id="latest">
@@ -283,5 +288,72 @@ export default function Home() {
         <DownloadSection />
       </div>
     </main>
+  );
+}
+
+/** Gateway from the national overview to one district's full list of reports. */
+function DistrictGateway() {
+  const { lang, t } = useLang();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+  const summary = useAsync(() => portalSource.districtSummary(), []);
+  const top = [...(summary.data ?? [])].sort((a, b) => b.total - a.total).slice(0, 8);
+  const matches = query.trim() ? districts.filter((d) => matchesDistrict(d, query)).slice(0, 6) : [];
+
+  return (
+    <section className="section">
+      <Reveal className="gateway">
+        <div>
+          <span className="eyebrow">{t('areasEyebrow')}</span>
+          <h2 className="display">{t('gatewayTitle')}</h2>
+          <p>{t('gatewayBody')}</p>
+          <form
+            className="gateway-search"
+            role="search"
+            onSubmit={(e) => {
+              e.preventDefault();
+              navigate(matches[0] ? `/district/${matches[0].id}` : '/areas');
+            }}
+          >
+            <label className="search-field">
+              <Search size={20} aria-hidden="true" />
+              <span className="vh">{t('searchDistrict')}</span>
+              <input type="search" value={query} placeholder={t('searchDistrict')} onChange={(e) => setQuery(e.target.value)} />
+            </label>
+            {matches.length > 0 && (
+              <ul className="suggest">
+                {matches.map((d) => (
+                  <li key={d.id}>
+                    <Link to={`/district/${d.id}`}>
+                      <MapPin size={15} aria-hidden="true" /> {d[lang]}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </form>
+          <Link to="/areas" className="btn light">
+            {t('exploreDistricts')} <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
+        <div className="gateway-list">
+          <p>{t('mostActive')}</p>
+          <ol>
+            {top.map((s, i) => (
+              <li key={s.districtId}>
+                <Link to={`/district/${s.districtId}`}>
+                  <span className="rank">{digits(i + 1, lang)}</span>
+                  <span className="who">{findDistrict(s.districtId)?.[lang]}</span>
+                  <span className="score">
+                    {digits(s.total, lang)}
+                    {t('reportsCount')}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Reveal>
+    </section>
   );
 }

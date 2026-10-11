@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/widgets/entrance.dart';
 import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
@@ -63,85 +64,87 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     };
 
     return Scaffold(
-      body: Column(
-        children: [
-          SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 16, 0),
-              child: Row(
-                children: [
-                  const SajagLogo(size: 44),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(l.appName, style: theme.textTheme.headlineSmall),
-                        const SizedBox(height: 2),
-                        Semantics(
-                          button: true,
-                          label: '${l.chooseArea}: $placeLabel',
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: _chooseArea,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(placeIcon, size: 15, color: theme.colorScheme.primary),
-                                  const SizedBox(width: 4),
-                                  Flexible(
-                                    child: Text(
-                                      placeLabel,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
+      body: PageEntrance(
+        child: Column(
+          children: [
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 16, 0),
+                child: Row(
+                  children: [
+                    const SajagLogo(size: 44),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l.appName, style: theme.textTheme.headlineSmall),
+                          const SizedBox(height: 2),
+                          Semantics(
+                            button: true,
+                            label: '${l.chooseArea}: $placeLabel',
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: _chooseArea,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 2),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(placeIcon, size: 15, color: theme.colorScheme.primary),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        placeLabel,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
+                                      ),
                                     ),
-                                  ),
-                                  Icon(Icons.expand_more_rounded, size: 18, color: theme.colorScheme.primary),
-                                ],
+                                    Icon(Icons.expand_more_rounded, size: 18, color: theme.colorScheme.primary),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  _ScopeMenu(
-                    scope: _scope,
-                    onChanged: (s) => setState(() {
-                      _scope = s;
-                      if (s != FeedScope.nearby) _area = null;
-                    }),
-                  ),
-                  const SizedBox(width: 8),
-                  _GlassIconButton(
-                    tooltip: l.notificationsTitle,
-                    onPressed: () async {
-                      await context.push('/notifications');
-                      ref.invalidate(notificationsProvider);
-                    },
-                    child: Badge(
-                      isLabelVisible: unread > 0,
-                      label: Text(localDigits(context, '$unread')),
-                      child: const Icon(Icons.notifications_none_rounded),
+                    _ScopeMenu(
+                      scope: _scope,
+                      onChanged: (s) => setState(() {
+                        _scope = s;
+                        if (s != FeedScope.nearby) _area = null;
+                      }),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    _GlassIconButton(
+                      tooltip: l.notificationsTitle,
+                      onPressed: () async {
+                        await context.push('/notifications');
+                        ref.invalidate(notificationsProvider);
+                      },
+                      child: Badge(
+                        isLabelVisible: unread > 0,
+                        label: Text(localDigits(context, '$unread')),
+                        child: const Icon(Icons.notifications_none_rounded),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          _CategoryFilter(selected: _category, onSelected: (c) => setState(() => _category = c)),
-          Expanded(
-            child: _FeedList(
-              key: ValueKey((_scope, _category, _area)),
-              feedKey: (scope: _scope, categoryId: _category, area: _scope == FeedScope.nearby ? _area : null),
+            const SizedBox(height: 8),
+            _CategoryFilter(selected: _category, onSelected: (c) => setState(() => _category = c)),
+            Expanded(
+              child: _FeedList(
+                key: ValueKey((_scope, _category, _area)),
+                feedKey: (scope: _scope, categoryId: _category, area: _scope == FeedScope.nearby ? _area : null),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -164,7 +167,6 @@ class _ScopeMenu extends StatelessWidget {
     ];
     return PopupMenuButton<FeedScope>(
       tooltip: l.filterPosts,
-      initialValue: scope,
       position: PopupMenuPosition.under,
       offset: const Offset(0, 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

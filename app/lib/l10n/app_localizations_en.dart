@@ -964,4 +964,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeDark => 'Dark';
+
+  @override
+  String get verifyTitle => 'Confirm it’s you';
+
+  @override
+  String get verifyPasswordBody => 'For your security, enter your password to continue.';
+
+  @override
+  String verifyCodeBody(String phone) {
+    return 'For your security, we’ll text a 6-digit code to $phone.';
+  }
+
+  @override
+  String get currentPassword => 'Current password';
+
+  @override
+  String get useCodeInstead => 'Use an SMS code instead';
+
+  @override
+  String get usePasswordInstead => 'Use my password instead';
+
+  @override
+  String get verifyContinue => 'Verify and continue';
+
+  @override
+  String get errReauthRequired => 'Please confirm it’s you first.';
+
+  @override
+  String get passwordChooseIntro => 'Choose a password so you can sign in without waiting for an SMS.';
 }

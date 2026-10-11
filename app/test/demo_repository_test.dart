@@ -190,23 +190,40 @@ void main() {
       );
     });
 
-    test('password: needs the code, strong rules, then signs in', () async {
+    test('sensitive changes need a fresh verification (code or password)', () async {
       await signIn();
-      await expectLater(repo.setPassword(password: 'abc12345', code: '000000'), throwsA(isA<SajagException>()));
-      await expectLater(repo.setPassword(password: 'short1', code: '123456'), throwsA(isA<SajagException>()));
-      await repo.setPassword(password: 'river2026', code: '123456');
-      expect((await repo.myAccount()).hasPassword, isTrue);
-      await repo.signOut();
       await expectLater(
-        repo.signInWithPassword('01712345678', 'wrong123'),
+        repo.setPassword('river2026'),
+        throwsA(isA<SajagException>().having((e) => e.code, 'code', SajagErrorCode.reauthRequired)),
+      );
+      await expectLater(repo.requestPhoneChange('01898765432'), throwsA(isA<SajagException>()));
+      await expectLater(repo.submitIdentity(nid: '9876543210', dob: DateTime(1988)), throwsA(isA<SajagException>()));
+      await expectLater(repo.deleteAccount(), throwsA(isA<SajagException>()));
+      await expectLater(repo.verifyCode('000000'), throwsA(isA<SajagException>()));
+      await repo.verifyCode('123456');
+      expect(repo.recentlyVerified, isTrue);
+    });
+
+    test('password: strong rules, then verify and sign in with it', () async {
+      await signIn();
+      await repo.verifyCode('123456');
+      await expectLater(repo.setPassword('short1'), throwsA(isA<SajagException>()));
+      await repo.setPassword('river2026');
+      expect((await repo.myAccount()).hasPassword, isTrue);
+      await expectLater(
+        repo.verifyPassword('wrong123'),
         throwsA(isA<SajagException>().having((e) => e.code, 'code', SajagErrorCode.wrongPassword)),
       );
+      await repo.verifyPassword('river2026');
+      await repo.signOut();
+      await expectLater(repo.signInWithPassword('01712345678', 'wrong123'), throwsA(isA<SajagException>()));
       await repo.signInWithPassword('01712345678', 'river2026');
       expect(repo.currentStage, AuthStage.ready);
     });
 
     test('phone change needs the code sent to the new number', () async {
       await signIn();
+      await repo.verifyCode('123456');
       await repo.requestPhoneChange('01898765432');
       await expectLater(repo.confirmPhoneChange('01898765432', '000000'), throwsA(isA<SajagException>()));
       await repo.confirmPhoneChange('01898765432', '123456');
@@ -215,6 +232,7 @@ void main() {
 
     test('NID and date of birth can be updated', () async {
       await signIn();
+      await repo.verifyCode('123456');
       await repo.submitIdentity(nid: '9876543210123', dob: DateTime(1988, 5, 4));
       final a = await repo.myAccount();
       expect((a.nidLast4, a.dob), ('0123', DateTime(1988, 5, 4)));
@@ -223,6 +241,7 @@ void main() {
     test('deleting the account removes my reports and signs out', () async {
       await signIn();
       final r = await repo.createReport(newReport());
+      await repo.verifyCode('123456');
       await repo.deleteAccount();
       expect(repo.currentStage, AuthStage.signedOut);
       expect(await repo.report(r.id), isNull);

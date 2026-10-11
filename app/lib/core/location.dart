@@ -1,3 +1,5 @@
+import 'districts.dart';
+
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -20,10 +22,13 @@ class Fix {
 }
 
 class Place {
-  const Place({this.area, this.city, this.address});
+  const Place({this.area, this.city, this.address, this.districtId});
   final String? area;
   final String? city;
   final String? address;
+
+  /// One of [districtIds] when the geocoder's district name was recognised.
+  final String? districtId;
 }
 
 class LocationService {
@@ -90,7 +95,8 @@ class LocationService {
       final area = clean(m.subLocality) ?? clean(m.locality) ?? clean(m.subAdministrativeArea);
       final city = clean(m.locality) != area ? clean(m.locality) : clean(m.administrativeArea);
       final address = [clean(m.street), area, city].whereType<String>().toSet().join(', ');
-      return Place(area: area, city: city, address: address.isEmpty ? null : address);
+      final district = districtIdFromName(clean(m.subAdministrativeArea)) ?? districtIdFromName(clean(m.locality));
+      return Place(area: area, city: city, address: address.isEmpty ? null : address, districtId: district);
     } on Exception {
       return const Place(); // Geocoding is best-effort; the coordinates are what matter.
     }

@@ -508,5 +508,21 @@
   "appearance": "Appearance",
   "themeSystem": "Auto",
   "themeLight": "Light",
-  "themeDark": "Dark"
+  "themeDark": "Dark",
+  "verifyTitle": "Confirm it’s you",
+  "verifyPasswordBody": "For your security, enter your password to continue.",
+  "verifyCodeBody": "For your security, we’ll text a 6-digit code to {phone}.",
+  "@verifyCodeBody": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "currentPassword": "Current password",
+  "useCodeInstead": "Use an SMS code instead",
+  "usePasswordInstead": "Use my password instead",
+  "verifyContinue": "Verify and continue",
+  "errReauthRequired": "Please confirm it’s you first.",
+  "passwordChooseIntro": "Choose a password so you can sign in without waiting for an SMS."
 }

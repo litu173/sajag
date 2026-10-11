@@ -34,9 +34,17 @@ abstract interface class SajagRepository {
   Future<void> requestPhoneChange(String newPhone);
   Future<void> confirmPhoneChange(String newPhone, String code);
 
-  /// Sends a one-time code to the current phone, required to set or change the password.
-  Future<void> requestSecurityCode();
-  Future<void> setPassword({required String password, required String code});
+  /// Proves the person is present before a sensitive change (phone, NID, birth date, password,
+  /// deleting the account): either their password, or a code texted to their current phone.
+  Future<void> verifyPassword(String password);
+  Future<void> sendVerificationCode();
+  Future<void> verifyCode(String code);
+
+  /// True for 10 minutes after [verifyPassword] / [verifyCode] succeeded (the server uses the same window).
+  bool get recentlyVerified;
+
+  /// Requires [recentlyVerified].
+  Future<void> setPassword(String password);
 
   /// Permanently deletes the account, its reports and photos.
   Future<void> deleteAccount();

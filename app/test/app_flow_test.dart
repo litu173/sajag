@@ -118,10 +118,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Noise pollution'), findsOneWidget, reason: 'picked category appears as a selected chip');
 
-    // Achievements: period dropdown beside the title, level header and badges
+    // Achievements: level header and badges, no period dropdown
     await tester.tap(find.bySemanticsLabel('Badges'));
     await tester.pumpAndSettle();
-    expect(find.text('This week'), findsOneWidget);
+    expect(find.text('This week'), findsNothing);
     // Verifying earns Founding Member (+100 XP), which lifts a new citizen to level 2.
     expect(find.text('Observer'), findsOneWidget);
     expect(find.text('First Snap'), findsOneWidget);

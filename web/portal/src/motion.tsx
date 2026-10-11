@@ -5,6 +5,30 @@ export const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-mo
 
 let lenis: Lenis | null = null;
 
+// Reveal animations wait for the splash screen to leave, so the page visibly assembles itself
+// instead of finishing its entrance behind the splash.
+let splashGone = typeof document === 'undefined' || !document.getElementById('splash');
+const splashWaiters = new Set<() => void>();
+
+export function markSplashGone() {
+  splashGone = true;
+  splashWaiters.forEach((w) => w());
+  splashWaiters.clear();
+}
+
+function useSplashGone() {
+  const [gone, setGone] = useState(splashGone);
+  useEffect(() => {
+    if (gone) return;
+    const w = () => setGone(true);
+    splashWaiters.add(w);
+    return () => {
+      splashWaiters.delete(w);
+    };
+  }, [gone]);
+  return gone;
+}
+
 /** Inertial smooth scrolling for the whole page; skipped when the user prefers reduced motion. */
 export function useSmoothScroll() {
   useEffect(() => {
@@ -38,16 +62,18 @@ export function scrollToId(id: string) {
 export function useInView<T extends Element>(rootMargin = '0px 0px -10% 0px') {
   const ref = useRef<T>(null);
   const [inView, setInView] = useState(false);
+  const ready = useSplashGone();
   useEffect(() => {
     const el = ref.current;
-    if (!el || inView) return;
+    if (!el || inView || !ready) return;
     if (!('IntersectionObserver' in window)) {
       setInView(true);
       return;
     }
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) {
+        // Also counts content that was jumped past (anchor links, restored scroll), so it never stays hidden.
+        if (entry && (entry.isIntersecting || entry.boundingClientRect.bottom < 0)) {
           setInView(true);
           io.disconnect();
         }
@@ -56,7 +82,7 @@ export function useInView<T extends Element>(rootMargin = '0px 0px -10% 0px') {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [inView, rootMargin]);
+  }, [inView, rootMargin, ready]);
   return [ref, inView] as const;
 }
 

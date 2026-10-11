@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/widgets/entrance.dart';
 import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
@@ -23,12 +24,14 @@ class AccountScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l.accountSettings)),
-      body: switch ((profile, account)) {
-        (AsyncData(value: final p), AsyncData(value: final a)) => _Body(profile: p, account: a),
-        (AsyncError(:final error), _) ||
-        (_, AsyncError(:final error)) => ErrorView(error: error, onRetry: () => refreshMe(ref)),
-        _ => const _AccountSkeleton(),
-      },
+      body: PageEntrance(
+        child: switch ((profile, account)) {
+          (AsyncData(value: final p), AsyncData(value: final a)) => _Body(profile: p, account: a),
+          (AsyncError(:final error), _) ||
+          (_, AsyncError(:final error)) => ErrorView(error: error, onRetry: () => refreshMe(ref)),
+          _ => const _AccountSkeleton(),
+        },
+      ),
     );
   }
 }
@@ -47,13 +50,20 @@ class _Body extends ConsumerWidget {
 
     void emoji() => showAccountSheet<void>(context, EmojiAvatarSheet(profile: profile));
     void alias() => showAccountSheet<void>(context, AliasSheet(current: profile.alias, lockedUntil: locked));
-    void identity() => showAccountSheet<void>(context, IdentitySheet(currentDob: account.dob));
+    // Phone, NID, birth date, password and deletion first ask the person to confirm it's them.
+    Future<void> guarded(Widget sheet) async {
+      if (await ensureVerified(context, ref, account) && context.mounted) {
+        await showAccountSheet<void>(context, sheet);
+      }
+    }
+
+    void identity() => guarded(IdentitySheet(currentDob: account.dob));
 
     return ListView(
       padding: EdgeInsets.fromLTRB(20, 8, 20, MediaQuery.paddingOf(context).bottom + 32),
       children: [
         Center(
-          child: EditableAvatar(profile: profile, size: 96, onTap: emoji),
+          child: AliasAvatar(alias: profile.alias, seed: profile.avatarSeed, emoji: profile.avatarEmoji, size: 104),
         ),
         const SizedBox(height: 14),
         Text(profile.alias, textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
@@ -109,7 +119,7 @@ class _Body extends ConsumerWidget {
               tint: SajagColors.brand,
               title: l.phoneLabel,
               subtitle: formatPhone(context, account.phone),
-              onTap: () => showAccountSheet<void>(context, const PhoneChangeSheet()),
+              onTap: () => guarded(const PhoneChangeSheet()),
             ),
             SettingsRow(
               icon: Icons.badge_rounded,
@@ -145,10 +155,7 @@ class _Body extends ConsumerWidget {
               tint: const Color(0xFF2A9D8F),
               title: account.hasPassword ? l.changePassword : l.setPassword,
               subtitle: account.hasPassword ? l.passwordIsSet : l.passwordNotSet,
-              onTap: () => showAccountSheet<void>(
-                context,
-                PasswordSheet(phone: account.phone, hasPassword: account.hasPassword),
-              ),
+              onTap: () => guarded(PasswordSheet(hasPassword: account.hasPassword)),
             ),
           ],
         ),
@@ -162,7 +169,7 @@ class _Body extends ConsumerWidget {
               title: l.deleteAccount,
               titleColor: SajagColors.accent,
               subtitle: l.deleteAccountHint,
-              onTap: () => _delete(context, ref),
+              onTap: () => _delete(context, ref, account),
             ),
           ],
         ),
@@ -170,8 +177,9 @@ class _Body extends ConsumerWidget {
     );
   }
 
-  static Future<void> _delete(BuildContext context, WidgetRef ref) async {
+  static Future<void> _delete(BuildContext context, WidgetRef ref, AccountInfo account) async {
     if (!await confirmDeleteAccount(context) || !context.mounted) return;
+    if (!await ensureVerified(context, ref, account) || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     final done = context.l10n.accountDeleted;
     try {
@@ -205,58 +213,6 @@ class _VerificationChip extends StatelessWidget {
             style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Avatar with a small pencil badge; tapping opens the emoji picker.
-class EditableAvatar extends StatelessWidget {
-  const EditableAvatar({required this.profile, required this.onTap, super.key, this.size = 84, this.ring});
-  final Profile profile;
-  final VoidCallback onTap;
-  final double size;
-
-  /// Optional backdrop behind the avatar (the profile hero draws a progress ring there).
-  final Color? ring;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    return Semantics(
-      button: true,
-      label: l.chooseEmoji,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(shape: BoxShape.circle, color: ring ?? Theme.of(context).cardTheme.color),
-              child: AliasAvatar(
-                alias: profile.alias,
-                seed: profile.avatarSeed,
-                emoji: profile.avatarEmoji,
-                size: size,
-              ),
-            ),
-            Positioned(
-              right: -2,
-              bottom: -2,
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: SajagColors.brand,
-                  border: Border.all(color: Colors.white, width: 2.5),
-                ),
-                child: const Icon(Icons.edit_rounded, size: 15, color: Colors.white),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

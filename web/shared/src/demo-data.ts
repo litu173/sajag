@@ -10,6 +10,7 @@ interface DemoReport {
   area: string;
   area_bn: string;
   city: string;
+  district: string;
   status: string;
   author_id: string | null;
   author_alias: string | null;
@@ -39,6 +40,7 @@ export function demoReports(now = new Date()): Report[] {
       address: null,
       areaName: r.area,
       city: r.city,
+      districtId: r.district,
       status,
       statusNote: null,
       confirmCount: r.confirmations,

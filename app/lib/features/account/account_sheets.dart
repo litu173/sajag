@@ -670,10 +670,142 @@ class _IdentitySheetState extends ConsumerState<IdentitySheet> {
   }
 }
 
+// ================================================================ confirm it's you
+/// Asks for proof the person is present before a sensitive change. Skipped when they verified in
+/// the last few minutes. Returns true once verified.
+Future<bool> ensureVerified(BuildContext context, WidgetRef ref, AccountInfo account) async {
+  if (ref.read(repositoryProvider).recentlyVerified) return true;
+  final ok = await showAccountSheet<bool>(context, VerifySheet(account: account));
+  return ok ?? false;
+}
+
+class VerifySheet extends ConsumerStatefulWidget {
+  const VerifySheet({required this.account, super.key});
+  final AccountInfo account;
+
+  @override
+  ConsumerState<VerifySheet> createState() => _VerifySheetState();
+}
+
+class _VerifySheetState extends ConsumerState<VerifySheet> {
+  final _password = TextEditingController();
+  final _code = TextEditingController();
+  late bool _usePassword = widget.account.hasPassword;
+  bool _codeSent = false;
+  bool _obscure = true;
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _password.dispose();
+    _code.dispose();
+    super.dispose();
+  }
+
+  Future<void> _run(Future<void> Function() body) async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await body();
+    } catch (e) {
+      if (mounted) setState(() => _error = errorMessage(context, e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _submit() async {
+    final repo = ref.read(repositoryProvider);
+    if (_usePassword) {
+      if (_password.text.isEmpty) return;
+      await _run(() async {
+        await repo.verifyPassword(_password.text);
+        if (mounted) Navigator.pop(context, true);
+      });
+    } else if (!_codeSent) {
+      await _run(() async {
+        await repo.sendVerificationCode();
+        if (mounted) setState(() => _codeSent = true);
+      });
+    } else {
+      if (_code.text.length != 6) return;
+      await _run(() async {
+        await repo.verifyCode(_code.text);
+        if (mounted) Navigator.pop(context, true);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final phone = formatPhone(context, widget.account.phone);
+    return _SheetFrame(
+      title: l.verifyTitle,
+      subtitle: _usePassword ? l.verifyPasswordBody : (_codeSent ? l.codeSentTo(phone) : l.verifyCodeBody(phone)),
+      action: FilledButton(
+        key: const Key('verify-continue'),
+        onPressed: _busy ? null : _submit,
+        child: BusyLabel(busy: _busy, label: !_usePassword && !_codeSent ? l.sendCode : l.verifyContinue),
+      ),
+      children: [
+        if (_usePassword)
+          TextField(
+            controller: _password,
+            autofocus: true,
+            obscureText: _obscure,
+            autofillHints: const [AutofillHints.password],
+            onSubmitted: (_) => _submit(),
+            onChanged: (_) => _error != null ? setState(() => _error = null) : null,
+            decoration: InputDecoration(
+              labelText: l.currentPassword,
+              prefixIcon: const Icon(Icons.lock_rounded),
+              errorText: _error,
+              suffixIcon: IconButton(
+                tooltip: _obscure ? l.showPassword : l.hidePassword,
+                onPressed: () => setState(() => _obscure = !_obscure),
+                icon: Icon(_obscure ? Icons.visibility_rounded : Icons.visibility_off_rounded),
+              ),
+            ),
+          )
+        else if (_codeSent)
+          _CodeField(
+            controller: _code,
+            label: l.codeLabel,
+            error: _error,
+            onChanged: (v) => v.length == 6 ? _submit() : null,
+          )
+        else
+          _Note(
+            icon: Icons.shield_rounded,
+            text: _error ?? l.identityHint,
+            color: _error == null ? null : SajagColors.accent,
+          ),
+        if (widget.account.hasPassword)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _busy
+                  ? null
+                  : () => setState(() {
+                      _usePassword = !_usePassword;
+                      _error = null;
+                    }),
+              icon: Icon(_usePassword ? Icons.sms_rounded : Icons.password_rounded, size: 18),
+              label: Text(_usePassword ? l.useCodeInstead : l.usePasswordInstead),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 // ================================================================ password
 class PasswordSheet extends ConsumerStatefulWidget {
-  const PasswordSheet({required this.phone, required this.hasPassword, super.key});
-  final String? phone;
+  const PasswordSheet({required this.hasPassword, super.key});
   final bool hasPassword;
 
   @override
@@ -681,42 +813,27 @@ class PasswordSheet extends ConsumerStatefulWidget {
 }
 
 class _PasswordSheetState extends ConsumerState<PasswordSheet> {
-  final _code = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
-  bool _codeSent = false;
   bool _obscure = true;
   bool _busy = false;
   bool _showErrors = false;
 
   @override
   void dispose() {
-    _code.dispose();
     _password.dispose();
     _confirm.dispose();
     super.dispose();
   }
 
-  Future<void> _sendCode() async {
-    setState(() => _busy = true);
-    try {
-      await ref.read(repositoryProvider).requestSecurityCode();
-      if (mounted) setState(() => _codeSent = true);
-    } catch (e) {
-      if (mounted) showError(context, e);
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
   Future<void> _save() async {
-    if (_code.text.length != 6 || !isStrongPassword(_password.text) || _password.text != _confirm.text) {
+    if (!isStrongPassword(_password.text) || _password.text != _confirm.text) {
       setState(() => _showErrors = true);
       return;
     }
     setState(() => _busy = true);
     try {
-      await ref.read(repositoryProvider).setPassword(password: _password.text, code: _code.text);
+      await ref.read(repositoryProvider).setPassword(_password.text);
       refreshMe(ref);
       if (mounted) {
         showMessage(context, context.l10n.passwordSaved);
@@ -732,7 +849,6 @@ class _PasswordSheetState extends ConsumerState<PasswordSheet> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    final phone = formatPhone(context, widget.phone);
     final toggle = IconButton(
       tooltip: _obscure ? l.showPassword : l.hidePassword,
       onPressed: () => setState(() => _obscure = !_obscure),
@@ -740,55 +856,47 @@ class _PasswordSheetState extends ConsumerState<PasswordSheet> {
     );
     return _SheetFrame(
       title: widget.hasPassword ? l.changePassword : l.setPassword,
-      subtitle: _codeSent ? l.codeSentTo(phone) : l.passwordIntro(phone),
+      subtitle: l.passwordChooseIntro,
       action: FilledButton(
-        onPressed: _busy ? null : (_codeSent ? _save : _sendCode),
-        child: BusyLabel(busy: _busy, label: _codeSent ? l.saveChanges : l.sendCode),
+        onPressed: _busy ? null : _save,
+        child: BusyLabel(busy: _busy, label: l.saveChanges),
       ),
       children: [
-        if (!_codeSent)
-          _Note(icon: Icons.lock_rounded, text: l.passwordRule)
-        else
-          AutofillGroup(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _CodeField(
-                  controller: _code,
-                  label: l.codeLabel,
-                  error: _showErrors && _code.text.length != 6 ? l.errInvalidOtp : null,
+        AutofillGroup(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _password,
+                autofocus: true,
+                obscureText: _obscure,
+                autofillHints: const [AutofillHints.newPassword],
+                onChanged: (_) => _showErrors ? setState(() {}) : null,
+                decoration: InputDecoration(
+                  labelText: l.newPassword,
+                  helperText: l.passwordRule,
+                  prefixIcon: const Icon(Icons.lock_rounded),
+                  suffixIcon: toggle,
+                  errorText: _showErrors && !isStrongPassword(_password.text) ? l.errWeakPassword : null,
+                  errorMaxLines: 2,
                 ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: _password,
-                  obscureText: _obscure,
-                  autofillHints: const [AutofillHints.newPassword],
-                  onChanged: (_) => _showErrors ? setState(() {}) : null,
-                  decoration: InputDecoration(
-                    labelText: l.newPassword,
-                    helperText: l.passwordRule,
-                    prefixIcon: const Icon(Icons.lock_rounded),
-                    suffixIcon: toggle,
-                    errorText: _showErrors && !isStrongPassword(_password.text) ? l.errWeakPassword : null,
-                    errorMaxLines: 2,
-                  ),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _confirm,
+                obscureText: _obscure,
+                autofillHints: const [AutofillHints.newPassword],
+                onChanged: (_) => _showErrors ? setState(() {}) : null,
+                onSubmitted: (_) => _save(),
+                decoration: InputDecoration(
+                  labelText: l.confirmPassword,
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                  errorText: _showErrors && _password.text != _confirm.text ? l.passwordMismatch : null,
                 ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: _confirm,
-                  obscureText: _obscure,
-                  autofillHints: const [AutofillHints.newPassword],
-                  onChanged: (_) => _showErrors ? setState(() {}) : null,
-                  onSubmitted: (_) => _save(),
-                  decoration: InputDecoration(
-                    labelText: l.confirmPassword,
-                    prefixIcon: const Icon(Icons.lock_outline_rounded),
-                    errorText: _showErrors && _password.text != _confirm.text ? l.passwordMismatch : null,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
       ],
     );
   }

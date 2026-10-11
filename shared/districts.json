@@ -1,0 +1,558 @@
+{
+ "divisions": [
+  {
+   "id": "dhaka",
+   "en": "Dhaka",
+   "bn": "ঢাকা"
+  },
+  {
+   "id": "chattogram",
+   "en": "Chattogram",
+   "bn": "চট্টগ্রাম"
+  },
+  {
+   "id": "rajshahi",
+   "en": "Rajshahi",
+   "bn": "রাজশাহী"
+  },
+  {
+   "id": "khulna",
+   "en": "Khulna",
+   "bn": "খুলনা"
+  },
+  {
+   "id": "barishal",
+   "en": "Barishal",
+   "bn": "বরিশাল"
+  },
+  {
+   "id": "sylhet",
+   "en": "Sylhet",
+   "bn": "সিলেট"
+  },
+  {
+   "id": "rangpur",
+   "en": "Rangpur",
+   "bn": "রংপুর"
+  },
+  {
+   "id": "mymensingh",
+   "en": "Mymensingh",
+   "bn": "ময়মনসিংহ"
+  }
+ ],
+ "districts": [
+  {
+   "id": "dhaka",
+   "division": "dhaka",
+   "en": "Dhaka",
+   "bn": "ঢাকা",
+   "lat": 23.8103,
+   "lng": 90.4125
+  },
+  {
+   "id": "gazipur",
+   "division": "dhaka",
+   "en": "Gazipur",
+   "bn": "গাজীপুর",
+   "lat": 23.9999,
+   "lng": 90.4203
+  },
+  {
+   "id": "narayanganj",
+   "division": "dhaka",
+   "en": "Narayanganj",
+   "bn": "নারায়ণগঞ্জ",
+   "lat": 23.6238,
+   "lng": 90.5
+  },
+  {
+   "id": "narsingdi",
+   "division": "dhaka",
+   "en": "Narsingdi",
+   "bn": "নরসিংদী",
+   "lat": 23.9322,
+   "lng": 90.7151
+  },
+  {
+   "id": "manikganj",
+   "division": "dhaka",
+   "en": "Manikganj",
+   "bn": "মানিকগঞ্জ",
+   "lat": 23.8617,
+   "lng": 90.0003
+  },
+  {
+   "id": "munshiganj",
+   "division": "dhaka",
+   "en": "Munshiganj",
+   "bn": "মুন্সীগঞ্জ",
+   "lat": 23.5422,
+   "lng": 90.5305
+  },
+  {
+   "id": "tangail",
+   "division": "dhaka",
+   "en": "Tangail",
+   "bn": "টাঙ্গাইল",
+   "lat": 24.2513,
+   "lng": 89.9167
+  },
+  {
+   "id": "kishoreganj",
+   "division": "dhaka",
+   "en": "Kishoreganj",
+   "bn": "কিশোরগঞ্জ",
+   "lat": 24.4449,
+   "lng": 90.7766
+  },
+  {
+   "id": "faridpur",
+   "division": "dhaka",
+   "en": "Faridpur",
+   "bn": "ফরিদপুর",
+   "lat": 23.6071,
+   "lng": 89.8429
+  },
+  {
+   "id": "gopalganj",
+   "division": "dhaka",
+   "en": "Gopalganj",
+   "bn": "গোপালগঞ্জ",
+   "lat": 23.005,
+   "lng": 89.8266
+  },
+  {
+   "id": "madaripur",
+   "division": "dhaka",
+   "en": "Madaripur",
+   "bn": "মাদারীপুর",
+   "lat": 23.1641,
+   "lng": 90.1897
+  },
+  {
+   "id": "rajbari",
+   "division": "dhaka",
+   "en": "Rajbari",
+   "bn": "রাজবাড়ী",
+   "lat": 23.7574,
+   "lng": 89.6445
+  },
+  {
+   "id": "shariatpur",
+   "division": "dhaka",
+   "en": "Shariatpur",
+   "bn": "শরীয়তপুর",
+   "lat": 23.2423,
+   "lng": 90.4348
+  },
+  {
+   "id": "chattogram",
+   "division": "chattogram",
+   "en": "Chattogram",
+   "bn": "চট্টগ্রাম",
+   "lat": 22.3569,
+   "lng": 91.7832
+  },
+  {
+   "id": "coxs-bazar",
+   "division": "chattogram",
+   "en": "Cox's Bazar",
+   "bn": "কক্সবাজার",
+   "lat": 21.4272,
+   "lng": 92.0058
+  },
+  {
+   "id": "cumilla",
+   "division": "chattogram",
+   "en": "Cumilla",
+   "bn": "কুমিল্লা",
+   "lat": 23.4607,
+   "lng": 91.1809
+  },
+  {
+   "id": "feni",
+   "division": "chattogram",
+   "en": "Feni",
+   "bn": "ফেনী",
+   "lat": 23.0159,
+   "lng": 91.3976
+  },
+  {
+   "id": "noakhali",
+   "division": "chattogram",
+   "en": "Noakhali",
+   "bn": "নোয়াখালী",
+   "lat": 22.8696,
+   "lng": 91.0995
+  },
+  {
+   "id": "lakshmipur",
+   "division": "chattogram",
+   "en": "Lakshmipur",
+   "bn": "লক্ষ্মীপুর",
+   "lat": 22.9447,
+   "lng": 90.8282
+  },
+  {
+   "id": "chandpur",
+   "division": "chattogram",
+   "en": "Chandpur",
+   "bn": "চাঁদপুর",
+   "lat": 23.2333,
+   "lng": 90.6713
+  },
+  {
+   "id": "brahmanbaria",
+   "division": "chattogram",
+   "en": "Brahmanbaria",
+   "bn": "ব্রাহ্মণবাড়িয়া",
+   "lat": 23.9571,
+   "lng": 91.1119
+  },
+  {
+   "id": "rangamati",
+   "division": "chattogram",
+   "en": "Rangamati",
+   "bn": "রাঙ্গামাটি",
+   "lat": 22.6574,
+   "lng": 92.1733
+  },
+  {
+   "id": "khagrachhari",
+   "division": "chattogram",
+   "en": "Khagrachhari",
+   "bn": "খাগড়াছড়ি",
+   "lat": 23.1193,
+   "lng": 91.9847
+  },
+  {
+   "id": "bandarban",
+   "division": "chattogram",
+   "en": "Bandarban",
+   "bn": "বান্দরবান",
+   "lat": 22.1953,
+   "lng": 92.2184
+  },
+  {
+   "id": "rajshahi",
+   "division": "rajshahi",
+   "en": "Rajshahi",
+   "bn": "রাজশাহী",
+   "lat": 24.3745,
+   "lng": 88.6042
+  },
+  {
+   "id": "bogura",
+   "division": "rajshahi",
+   "en": "Bogura",
+   "bn": "বগুড়া",
+   "lat": 24.8465,
+   "lng": 89.3773
+  },
+  {
+   "id": "pabna",
+   "division": "rajshahi",
+   "en": "Pabna",
+   "bn": "পাবনা",
+   "lat": 24.0064,
+   "lng": 89.2372
+  },
+  {
+   "id": "sirajganj",
+   "division": "rajshahi",
+   "en": "Sirajganj",
+   "bn": "সিরাজগঞ্জ",
+   "lat": 24.4534,
+   "lng": 89.7007
+  },
+  {
+   "id": "natore",
+   "division": "rajshahi",
+   "en": "Natore",
+   "bn": "নাটোর",
+   "lat": 24.4206,
+   "lng": 88.9937
+  },
+  {
+   "id": "naogaon",
+   "division": "rajshahi",
+   "en": "Naogaon",
+   "bn": "নওগাঁ",
+   "lat": 24.7936,
+   "lng": 88.9318
+  },
+  {
+   "id": "chapainawabganj",
+   "division": "rajshahi",
+   "en": "Chapainawabganj",
+   "bn": "চাঁপাইনবাবগঞ্জ",
+   "lat": 24.5965,
+   "lng": 88.2776
+  },
+  {
+   "id": "joypurhat",
+   "division": "rajshahi",
+   "en": "Joypurhat",
+   "bn": "জয়পুরহাট",
+   "lat": 25.0968,
+   "lng": 89.0227
+  },
+  {
+   "id": "khulna",
+   "division": "khulna",
+   "en": "Khulna",
+   "bn": "খুলনা",
+   "lat": 22.8456,
+   "lng": 89.5403
+  },
+  {
+   "id": "jashore",
+   "division": "khulna",
+   "en": "Jashore",
+   "bn": "যশোর",
+   "lat": 23.1664,
+   "lng": 89.2081
+  },
+  {
+   "id": "satkhira",
+   "division": "khulna",
+   "en": "Satkhira",
+   "bn": "সাতক্ষীরা",
+   "lat": 22.7185,
+   "lng": 89.0705
+  },
+  {
+   "id": "bagerhat",
+   "division": "khulna",
+   "en": "Bagerhat",
+   "bn": "বাগেরহাট",
+   "lat": 22.6516,
+   "lng": 89.7859
+  },
+  {
+   "id": "kushtia",
+   "division": "khulna",
+   "en": "Kushtia",
+   "bn": "কুষ্টিয়া",
+   "lat": 23.9013,
+   "lng": 89.1205
+  },
+  {
+   "id": "chuadanga",
+   "division": "khulna",
+   "en": "Chuadanga",
+   "bn": "চুয়াডাঙ্গা",
+   "lat": 23.6402,
+   "lng": 88.8418
+  },
+  {
+   "id": "meherpur",
+   "division": "khulna",
+   "en": "Meherpur",
+   "bn": "মেহেরপুর",
+   "lat": 23.7622,
+   "lng": 88.6318
+  },
+  {
+   "id": "jhenaidah",
+   "division": "khulna",
+   "en": "Jhenaidah",
+   "bn": "ঝিনাইদহ",
+   "lat": 23.545,
+   "lng": 89.1726
+  },
+  {
+   "id": "magura",
+   "division": "khulna",
+   "en": "Magura",
+   "bn": "মাগুরা",
+   "lat": 23.4873,
+   "lng": 89.4199
+  },
+  {
+   "id": "narail",
+   "division": "khulna",
+   "en": "Narail",
+   "bn": "নড়াইল",
+   "lat": 23.1725,
+   "lng": 89.5127
+  },
+  {
+   "id": "barishal",
+   "division": "barishal",
+   "en": "Barishal",
+   "bn": "বরিশাল",
+   "lat": 22.701,
+   "lng": 90.3535
+  },
+  {
+   "id": "patuakhali",
+   "division": "barishal",
+   "en": "Patuakhali",
+   "bn": "পটুয়াখালী",
+   "lat": 22.3596,
+   "lng": 90.3299
+  },
+  {
+   "id": "bhola",
+   "division": "barishal",
+   "en": "Bhola",
+   "bn": "ভোলা",
+   "lat": 22.6859,
+   "lng": 90.6482
+  },
+  {
+   "id": "pirojpur",
+   "division": "barishal",
+   "en": "Pirojpur",
+   "bn": "পিরোজপুর",
+   "lat": 22.5841,
+   "lng": 89.972
+  },
+  {
+   "id": "jhalokati",
+   "division": "barishal",
+   "en": "Jhalokati",
+   "bn": "ঝালকাঠি",
+   "lat": 22.6406,
+   "lng": 90.1987
+  },
+  {
+   "id": "barguna",
+   "division": "barishal",
+   "en": "Barguna",
+   "bn": "বরগুনা",
+   "lat": 22.1591,
+   "lng": 90.1119
+  },
+  {
+   "id": "sylhet",
+   "division": "sylhet",
+   "en": "Sylhet",
+   "bn": "সিলেট",
+   "lat": 24.8949,
+   "lng": 91.8687
+  },
+  {
+   "id": "moulvibazar",
+   "division": "sylhet",
+   "en": "Moulvibazar",
+   "bn": "মৌলভীবাজার",
+   "lat": 24.4829,
+   "lng": 91.7774
+  },
+  {
+   "id": "habiganj",
+   "division": "sylhet",
+   "en": "Habiganj",
+   "bn": "হবিগঞ্জ",
+   "lat": 24.3745,
+   "lng": 91.4155
+  },
+  {
+   "id": "sunamganj",
+   "division": "sylhet",
+   "en": "Sunamganj",
+   "bn": "সুনামগঞ্জ",
+   "lat": 25.0658,
+   "lng": 91.395
+  },
+  {
+   "id": "rangpur",
+   "division": "rangpur",
+   "en": "Rangpur",
+   "bn": "রংপুর",
+   "lat": 25.7439,
+   "lng": 89.2752
+  },
+  {
+   "id": "dinajpur",
+   "division": "rangpur",
+   "en": "Dinajpur",
+   "bn": "দিনাজপুর",
+   "lat": 25.6217,
+   "lng": 88.6354
+  },
+  {
+   "id": "kurigram",
+   "division": "rangpur",
+   "en": "Kurigram",
+   "bn": "কুড়িগ্রাম",
+   "lat": 25.8054,
+   "lng": 89.6362
+  },
+  {
+   "id": "gaibandha",
+   "division": "rangpur",
+   "en": "Gaibandha",
+   "bn": "গাইবান্ধা",
+   "lat": 25.3297,
+   "lng": 89.543
+  },
+  {
+   "id": "nilphamari",
+   "division": "rangpur",
+   "en": "Nilphamari",
+   "bn": "নীলফামারী",
+   "lat": 25.9318,
+   "lng": 88.856
+  },
+  {
+   "id": "lalmonirhat",
+   "division": "rangpur",
+   "en": "Lalmonirhat",
+   "bn": "লালমনিরহাট",
+   "lat": 25.9923,
+   "lng": 89.2847
+  },
+  {
+   "id": "thakurgaon",
+   "division": "rangpur",
+   "en": "Thakurgaon",
+   "bn": "ঠাকুরগাঁও",
+   "lat": 26.0337,
+   "lng": 88.4617
+  },
+  {
+   "id": "panchagarh",
+   "division": "rangpur",
+   "en": "Panchagarh",
+   "bn": "পঞ্চগড়",
+   "lat": 26.3411,
+   "lng": 88.5541
+  },
+  {
+   "id": "mymensingh",
+   "division": "mymensingh",
+   "en": "Mymensingh",
+   "bn": "ময়মনসিংহ",
+   "lat": 24.7471,
+   "lng": 90.4203
+  },
+  {
+   "id": "jamalpur",
+   "division": "mymensingh",
+   "en": "Jamalpur",
+   "bn": "জামালপুর",
+   "lat": 24.9375,
+   "lng": 89.9372
+  },
+  {
+   "id": "netrokona",
+   "division": "mymensingh",
+   "en": "Netrokona",
+   "bn": "নেত্রকোনা",
+   "lat": 24.8709,
+   "lng": 90.7276
+  },
+  {
+   "id": "sherpur",
+   "division": "mymensingh",
+   "en": "Sherpur",
+   "bn": "শেরপুর",
+   "lat": 25.0205,
+   "lng": 90.0153
+  }
+ ]
+}

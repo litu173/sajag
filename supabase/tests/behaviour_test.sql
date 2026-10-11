@@ -22,6 +22,12 @@ begin
   if cond is distinct from true then raise exception 'ASSERTION FAILED: %', label; end if;
   raise notice 'ok - %', label;
 end $$;
+-- Simulates the JWT `amr` claim: a sign-in `seconds_ago` seconds ago.
+create function tests.signed_in(seconds_ago int) returns void language sql as $$
+  select set_config('request.jwt.claims',
+    json_build_object('amr', json_build_array(json_build_object('method', 'otp',
+      'timestamp', extract(epoch from now())::bigint - seconds_ago)))::text, false);
+$$;
 grant execute on all functions in schema tests to anon, authenticated;
 
 insert into auth.users (id, phone, email) values
@@ -228,7 +234,10 @@ reset role;
 update public.app_config set value = 'false' where key = 'nid_auto_verify';
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
-select tests.ok(public.submit_identity('9999999999', '1991-02-03') = 'pending', 'changed NID goes to review');
+select tests.signed_in(3600);
+select tests.expect_error($$select public.submit_identity('9999999999', '1991-02-03')$$, 'confirm it is you');
+select tests.signed_in(30);
+select tests.ok(public.submit_identity('9999999999', '1991-02-03') = 'pending', 'changed NID goes to review (after re-verifying)');
 select tests.ok((select not verified from public.profiles where id = auth.uid()), 'posting paused until the new NID is approved');
 reset role;
 update public.app_config set value = 'true' where key = 'nid_auto_verify';
@@ -239,9 +248,35 @@ select tests.expect_error($$select * from public.my_account()$$, 'permission den
 select tests.expect_error($$select public.delete_my_account()$$, 'permission denied');
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
+select tests.signed_in(3600);
+select tests.expect_error($$select public.delete_my_account()$$, 'confirm it is you');
+select tests.signed_in(10);
 select public.delete_my_account();
 reset role;
 select tests.ok(not exists (select 1 from public.profiles where id = '00000000-0000-0000-0000-000000000002')
                 and not exists (select 1 from public.reports where description like 'Streetlight%'), 'account deletion removes profile and reports');
+
+-- ================================================================ districts
+select tests.ok((select count(*) = 64 from public.districts) and (select count(*) = 8 from public.divisions), '64 districts in 8 divisions');
+select tests.ok(public.nearest_district(22.36, 91.80) = 'chattogram' and public.nearest_district(24.37, 88.60) = 'rajshahi', 'nearest district headquarters');
+update public.profiles set status = 'active' where id = '00000000-0000-0000-0000-000000000003'; -- suspended earlier
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000003';
+select tests.signed_in(5);
+select public.submit_identity('5555555555', '1985-05-05');
+insert into public.reports (category_id, description, photo_path, lat, lng, captured_at)
+values ('garbage', 'Garbage near Shaheb Bazar', 'r/2026/10/raj.jpg', 24.366, 88.598, now());
+insert into public.reports (category_id, description, photo_path, lat, lng, captured_at, district_id)
+values ('road_damage', 'Pothole, geocoded as Sylhet', 'r/2026/10/syl.jpg', 23.81, 90.41, now(), 'sylhet');
+insert into public.reports (category_id, description, photo_path, lat, lng, captured_at, district_id)
+values ('road_damage', 'Bogus district from client', 'r/2026/10/bad.jpg', 22.70, 90.37, now(), 'atlantis');
+set role anon;
+reset request.jwt.claim.sub;
+select tests.ok((select district_id = 'rajshahi' from public.report_feed where description like 'Garbage near Shaheb%'), 'district filled from location');
+select tests.ok((select district_id = 'sylhet' from public.report_feed where description like 'Pothole, geocoded%'), 'client geocoded district kept');
+select tests.ok((select district_id = 'barishal' from public.report_feed where description like 'Bogus district%'), 'unknown district falls back to nearest');
+select tests.ok((select total >= 1 from public.district_summary() where district_id = 'rajshahi'), 'public district summary');
+select tests.ok(not exists (select 1 from public.report_feed where district_id is null), 'every visible report has a district');
+reset role;
 
 \echo 'ALL DATABASE TESTS PASSED'

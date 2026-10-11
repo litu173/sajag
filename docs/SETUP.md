@@ -23,6 +23,9 @@ Account settings in the app also rely on these Auth options:
 - **Password sign-in (optional for citizens):** keep the Phone provider's password sign-in enabled, and turn on **Secure password change** (Authentication → Providers → Phone/Email settings). The app always sends a re-authentication SMS code before setting a password.
 - **Change mobile number:** works out of the box; Supabase texts a code to the new number and the `on_auth_user_phone_changed` trigger keeps the private identity record in step.
 - **Delete account:** handled by the `delete_my_account()` RPC, which removes the auth user and cascades to the profile, identity and reports (photos are removed by the app first).
+- **Confirm it's you:** changing the phone, NID/date of birth or password, and deleting the account, first ask for the password or an SMS code. The database checks the JWT `amr` sign-in time (`recent_auth()`, 10 minutes) before NID changes and deletion.
+
+Reports are filed under one of the 64 districts (`public.districts`, mirrored in `shared/districts.json`). The app sends the district from reverse geocoding when it recognises it; otherwise a trigger picks the nearest district headquarters. The portal's **Your area** pages (`#/areas`, `#/district/<id>`) list and filter reports per district.
 
 ## 3. NID verification
 

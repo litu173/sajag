@@ -68,6 +68,7 @@ String errorMessage(BuildContext context, Object error) {
     SajagErrorCode.phoneTaken => l.errPhoneTaken,
     SajagErrorCode.weakPassword => l.errWeakPassword,
     SajagErrorCode.wrongPassword => l.errWrongPassword,
+    SajagErrorCode.reauthRequired => l.errReauthRequired,
     SajagErrorCode.network => l.errorNetwork,
     SajagErrorCode.unknown => l.errorGeneric,
   };

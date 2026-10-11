@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/widgets/entrance.dart';
 import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
@@ -36,33 +37,35 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final catalog = ref.watch(catalogProvider);
     return Scaffold(
       appBar: AppBar(title: Text(l.notificationsTitle)),
-      body: async.when(
-        loading: () => const ListSkeleton(),
-        error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(notificationsProvider)),
-        data: (items) => items.isEmpty
-            ? EmptyState(icon: Icons.notifications_none, message: l.noNotifications)
-            : RefreshIndicator(
-                onRefresh: () async => ref.invalidate(notificationsProvider),
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: items.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1, indent: 72),
-                  itemBuilder: (context, i) {
-                    final n = items[i];
-                    final (icon, color, text) = describe(context, n, catalog);
-                    return ListTile(
-                      tileColor: n.read ? null : SajagColors.brand.withValues(alpha: 0.06),
-                      leading: CircleAvatar(
-                        backgroundColor: color.withValues(alpha: 0.15),
-                        child: Icon(icon, color: color),
-                      ),
-                      title: Text(text),
-                      subtitle: Text(timeAgo(context, n.createdAt)),
-                      onTap: n.reportId == null ? null : () => unawaited(context.push('/reports/${n.reportId}')),
-                    );
-                  },
+      body: PageEntrance(
+        child: async.when(
+          loading: () => const ListSkeleton(),
+          error: (e, _) => ErrorView(error: e, onRetry: () => ref.invalidate(notificationsProvider)),
+          data: (items) => items.isEmpty
+              ? EmptyState(icon: Icons.notifications_none, message: l.noNotifications)
+              : RefreshIndicator(
+                  onRefresh: () async => ref.invalidate(notificationsProvider),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: items.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1, indent: 72),
+                    itemBuilder: (context, i) {
+                      final n = items[i];
+                      final (icon, color, text) = describe(context, n, catalog);
+                      return ListTile(
+                        tileColor: n.read ? null : SajagColors.brand.withValues(alpha: 0.06),
+                        leading: CircleAvatar(
+                          backgroundColor: color.withValues(alpha: 0.15),
+                          child: Icon(icon, color: color),
+                        ),
+                        title: Text(text),
+                        subtitle: Text(timeAgo(context, n.createdAt)),
+                        onTap: n.reportId == null ? null : () => unawaited(context.push('/reports/${n.reportId}')),
+                      );
+                    },
+                  ),
                 ),
-              ),
+        ),
       ),
     );
   }

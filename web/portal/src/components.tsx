@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, CheckCircle2, Download } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Download, MapPin } from 'lucide-react';
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -19,6 +19,7 @@ import {
   timeAgo,
 } from '@sajag/shared';
 import { useLang } from './i18n';
+import { ThemeToggle } from './theme';
 import { scrollToId, useInView } from './motion';
 
 const logoUrl = `${import.meta.env.BASE_URL}logo.svg`;
@@ -246,6 +247,9 @@ export function Header() {
           {lang === 'bn' ? 'সজাগ' : 'Sajag'}
         </Link>
         <nav className="site-nav" aria-label="Sections">
+          <Link to="/areas" aria-current={location.pathname.startsWith('/areas') || location.pathname.startsWith('/district') ? 'page' : undefined}>
+            {t('navAreas')}
+          </Link>
           <button type="button" onClick={() => go('latest')}>{t('navStories')}</button>
           <button type="button" onClick={() => go('data')}>{t('navData')}</button>
           <button type="button" onClick={() => go('map')}>{t('navMap')}</button>
@@ -253,6 +257,10 @@ export function Header() {
         </nav>
         <span className="spacer" />
         {isDemo && <span className="demo-note">{t('demo')}</span>}
+        <Link to="/areas" className="icon-btn areas-btn" aria-label={t('navAreas')} title={t('navAreas')}>
+          <MapPin size={18} aria-hidden="true" />
+        </Link>
+        <ThemeToggle />
         <div className="lang" role="group" aria-label="Language">
           <button type="button" aria-pressed={lang === 'bn'} onClick={() => setLang('bn')}>বাংলা</button>
           <button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>EN</button>

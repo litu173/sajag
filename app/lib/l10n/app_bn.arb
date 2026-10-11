@@ -290,5 +290,14 @@
   "appearance": "থিম",
   "themeSystem": "অটো",
   "themeLight": "লাইট",
-  "themeDark": "ডার্ক"
+  "themeDark": "ডার্ক",
+  "verifyTitle": "আপনার পরিচয় নিশ্চিত করুন",
+  "verifyPasswordBody": "নিরাপত্তার জন্য, চালিয়ে যেতে আপনার পাসওয়ার্ড দিন।",
+  "verifyCodeBody": "নিরাপত্তার জন্য, {phone} নম্বরে ৬ সংখ্যার একটি কোড পাঠানো হবে।",
+  "currentPassword": "বর্তমান পাসওয়ার্ড",
+  "useCodeInstead": "এর বদলে এসএমএস কোড ব্যবহার করুন",
+  "usePasswordInstead": "এর বদলে পাসওয়ার্ড ব্যবহার করুন",
+  "verifyContinue": "যাচাই করে এগিয়ে যান",
+  "errReauthRequired": "প্রথমে আপনার পরিচয় নিশ্চিত করুন।",
+  "passwordChooseIntro": "একটি পাসওয়ার্ড বেছে নিন, যাতে এসএমএসের অপেক্ষা ছাড়াই সাইন ইন করতে পারেন।"
 }

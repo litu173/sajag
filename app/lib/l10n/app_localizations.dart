@@ -1837,6 +1837,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeDark;
+
+  /// No description provided for @verifyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm it’s you'**
+  String get verifyTitle;
+
+  /// No description provided for @verifyPasswordBody.
+  ///
+  /// In en, this message translates to:
+  /// **'For your security, enter your password to continue.'**
+  String get verifyPasswordBody;
+
+  /// No description provided for @verifyCodeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'For your security, we’ll text a 6-digit code to {phone}.'**
+  String verifyCodeBody(String phone);
+
+  /// No description provided for @currentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get currentPassword;
+
+  /// No description provided for @useCodeInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Use an SMS code instead'**
+  String get useCodeInstead;
+
+  /// No description provided for @usePasswordInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my password instead'**
+  String get usePasswordInstead;
+
+  /// No description provided for @verifyContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify and continue'**
+  String get verifyContinue;
+
+  /// No description provided for @errReauthRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm it’s you first.'**
+  String get errReauthRequired;
+
+  /// No description provided for @passwordChooseIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a password so you can sign in without waiting for an SMS.'**
+  String get passwordChooseIntro;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
