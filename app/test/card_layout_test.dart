@@ -67,8 +67,10 @@ void main() {
             find.descendant(of: cardFinder, matching: find.byKey(const Key('card-category'))),
           );
           final more = tester.getRect(find.descendant(of: cardFinder, matching: find.byKey(const Key('card-more'))));
-          if (photo.top < 0 || photo.bottom > tester.view.physicalSize.height / 3)
-            continue; // only fully laid-out cards
+          // Only cards that are fully on screen.
+          if (photo.top < 0 || photo.bottom > tester.view.physicalSize.height / 3) {
+            continue;
+          }
           expect(
             chip.left - photo.left,
             moreOrLessEquals(photo.right - more.right, epsilon: 0.5),
