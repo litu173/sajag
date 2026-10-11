@@ -491,9 +491,6 @@ enum FlagReason {
 
 enum FeedScope { nearby, latest, following }
 
-/// Home has two sections: public hazards, and traffic violations.
-enum FeedSection { hazards, traffic }
-
 enum AuthStage { signedOut, needsIdentity, pendingReview, ready }
 
 /// The signed-in citizen's private account details. Only ever shown to themselves.

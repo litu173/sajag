@@ -1886,30 +1886,6 @@ abstract class AppLocalizations {
   /// **'Choose a password so you can sign in without waiting for an SMS.'**
   String get passwordChooseIntro;
 
-  /// No description provided for @sectionHazards.
-  ///
-  /// In en, this message translates to:
-  /// **'Hazards'**
-  String get sectionHazards;
-
-  /// No description provided for @sectionTraffic.
-  ///
-  /// In en, this message translates to:
-  /// **'Traffic watch'**
-  String get sectionTraffic;
-
-  /// No description provided for @searchPlate.
-  ///
-  /// In en, this message translates to:
-  /// **'Search a number plate'**
-  String get searchPlate;
-
-  /// No description provided for @allVehicles.
-  ///
-  /// In en, this message translates to:
-  /// **'All vehicles'**
-  String get allVehicles;
-
   /// No description provided for @trafficIntro.
   ///
   /// In en, this message translates to:

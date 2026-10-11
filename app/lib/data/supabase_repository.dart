@@ -241,21 +241,14 @@ class SupabaseRepository implements SajagRepository {
   @override
   Future<List<Report>> feed({
     required FeedScope scope,
-    FeedSection section = FeedSection.hazards,
     LatLng? near,
-    String? vehicleType,
     String? area,
     String? categoryId,
     DateTime? before,
     int limit = 20,
   }) => _guard(() async {
     var q = _db.from('report_feed').select().not('status', 'in', '(hidden,removed)');
-    if (categoryId != null) {
-      q = q.eq('category_id', categoryId);
-    } else {
-      q = section == FeedSection.traffic ? q.eq('category_id', trafficCategory) : q.neq('category_id', trafficCategory);
-    }
-    if (vehicleType != null) q = q.eq('vehicle_type', vehicleType);
+    if (categoryId != null) q = q.eq('category_id', categoryId);
     if (area != null) q = q.eq('area_name', area);
     if (before != null) q = q.lt('created_at', before.toUtc().toIso8601String());
     if (scope == FeedScope.nearby && area == null && near != null) {

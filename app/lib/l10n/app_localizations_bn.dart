@@ -986,18 +986,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String get passwordChooseIntro => 'একটি পাসওয়ার্ড বেছে নিন, যাতে এসএমএসের অপেক্ষা ছাড়াই সাইন ইন করতে পারেন।';
 
   @override
-  String get sectionHazards => 'সমস্যা';
-
-  @override
-  String get sectionTraffic => 'ট্রাফিক নজরদারি';
-
-  @override
-  String get searchPlate => 'নম্বরপ্লেট খুঁজুন';
-
-  @override
-  String get allVehicles => 'সব যানবাহন';
-
-  @override
   String get trafficIntro =>
       'নাগরিকদের রিপোর্ট করা ট্রাফিক আইন ভঙ্গ। নম্বরপ্লেট কখনো প্রকাশ্যে দেখানো হয় না — শুধু ট্রাফিক বিভাগ দেখে, যাচাই করে ব্যবস্থা নেয়।';
 

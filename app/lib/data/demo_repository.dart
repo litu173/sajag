@@ -406,9 +406,7 @@ class DemoRepository implements SajagRepository {
   @override
   Future<List<Report>> feed({
     required FeedScope scope,
-    FeedSection section = FeedSection.hazards,
     LatLng? near,
-    String? vehicleType,
     String? area,
     String? categoryId,
     DateTime? before,
@@ -417,12 +415,7 @@ class DemoRepository implements SajagRepository {
     await _delay();
     const distance = Distance();
     Iterable<Report> items = _visible;
-    if (categoryId != null) {
-      items = items.where((r) => r.categoryId == categoryId);
-    } else {
-      items = items.where((r) => r.isTraffic == (section == FeedSection.traffic));
-    }
-    if (vehicleType != null) items = items.where((r) => r.vehicleType == vehicleType);
+    if (categoryId != null) items = items.where((r) => r.categoryId == categoryId);
     if (area != null) items = items.where((r) => r.areaName == area);
     if (before != null) items = items.where((r) => r.createdAt.isBefore(before));
     switch (scope) {

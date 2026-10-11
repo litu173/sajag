@@ -23,7 +23,7 @@ class _FakeLocation extends LocationService {
 }
 
 void main() {
-  testWidgets('home has a traffic section with plates; cards have ⋮ on the photo and "I verify"', (tester) async {
+  testWidgets('one home feed with a traffic chip, no plates; cards have ⋮ on the photo and "I verify"', (tester) async {
     tester.view.physicalSize = const Size(1179, 2556);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
@@ -49,28 +49,25 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
 
-    // Hazards first: the more menu sits on the photo and the verify button shows a count.
-    expect(find.text('Hazards'), findsOneWidget);
+    // No section tabs on Home: one feed, with traffic violations as a category chip.
+    expect(find.byKey(const Key('feed-sections')), findsNothing);
     expect(find.byIcon(Icons.more_vert_rounded), findsWidgets);
     expect(find.textContaining('I verify ·'), findsWidgets);
     expect(find.byIcon(Icons.visibility_outlined), findsNothing, reason: 'no eye icon any more');
-    expect(
-      find.byIcon(Icons.local_police_outlined),
-      findsOneWidget,
-      reason: 'only the section tab, no traffic posts among hazards',
-    );
 
     // Verifying toggles the label.
     await tester.tap(find.textContaining('I verify ·').first);
     await tester.pumpAndSettle();
     expect(find.textContaining('Verified ·'), findsOneWidget);
 
-    // Traffic watch: plate search, vehicle chips and traffic cards with plates.
-    await tester.tap(find.text('Traffic watch'));
+    // The traffic chip filters to traffic violations and explains that plates stay private.
+    final chip = find.descendant(of: find.byKey(const Key('category-chips')), matching: find.text('Traffic violation'));
+    await tester.drag(find.byKey(const Key('category-chips')), const Offset(-2000, 0));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('vehicle-chips')), findsOneWidget);
-    expect(find.byKey(const Key('plate-search')), findsNothing, reason: 'plates are private');
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
     expect(find.textContaining('never shown publicly'), findsOneWidget);
-    expect(find.textContaining('ঢাকা মেট্রো'), findsNothing, reason: 'no plate text anywhere in the feed');
+    expect(find.byKey(const Key('plate-search')), findsNothing, reason: 'plates are private');
+    expect(find.textContaining('মেট্রো'), findsNothing, reason: 'no plate text anywhere in the feed');
   });
 }

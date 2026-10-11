@@ -29,9 +29,7 @@ class FeedScreen extends ConsumerStatefulWidget {
 
 class _FeedScreenState extends ConsumerState<FeedScreen> {
   FeedScope _scope = FeedScope.nearby;
-  FeedSection _section = FeedSection.hazards;
   String? _category;
-  String? _vehicle;
 
   /// A chosen area name; null means "near my current location".
   String? _area;
@@ -137,29 +135,12 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            _SectionSwitch(
-              value: _section,
-              onChanged: (s) => setState(() {
-                _section = s;
-                _category = null;
-                _vehicle = null;
-              }),
-            ),
-            if (_section == FeedSection.hazards)
-              _CategoryFilter(selected: _category, onSelected: (c) => setState(() => _category = c))
-            else
-              _TrafficFilter(vehicle: _vehicle, onVehicle: (v) => setState(() => _vehicle = v)),
+            const SizedBox(height: 8),
+            _CategoryFilter(selected: _category, onSelected: (c) => setState(() => _category = c)),
             Expanded(
               child: _FeedList(
-                key: ValueKey((_scope, _section, _category, _area, _vehicle)),
-                feedKey: (
-                  scope: _scope,
-                  section: _section,
-                  categoryId: _category,
-                  area: _scope == FeedScope.nearby ? _area : null,
-                  vehicleType: _vehicle,
-                ),
+                key: ValueKey((_scope, _category, _area)),
+                feedKey: (scope: _scope, categoryId: _category, area: _scope == FeedScope.nearby ? _area : null),
               ),
             ),
           ],
@@ -348,118 +329,6 @@ class _GlassIconButton extends StatelessWidget {
 }
 
 /// Five quick categories plus "Show all", which opens every category in a sheet.
-/// "Hazards | Traffic watch" — the two sections of the home feed.
-class _SectionSwitch extends StatelessWidget {
-  const _SectionSwitch({required this.value, required this.onChanged});
-  final FeedSection value;
-  final ValueChanged<FeedSection> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final theme = Theme.of(context);
-    Widget option(FeedSection s, IconData icon, String label) {
-      final on = s == value;
-      return Expanded(
-        child: Semantics(
-          button: true,
-          selected: on,
-          child: GestureDetector(
-            onTap: () => onChanged(s),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutCubic,
-              height: 42,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: on ? theme.cardTheme.color : Colors.transparent,
-                borderRadius: BorderRadius.circular(21),
-                boxShadow: on ? SajagColors.softShadow(theme.brightness) : null,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: 18, color: on ? theme.colorScheme.primary : theme.textTheme.bodySmall?.color),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: on ? theme.colorScheme.primary : theme.textTheme.bodySmall?.color,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        key: const Key('feed-sections'),
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(25),
-        ),
-        child: Row(
-          children: [
-            option(FeedSection.hazards, Icons.warning_amber_rounded, l.sectionHazards),
-            option(FeedSection.traffic, Icons.local_police_outlined, l.sectionTraffic),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Traffic section: vehicle-type chips. (No plate search: plates are private to the traffic division.)
-class _TrafficFilter extends ConsumerWidget {
-  const _TrafficFilter({required this.vehicle, required this.onVehicle});
-  final String? vehicle;
-  final ValueChanged<String?> onVehicle;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    final theme = Theme.of(context);
-    final vehicles = ref.watch(catalogProvider).vehicles;
-    return SizedBox(
-      height: 58,
-      child: ListView(
-        key: const Key('vehicle-chips'),
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-        children: [
-          CategoryFilterChip(
-            label: l.allVehicles,
-            icon: Icons.commute_rounded,
-            color: theme.colorScheme.primary,
-            selected: vehicle == null,
-            onTap: () => onVehicle(null),
-          ),
-          for (final v in vehicles.where((v) => v.id != 'other')) ...[
-            const SizedBox(width: 8),
-            CategoryFilterChip(
-              label: v.name(context),
-              icon: vehicleIcon(v.id),
-              color: const Color(0xFFC2185B),
-              selected: vehicle == v.id,
-              onTap: () => onVehicle(vehicle == v.id ? null : v.id),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
 class _CategoryFilter extends ConsumerWidget {
   const _CategoryFilter({required this.selected, required this.onSelected});
   final String? selected;
@@ -470,8 +339,12 @@ class _CategoryFilter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
-    final categories = ref.watch(catalogProvider).categories.where((c) => c.id != trafficCategory);
-    final quick = categories.take(_quick).toList();
+    final catalog = ref.watch(catalogProvider);
+    // The first few problem types plus traffic violations, which have no tab of their own.
+    final quick = [
+      ...catalog.categories.where((c) => c.id != trafficCategory).take(_quick),
+      catalog.category(trafficCategory),
+    ];
     final current = selected == null ? null : ref.watch(catalogProvider).category(selected!);
     final visible = [if (current != null && !quick.contains(current)) current, ...quick];
 
@@ -572,7 +445,7 @@ class _CategorySheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
-    final categories = ref.watch(catalogProvider).categories.where((c) => c.id != trafficCategory);
+    final categories = ref.watch(catalogProvider).categories;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -651,13 +524,18 @@ class _FeedListState extends ConsumerState<_FeedList> {
           return RefreshIndicator(
             onRefresh: refresh,
             child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               children: [
+                if (widget.feedKey.categoryId == trafficCategory) ...[
+                  const SizedBox(height: 8),
+                  _Note(text: l.trafficIntro),
+                ],
                 const SizedBox(height: 60),
                 EmptyState(
                   icon: widget.feedKey.scope == FeedScope.following
                       ? Icons.group_add_outlined
                       : Icons.photo_camera_outlined,
-                  message: widget.feedKey.section == FeedSection.traffic
+                  message: widget.feedKey.categoryId == trafficCategory
                       ? l.noTrafficReports
                       : widget.feedKey.categoryId != null
                       ? l.emptyCategory
@@ -679,8 +557,9 @@ class _FeedListState extends ConsumerState<_FeedList> {
         }
 
         // Interleave an awareness tip after every few reports (only in the unfiltered feeds).
-        final traffic = widget.feedKey.section == FeedSection.traffic;
-        final showTips = awareness.isNotEmpty && widget.feedKey.categoryId == null && !traffic;
+        // Picking the traffic chip shows the privacy note: plates are never shown publicly.
+        final traffic = widget.feedKey.categoryId == trafficCategory;
+        final showTips = awareness.isNotEmpty && widget.feedKey.categoryId == null;
         final tipSlots = showTips ? state.items.length ~/ _awarenessEvery : 0;
         final notes = [
           if (traffic) l.trafficIntro,

@@ -103,12 +103,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Everywhere'), findsOneWidget);
 
-    // Five quick categories + "Show all" opens every category in a sheet
+    // Quick categories (incl. traffic) + "Show all" opens every category in a sheet
     await tester.dragUntilVisible(
       find.text('Show all'),
       find.byKey(const Key('category-chips')),
       const Offset(-200, 0),
     );
+    await tester.ensureVisible(find.text('Show all'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Show all'));
     await tester.pumpAndSettle();
     expect(find.text('All categories'), findsWidgets);

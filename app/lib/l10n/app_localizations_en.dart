@@ -992,18 +992,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordChooseIntro => 'Choose a password so you can sign in without waiting for an SMS.';
 
   @override
-  String get sectionHazards => 'Hazards';
-
-  @override
-  String get sectionTraffic => 'Traffic watch';
-
-  @override
-  String get searchPlate => 'Search a number plate';
-
-  @override
-  String get allVehicles => 'All vehicles';
-
-  @override
   String get trafficIntro =>
       'Vehicles breaking traffic law, reported by citizens. Number plates are never shown publicly — only the traffic division sees them, verifies each report and takes action.';
 

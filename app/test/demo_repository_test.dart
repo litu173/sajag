@@ -289,7 +289,7 @@ void main() {
       expect((await repo.notifications()).first.type, 'post_held');
     });
 
-    test('traffic reports need a vehicle and a violation, and live in their own section', () async {
+    test('traffic reports need a vehicle and a violation, and have their own category', () async {
       await signIn();
       NewReport traffic({String? vehicle, List<String> violations = const []}) => NewReport(
         photoPath: '/tmp/x.jpg',
@@ -308,19 +308,12 @@ void main() {
       final r = await repo.createReport(traffic(vehicle: 'motorbike', violations: ['footpath_driving']));
       expect(r.canBeMarkedSolved, isFalse, reason: 'the traffic division closes these');
 
-      final hazards = await repo.feed(scope: FeedScope.latest, limit: 1000);
-      final trafficFeed = await repo.feed(scope: FeedScope.latest, section: FeedSection.traffic, limit: 1000);
-      expect(hazards.any((x) => x.isTraffic), isFalse);
-      expect(trafficFeed.every((x) => x.isTraffic), isTrue);
-      expect(trafficFeed.any((x) => x.id == r.id), isTrue);
-
-      final byVehicle = await repo.feed(
-        scope: FeedScope.latest,
-        section: FeedSection.traffic,
-        vehicleType: 'bus',
-        limit: 1000,
-      );
-      expect(byVehicle.every((x) => x.vehicleType == 'bus'), isTrue);
+      // Traffic violations show in the normal feed and under their own category chip.
+      final all = await repo.feed(scope: FeedScope.latest, limit: 1000);
+      final trafficOnly = await repo.feed(scope: FeedScope.latest, categoryId: trafficCategory, limit: 1000);
+      expect(all.any((x) => x.id == r.id), isTrue);
+      expect(trafficOnly.every((x) => x.isTraffic), isTrue);
+      expect(trafficOnly.any((x) => x.id == r.id), isTrue);
     });
   });
 }
