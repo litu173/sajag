@@ -235,16 +235,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get demoLocationNote => 'Demo: showing Dhaka because you\'re outside Bangladesh';
 
   @override
-  String get seeItToo => 'I see it too';
-
-  @override
   String confirmations(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count people see this',
-      one: '1 person sees this',
-      zero: 'Be the first to confirm',
+      other: '$count people verified this',
+      one: '1 person verified this',
+      zero: 'Be the first to verify',
     );
     return '$_temp0';
   }
@@ -993,4 +990,175 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordChooseIntro => 'Choose a password so you can sign in without waiting for an SMS.';
+
+  @override
+  String get sectionHazards => 'Hazards';
+
+  @override
+  String get sectionTraffic => 'Traffic watch';
+
+  @override
+  String get searchPlate => 'Search a number plate';
+
+  @override
+  String get allVehicles => 'All vehicles';
+
+  @override
+  String get trafficIntro =>
+      'Vehicles breaking traffic law, reported by citizens. The traffic division verifies each one before taking action.';
+
+  @override
+  String get noTrafficReports => 'No traffic violations reported here yet.';
+
+  @override
+  String get reportTypeHazard => 'Hazard';
+
+  @override
+  String get reportTypeTraffic => 'Traffic violation';
+
+  @override
+  String get vehicleTypeLabel => 'Vehicle';
+
+  @override
+  String get violationsLabel => 'What rule did it break?';
+
+  @override
+  String get plateLabel => 'Number plate';
+
+  @override
+  String get plateHelper => 'Type it as written on the plate. Leave it empty if it isn’t readable.';
+
+  @override
+  String get pickVehicle => 'Choose the vehicle type.';
+
+  @override
+  String get pickViolation => 'Choose at least one violation.';
+
+  @override
+  String get trafficSafety =>
+      'Stay safe: never film while driving and don’t confront anyone. Capture the vehicle and its plate, not people’s faces.';
+
+  @override
+  String get policyNote =>
+      'Report hazards, not people. Posts about any person, politician or celebrity, or for personal gain, are not published — repeated violations get the account banned.';
+
+  @override
+  String get policyWarnTitle => 'This can’t be published as written';
+
+  @override
+  String get policyIssuePolitical => 'It mentions politics or a political figure.';
+
+  @override
+  String get policyIssuePerson => 'It seems to be about a specific person.';
+
+  @override
+  String get policyIssueCelebrity => 'It mentions a celebrity or public personality.';
+
+  @override
+  String get policyIssuePersonalGain => 'It looks like an ad, a private dispute or personal gain.';
+
+  @override
+  String get policyIssueContact => 'It contains a phone number, link or social media handle.';
+
+  @override
+  String get policyWarnBody =>
+      'Describe only the hazard — what it is and where. If you send it anyway, a moderator reviews it first and it stays hidden until approved. Posts that break the rules count as a strike; after 3 strikes the account is banned.';
+
+  @override
+  String get editDescription => 'Edit description';
+
+  @override
+  String get sendForReview => 'Send for review anyway';
+
+  @override
+  String get sentForReview => 'Sent for review. You’ll be notified when a moderator decides.';
+
+  @override
+  String get communityRules => 'Community rules';
+
+  @override
+  String get rulesIntro => 'Sajag exists to warn people about public hazards. To keep it fair and safe:';
+
+  @override
+  String get rule1 => 'Report only public hazards and traffic violations.';
+
+  @override
+  String get rule2 =>
+      'Never post about a person, politician, political party or celebrity — no names, accusations or campaigns.';
+
+  @override
+  String get rule3 => 'No ads, sales, private disputes, revenge or anything for personal gain.';
+
+  @override
+  String get rule4 => 'No phone numbers, links or social media handles.';
+
+  @override
+  String get rule5 => 'Photos must be live and real. Capture the problem or the vehicle, not people’s faces.';
+
+  @override
+  String get rule6 =>
+      'Posts that break these rules are not published. Each one is a strike; after 3 strikes the account is banned.';
+
+  @override
+  String get agreeRules => 'I agree';
+
+  @override
+  String get modPending => 'Being checked';
+
+  @override
+  String get modHeld => 'Under review';
+
+  @override
+  String get modRejected => 'Not published';
+
+  @override
+  String get modHeldBody =>
+      'Only you can see this post for now. A moderator is checking it against the community rules.';
+
+  @override
+  String get modRejectedBody => 'This post was not published because it breaks the community rules.';
+
+  @override
+  String get nPostHeld => 'Your post is under review before it can be published';
+
+  @override
+  String get nPostApproved => 'Your post was approved and is now public';
+
+  @override
+  String nPostRejected(int strikes, int limit) {
+    return 'Your post broke the community rules and was not published. Warning $strikes of $limit.';
+  }
+
+  @override
+  String get nAccountSuspended => 'Your account is suspended for repeatedly breaking the community rules.';
+
+  @override
+  String get trafficOpen => 'Reported';
+
+  @override
+  String get trafficAcknowledged => 'Under verification';
+
+  @override
+  String get trafficInProgress => 'Case in progress';
+
+  @override
+  String get trafficResolved => 'Action taken';
+
+  @override
+  String get trafficDetails => 'Violation details';
+
+  @override
+  String get plateUnknown => 'Plate not readable';
+
+  @override
+  String get verifyAction => 'I verify';
+
+  @override
+  String get verifiedAction => 'Verified';
+
+  @override
+  String get verifyExplain => 'Saw this too? Verify it so authorities know it’s real.';
+
+  @override
+  String get moreActions => 'More';
 }

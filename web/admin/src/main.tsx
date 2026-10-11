@@ -3,6 +3,8 @@ import {
   Building2,
   FileText,
   Flag,
+  ShieldAlert,
+  Siren,
   LayoutDashboard,
   LogOut,
   Map,
@@ -22,6 +24,8 @@ import { HashRouter, NavLink, Route, Routes, useLocation } from 'react-router-do
 import { isDemo } from '@sajag/shared';
 import { adminSource, type AdminSession } from '@sajag/shared/src/admin-source';
 import Dashboard from './pages/Dashboard';
+import Held from './pages/Held';
+import Traffic from './pages/Traffic';
 import Login from './pages/Login';
 import Reports from './pages/Reports';
 import ResourcePage from './pages/ResourcePage';
@@ -39,11 +43,13 @@ const nav = [
   {
     group: 'Moderation',
     items: [
+      { to: '/held', label: 'Held for review', icon: ShieldAlert },
       { to: '/moderation', label: 'Flag queue', icon: Flag },
       { to: '/reports', label: 'All reports', icon: FileText },
       { to: '/users', label: 'Citizens', icon: UsersIcon },
     ],
   },
+  { group: 'Traffic division', items: [{ to: '/traffic', label: 'Traffic violations', icon: Siren }] },
   {
     group: 'Content',
     items: [
@@ -71,6 +77,13 @@ const nav = [
   },
 ];
 
+// Traffic officers only see what they work with; everyone else sees the full panel.
+const trafficPaths = new Set(['/', '/map', '/traffic']);
+function visibleNav(role: AdminSession['role']) {
+  if (role !== 'traffic') return nav;
+  return nav.map((g) => ({ ...g, items: g.items.filter((i) => trafficPaths.has(i.to)) })).filter((g) => g.items.length > 0);
+}
+
 function Shell({ onSignOut }: { onSignOut: () => void }) {
   const { session } = useApp();
   const [open, setOpen] = useState(false);
@@ -84,7 +97,7 @@ function Shell({ onSignOut }: { onSignOut: () => void }) {
           <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" />
           Sajag Admin
         </div>
-        {nav.map((g) => (
+        {visibleNav(session.role).map((g) => (
           <div key={g.group}>
             <div className="nav-group">{g.group}</div>
             {g.items.map(({ to, label, icon: Icon }) => (
@@ -118,6 +131,8 @@ function Shell({ onSignOut }: { onSignOut: () => void }) {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/map" element={<Suspense fallback={<div className="empty">Loading map…</div>}><MapPage /></Suspense>} />
+            <Route path="/held" element={<Held />} />
+            <Route path="/traffic" element={<Traffic />} />
             <Route path="/moderation" element={<Reports key="flagged" flaggedOnly />} />
             <Route path="/reports" element={<Reports key="all" />} />
             <Route path="/users" element={<Users />} />

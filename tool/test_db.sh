@@ -11,7 +11,7 @@ else
   PGBIN="${PGBIN:-$(brew --prefix postgresql@17 2>/dev/null)/bin}"
   export PATH="$PGBIN:$PATH"
   DATA="$(mktemp -d)"; PORT=54329
-  initdb -D "$DATA" -U postgres -A trust >/dev/null
+  initdb -D "$DATA" -U postgres -A trust -E UTF8 >/dev/null
   pg_ctl -D "$DATA" -w -o "-p $PORT -c listen_addresses=localhost -c unix_socket_directories=''" -l "$DATA/log" start >/dev/null
   trap 'pg_ctl -D "$DATA" stop -m immediate >/dev/null; rm -rf "$DATA"' EXIT
   DB="postgresql://postgres@localhost:$PORT/postgres"

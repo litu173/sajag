@@ -95,6 +95,17 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       ),
       'verification_approved' => (Icons.verified, SajagColors.brand, l.nVerifyApproved),
       'verification_rejected' => (Icons.error_outline, Theme.of(context).colorScheme.error, l.nVerifyRejected),
+      'post_held' => (Icons.gpp_maybe_rounded, SajagColors.progress, l.nPostHeld),
+      'post_approved' => (Icons.gpp_good_rounded, SajagColors.resolved, l.nPostApproved),
+      'post_rejected' => (
+        Icons.block_rounded,
+        SajagColors.accent,
+        localDigits(
+          context,
+          l.nPostRejected((n.data['strikes'] as num?)?.toInt() ?? 1, (n.data['limit'] as num?)?.toInt() ?? 3),
+        ),
+      ),
+      'account_suspended' => (Icons.lock_person_rounded, SajagColors.accent, l.nAccountSuspended),
       _ => (Icons.notifications, SajagColors.brand, l.appName),
     };
   }

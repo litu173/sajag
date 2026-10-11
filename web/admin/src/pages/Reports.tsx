@@ -175,6 +175,19 @@ function ReportDrawer({ report, onClose, onChanged }: { report: Report; onClose:
         </dd>
         <dt>Posted as</dt>
         <dd>{report.authorAlias ?? 'Anonymous (alias hidden)'}</dd>
+        <dt>Publication</dt>
+        <dd>
+          {report.moderation === 'ok' ? 'Public' : report.moderation === 'pending' ? 'Waiting for the automatic check' : report.moderation === 'held' ? 'Held for review' : 'Rejected (not public)'}
+          {report.moderationReason && <span className="muted"> — {report.moderationReason}</span>}
+        </dd>
+        {report.categoryId === 'traffic_violation' && (
+          <>
+            <dt>Vehicle</dt>
+            <dd>
+              {report.vehicleType} · {report.violations.join(', ')} {report.plateNumber && <span className="plate">{report.plateNumber}</span>}
+            </dd>
+          </>
+        )}
         <dt>Confirmations</dt>
         <dd>{report.confirmCount}</dd>
         {report.resolvedAt && (

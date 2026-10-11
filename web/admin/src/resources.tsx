@@ -5,7 +5,7 @@ import type { ResourceConfig } from './pages/ResourcePage';
 const categoryOptions = () => Promise.resolve(categories.map((c) => ({ value: c.id, label: c.en })));
 const areaKinds = ['division', 'district', 'city_corporation', 'upazila', 'thana', 'ward', 'union'].map((k) => ({ value: k, label: k.replace('_', ' ') }));
 const byOrder = (a: Row, b: Row) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0);
-const iconKeys = ['manhole', 'road', 'water', 'drain', 'trash', 'bolt', 'light', 'walk', 'parking', 'traffic', 'construction', 'smoke', 'noise', 'tree', 'tap', 'toilet', 'other'];
+const iconKeys = ['manhole', 'road', 'water', 'drain', 'trash', 'bolt', 'light', 'walk', 'parking', 'traffic', 'traffic_violation', 'construction', 'smoke', 'noise', 'tree', 'tap', 'toilet', 'other'];
 
 async function areaOptions() {
   return (await adminSource.list('areas')).map((a) => ({ value: String(a.id), label: `${String(a.name_en)} (${String(a.kind)})` }));

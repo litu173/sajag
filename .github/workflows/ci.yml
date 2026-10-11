@@ -20,6 +20,8 @@ jobs:
       - run: node tool/sync_shared.mjs
       - name: Generated files must be committed
         run: git diff --exit-code
+      - name: Moderation function helpers
+        run: node --experimental-strip-types --no-warnings supabase/functions/moderate-report/policy.test.ts
 
   database:
     name: Database behaviour tests

@@ -3,6 +3,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:sajag/data/catalog.dart';
 import 'package:sajag/data/demo_repository.dart';
 import 'package:sajag/data/models.dart';
+import 'package:sajag/data/policy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -247,6 +248,94 @@ void main() {
       expect(await repo.report(r.id), isNull);
       await repo.verifyOtp('01712345678', '123456');
       expect(repo.currentStage, AuthStage.needsIdentity, reason: 'identity was erased too');
+    });
+  });
+
+  group('content policy and traffic', () {
+    test('policy screening matches the server rules', () {
+      final policy = catalog.policy;
+      expect(policy.check('Open manhole beside the school gate'), isNull);
+      expect(policy.check('রাস্তায় বড় গর্ত, রিকশা উল্টে যাচ্ছে'), isNull);
+      expect(policy.check('Garbage dumped by the local MP'), PolicyIssue.political);
+      expect(policy.check('ছাত্রলীগের নেতারা ফুটপাত দখল করেছে'), PolicyIssue.political);
+      expect(policy.check('Mr. Karim blocks the drain'), PolicyIssue.person);
+      expect(policy.check('নায়িকা এখানে গাড়ি রাখে'), PolicyIssue.celebrity);
+      expect(policy.check('Flat to-let, call me'), PolicyIssue.personalGain);
+      expect(policy.check('details: 01712345678'), PolicyIssue.contact);
+      expect(policy.check('Damp campaign walls near camp'), isNull, reason: 'word boundaries: mp/camp');
+    });
+
+    test('a post that trips the policy is held, private and not rewarded', () async {
+      await signIn();
+      final xp = (await repo.myProfile()).xp;
+      final held = await repo.createReport(
+        NewReport(
+          photoPath: '/tmp/x.jpg',
+          categoryId: 'garbage',
+          description: 'The MP throws garbage here every night',
+          lat: 23.7465,
+          lng: 90.376,
+          accuracy: 8,
+          capturedAt: DateTime.now(),
+          showAlias: true,
+        ),
+      );
+      expect(held.moderation, 'held');
+      expect(held.isPublished, isFalse);
+      expect((await repo.myProfile()).xp, xp, reason: 'no XP until approved');
+      expect((await repo.myReports()).any((r) => r.id == held.id), isTrue, reason: 'author sees it');
+      final feed = await repo.feed(scope: FeedScope.latest, limit: 1000);
+      expect(feed.any((r) => r.id == held.id), isFalse, reason: 'nobody else does');
+      expect((await repo.notifications()).first.type, 'post_held');
+    });
+
+    test('traffic reports need a vehicle and a violation, and live in their own section', () async {
+      await signIn();
+      NewReport traffic({String? vehicle, List<String> violations = const []}) => NewReport(
+        photoPath: '/tmp/x.jpg',
+        categoryId: trafficCategory,
+        description: 'Bike riding on the footpath at rush hour',
+        lat: 23.7465,
+        lng: 90.376,
+        accuracy: 8,
+        capturedAt: DateTime.now(),
+        showAlias: true,
+        vehicleType: vehicle,
+        violations: violations,
+        plateNumber: '  ঢাকা মেট্রো-ল  ৯৯-৮৮৭৭ ',
+      );
+      await expectLater(repo.createReport(traffic()), throwsA(isA<SajagException>()));
+      final r = await repo.createReport(traffic(vehicle: 'motorbike', violations: ['footpath_driving']));
+      expect(r.plateNumber, 'ঢাকা মেট্রো-ল ৯৯-৮৮৭৭');
+      expect(r.canBeMarkedSolved, isFalse, reason: 'the traffic division closes these');
+
+      final hazards = await repo.feed(scope: FeedScope.latest, limit: 1000);
+      final trafficFeed = await repo.feed(scope: FeedScope.latest, section: FeedSection.traffic, limit: 1000);
+      expect(hazards.any((x) => x.isTraffic), isFalse);
+      expect(trafficFeed.every((x) => x.isTraffic), isTrue);
+      expect(trafficFeed.any((x) => x.id == r.id), isTrue);
+
+      // Plate search works across scripts: Bangla digits typed as English digits.
+      final byPlate = await repo.feed(
+        scope: FeedScope.latest,
+        section: FeedSection.traffic,
+        plate: '99-8877',
+        limit: 1000,
+      );
+      expect(byPlate.map((x) => x.id), [r.id]);
+      final byVehicle = await repo.feed(
+        scope: FeedScope.latest,
+        section: FeedSection.traffic,
+        vehicleType: 'bus',
+        limit: 1000,
+      );
+      expect(byVehicle.every((x) => x.vehicleType == 'bus'), isTrue);
+    });
+
+    test('plate normalisation', () {
+      expect(plateDigits('ঢাকা মেট্রো-গ ১২-৩৪৫৬'), '123456');
+      expect(plateKey('DHAKA METRO-GA 12-3456'), 'dhakametroga123456');
+      expect(plateKey('ঢাকা মেট্রো-গ ১২-৩৪৫৬'), 'ঢাকামেট্রোগ123456');
     });
   });
 }

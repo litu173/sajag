@@ -31,7 +31,7 @@ export default function Login({ onSignedIn }: { onSignedIn: (s: AdminSession) =>
         {isDemo && (
           <div className="demo-box">
             Demo mode — sample data only. Sign in as <b>{demoCredentials.email}</b> / <b>{demoCredentials.password}</b> (super admin) or{' '}
-            <b>moderator@sajag.app</b> / <b>{demoCredentials.password}</b>.
+            <b>moderator@sajag.app</b>, or <b>traffic@sajag.app</b> (traffic division) with the same password.
           </div>
         )}
         <div className="field">

@@ -9,6 +9,7 @@
   { "id": "footpath",          "en": "Footpath encroachment",   "bn": "ফুটপাত দখল",              "icon": "walk",         "color": "#9C6644", "severity": 1, "awareness": true },
   { "id": "illegal_parking",   "en": "Illegal parking",         "bn": "অবৈধ পার্কিং",             "icon": "parking",      "color": "#5E548E", "severity": 1, "awareness": true },
   { "id": "traffic_signal",    "en": "Traffic signal problem",  "bn": "ট্রাফিক সিগন্যাল সমস্যা",    "icon": "traffic",      "color": "#C1121F", "severity": 2, "awareness": false },
+  { "id": "traffic_violation", "en": "Traffic violation",       "bn": "ট্রাফিক আইন ভঙ্গ",         "icon": "traffic_violation", "color": "#C2185B", "severity": 2, "awareness": true },
   { "id": "construction",      "en": "Construction material on road", "bn": "রাস্তায় নির্মাণসামগ্রী", "icon": "construction", "color": "#B08968", "severity": 2, "awareness": true },
   { "id": "air_pollution",     "en": "Smoke / burning waste",   "bn": "ধোঁয়া / ময়লা পোড়ানো",      "icon": "smoke",        "color": "#6C757D", "severity": 2, "awareness": true },
   { "id": "noise",             "en": "Noise pollution",         "bn": "শব্দ দূষণ",               "icon": "noise",        "color": "#8338EC", "severity": 1, "awareness": true },

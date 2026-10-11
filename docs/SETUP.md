@@ -36,6 +36,22 @@ Reports are filed under one of the 64 districts (`public.districts`, mirrored in
 
 For automatic checks against the national database, integrate a provider such as **Porichoy** in an Edge Function that calls the provider and then updates `public.identities` with the service role. Turn auto-verify off once that's in place.
 
+## 3a. Content policy (posts about people, politics or personal gain)
+
+Every new report is screened by the database against `public.moderation_terms` (Bangla and English patterns, seeded from `shared/moderation.json`; moderators can add terms). A match is **held**: invisible to everyone but the author until a moderator approves or rejects it in **Admin → Held for review**. Each rejection is a strike; at `app_config.strikes_to_suspend` (default 3) the account is suspended automatically. Authors get a notification at each step.
+
+**Optional AI check (recommended in production).** Set `app_config.ai_moderation` to `true` and every report waits as *pending* until Claude reviews its text and photo:
+
+1. Deploy the function: `supabase functions deploy moderate-report --no-verify-jwt`
+2. Secrets: `supabase secrets set ANTHROPIC_API_KEY=… MODERATION_WEBHOOK_SECRET=<random string>`
+3. Database → Webhooks → new webhook on `public.reports`, event **Insert**, type *Supabase Edge Functions* → `moderate-report`, with HTTP header `x-webhook-secret: <same random string>`.
+
+Claude only publishes clear hazard/traffic reports; anything borderline is held for a moderator, and if the API is unreachable posts are held rather than published unchecked.
+
+## 3b. Traffic division
+
+Traffic-violation reports carry the vehicle type, violations and number plate. Create accounts for traffic officers in **Admin → Admin team** with the **Traffic division** role: they see only Dashboard, Live map and **Traffic violations**, where they verify reports, record a case or the action taken, or dismiss them, and see repeat offenders (vehicles reported more than once, grouped by plate digits so Bangla and English spellings match). The repeat-offender list is not public.
+
 ## 4. First super admin
 
 Create a user with email + password in Authentication → Users, then in the SQL editor:

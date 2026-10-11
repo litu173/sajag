@@ -1,4 +1,5 @@
 import {
+  Siren,
   CircleDot,
   CircleParking,
   Droplets,
@@ -32,6 +33,7 @@ const icons: Record<string, LucideIcon> = {
   walk: Footprints,
   parking: CircleParking,
   traffic: TrafficCone,
+  traffic_violation: Siren,
   construction: HardHat,
   smoke: Flame,
   noise: Volume2,

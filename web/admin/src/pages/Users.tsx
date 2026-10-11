@@ -65,6 +65,7 @@ export default function Users() {
                 <th>Followers</th>
                 <th>Identity</th>
                 <th>Account</th>
+                <th>Strikes</th>
                 <th>Joined</th>
               </tr>
             </thead>
@@ -87,6 +88,7 @@ export default function Users() {
                   <td>
                     <span className={`pill ${u.status === 'active' ? 'good' : 'bad'}`}>{u.status}</span>
                   </td>
+                  <td>{u.policyStrikes > 0 ? <span className={`pill ${u.policyStrikes >= 3 ? 'bad' : 'warn'}`}>{u.policyStrikes} / 3</span> : '—'}</td>
                   <td className="muted">{fmtDate(u.createdAt)}</td>
                 </tr>
               ))}
@@ -148,6 +150,22 @@ function UserDrawer({ user, onClose, onChanged }: { user: AdminUser; onClose: ()
         <dd>
           {user.status}
           {user.statusReason && <span className="muted"> — {user.statusReason}</span>}
+        </dd>
+        <dt>Policy strikes</dt>
+        <dd>
+          {user.policyStrikes} of 3
+          {canModerate && user.policyStrikes > 0 && (
+            <button
+              type="button"
+              className="btn sm"
+              style={{ marginLeft: 10 }}
+              onClick={async () => {
+                if (await run(() => adminSource.resetStrikes(user.id), 'Strikes cleared')) onChanged();
+              }}
+            >
+              Clear strikes
+            </button>
+          )}
         </dd>
         <dt>Joined</dt>
         <dd>{fmtDate(user.createdAt)}</dd>

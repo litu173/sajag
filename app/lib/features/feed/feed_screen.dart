@@ -29,7 +29,10 @@ class FeedScreen extends ConsumerStatefulWidget {
 
 class _FeedScreenState extends ConsumerState<FeedScreen> {
   FeedScope _scope = FeedScope.nearby;
+  FeedSection _section = FeedSection.hazards;
   String? _category;
+  String? _vehicle;
+  String _plate = '';
 
   /// A chosen area name; null means "near my current location".
   String? _area;
@@ -135,12 +138,35 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            _CategoryFilter(selected: _category, onSelected: (c) => setState(() => _category = c)),
+            const SizedBox(height: 12),
+            _SectionSwitch(
+              value: _section,
+              onChanged: (s) => setState(() {
+                _section = s;
+                _category = null;
+                _vehicle = null;
+                _plate = '';
+              }),
+            ),
+            if (_section == FeedSection.hazards)
+              _CategoryFilter(selected: _category, onSelected: (c) => setState(() => _category = c))
+            else
+              _TrafficFilter(
+                vehicle: _vehicle,
+                onVehicle: (v) => setState(() => _vehicle = v),
+                onPlate: (p) => setState(() => _plate = p),
+              ),
             Expanded(
               child: _FeedList(
-                key: ValueKey((_scope, _category, _area)),
-                feedKey: (scope: _scope, categoryId: _category, area: _scope == FeedScope.nearby ? _area : null),
+                key: ValueKey((_scope, _section, _category, _area, _vehicle, _plate)),
+                feedKey: (
+                  scope: _scope,
+                  section: _section,
+                  categoryId: _category,
+                  area: _scope == FeedScope.nearby ? _area : null,
+                  vehicleType: _vehicle,
+                  plate: _plate.isEmpty ? null : _plate,
+                ),
               ),
             ),
           ],
@@ -329,6 +355,155 @@ class _GlassIconButton extends StatelessWidget {
 }
 
 /// Five quick categories plus "Show all", which opens every category in a sheet.
+/// "Hazards | Traffic watch" — the two sections of the home feed.
+class _SectionSwitch extends StatelessWidget {
+  const _SectionSwitch({required this.value, required this.onChanged});
+  final FeedSection value;
+  final ValueChanged<FeedSection> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    Widget option(FeedSection s, IconData icon, String label) {
+      final on = s == value;
+      return Expanded(
+        child: Semantics(
+          button: true,
+          selected: on,
+          child: GestureDetector(
+            onTap: () => onChanged(s),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              height: 42,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: on ? theme.cardTheme.color : Colors.transparent,
+                borderRadius: BorderRadius.circular(21),
+                boxShadow: on ? SajagColors.softShadow(theme.brightness) : null,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 18, color: on ? theme.colorScheme.primary : theme.textTheme.bodySmall?.color),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: on ? theme.colorScheme.primary : theme.textTheme.bodySmall?.color,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        key: const Key('feed-sections'),
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(25),
+        ),
+        child: Row(
+          children: [
+            option(FeedSection.hazards, Icons.warning_amber_rounded, l.sectionHazards),
+            option(FeedSection.traffic, Icons.local_police_outlined, l.sectionTraffic),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Traffic section: number-plate search and vehicle-type chips.
+class _TrafficFilter extends ConsumerStatefulWidget {
+  const _TrafficFilter({required this.vehicle, required this.onVehicle, required this.onPlate});
+  final String? vehicle;
+  final ValueChanged<String?> onVehicle;
+  final ValueChanged<String> onPlate;
+
+  @override
+  ConsumerState<_TrafficFilter> createState() => _TrafficFilterState();
+}
+
+class _TrafficFilterState extends ConsumerState<_TrafficFilter> {
+  Timer? _debounce;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final vehicles = ref.watch(catalogProvider).vehicles;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+          child: TextField(
+            key: const Key('plate-search'),
+            textInputAction: TextInputAction.search,
+            onChanged: (v) {
+              _debounce?.cancel();
+              _debounce = Timer(const Duration(milliseconds: 400), () => widget.onPlate(v.trim()));
+            },
+            decoration: InputDecoration(
+              hintText: l.searchPlate,
+              prefixIcon: const Icon(Icons.search_rounded),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 58,
+          child: ListView(
+            key: const Key('vehicle-chips'),
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+            children: [
+              CategoryFilterChip(
+                label: l.allVehicles,
+                icon: Icons.commute_rounded,
+                color: theme.colorScheme.primary,
+                selected: widget.vehicle == null,
+                onTap: () => widget.onVehicle(null),
+              ),
+              for (final v in vehicles.where((v) => v.id != 'other')) ...[
+                const SizedBox(width: 8),
+                CategoryFilterChip(
+                  label: v.name(context),
+                  icon: vehicleIcon(v.id),
+                  color: const Color(0xFFC2185B),
+                  selected: widget.vehicle == v.id,
+                  onTap: () => widget.onVehicle(widget.vehicle == v.id ? null : v.id),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _CategoryFilter extends ConsumerWidget {
   const _CategoryFilter({required this.selected, required this.onSelected});
   final String? selected;
@@ -339,7 +514,7 @@ class _CategoryFilter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
-    final categories = ref.watch(catalogProvider).categories;
+    final categories = ref.watch(catalogProvider).categories.where((c) => c.id != trafficCategory);
     final quick = categories.take(_quick).toList();
     final current = selected == null ? null : ref.watch(catalogProvider).category(selected!);
     final visible = [if (current != null && !quick.contains(current)) current, ...quick];
@@ -441,7 +616,7 @@ class _CategorySheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
-    final categories = ref.watch(catalogProvider).categories;
+    final categories = ref.watch(catalogProvider).categories.where((c) => c.id != trafficCategory);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -526,7 +701,9 @@ class _FeedListState extends ConsumerState<_FeedList> {
                   icon: widget.feedKey.scope == FeedScope.following
                       ? Icons.group_add_outlined
                       : Icons.photo_camera_outlined,
-                  message: widget.feedKey.categoryId != null
+                  message: widget.feedKey.section == FeedSection.traffic
+                      ? l.noTrafficReports
+                      : widget.feedKey.categoryId != null
                       ? l.emptyCategory
                       : switch (widget.feedKey.scope) {
                           FeedScope.following => l.emptyFollowing,
@@ -546,9 +723,14 @@ class _FeedListState extends ConsumerState<_FeedList> {
         }
 
         // Interleave an awareness tip after every few reports (only in the unfiltered feeds).
-        final showTips = awareness.isNotEmpty && widget.feedKey.categoryId == null;
+        final traffic = widget.feedKey.section == FeedSection.traffic;
+        final showTips = awareness.isNotEmpty && widget.feedKey.categoryId == null && !traffic;
         final tipSlots = showTips ? state.items.length ~/ _awarenessEvery : 0;
-        final header = substituted && widget.feedKey.scope == FeedScope.nearby ? 1 : 0;
+        final notes = [
+          if (traffic) l.trafficIntro,
+          if (substituted && widget.feedKey.scope == FeedScope.nearby) l.demoLocationNote,
+        ];
+        final header = notes.length;
         final count = header + state.items.length + tipSlots + (state.hasMore ? 1 : 0);
 
         return NotificationListener<ScrollNotification>(
@@ -559,7 +741,7 @@ class _FeedListState extends ConsumerState<_FeedList> {
               padding: EdgeInsets.fromLTRB(20, 8, 20, navClearance(context)),
               itemCount: count,
               itemBuilder: (context, index) {
-                if (header == 1 && index == 0) return _Note(text: l.demoLocationNote);
+                if (index < header) return _Note(text: notes[index]);
                 var i = index - header;
                 if (showTips) {
                   const block = _awarenessEvery + 1;

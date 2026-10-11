@@ -5,6 +5,7 @@ export * from './config';
 export * from './portal-source';
 export { areaNamesBn } from './areas';
 export * from './districts';
+export * from './traffic';
 export { photoSources, type PhotoSources } from './photo';
 export { CategoryIcon } from './icons';
 export { useAsync, type AsyncState } from './use-async';

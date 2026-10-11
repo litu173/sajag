@@ -61,7 +61,12 @@ abstract interface class SajagRepository {
   // ---- reports
   Future<List<Report>> feed({
     required FeedScope scope,
+    FeedSection section = FeedSection.hazards,
     LatLng? near,
+
+    /// Traffic section filters.
+    String? vehicleType,
+    String? plate,
 
     /// Restrict to one named area (overrides [near]).
     String? area,

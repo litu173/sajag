@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../data/models.dart';
+import '../../data/policy.dart';
 import '../format.dart';
 import '../theme.dart';
 
@@ -20,6 +21,7 @@ const _categoryIcons = <String, IconData>{
   'walk': Icons.directions_walk,
   'parking': Icons.local_parking,
   'traffic': Icons.traffic_outlined,
+  'traffic_violation': Icons.local_police_outlined,
   'construction': Icons.construction,
   'smoke': Icons.local_fire_department_outlined,
   'noise': Icons.volume_up_outlined,
@@ -30,6 +32,21 @@ const _categoryIcons = <String, IconData>{
 };
 
 IconData categoryIcon(Category c) => _categoryIcons[c.icon] ?? Icons.report_outlined;
+
+const _vehicleIcons = <String, IconData>{
+  'motorbike': Icons.two_wheeler_rounded,
+  'cng': Icons.electric_rickshaw_rounded,
+  'easybike': Icons.electric_moped_rounded,
+  'bus': Icons.directions_bus_rounded,
+  'truck': Icons.local_shipping_rounded,
+  'car': Icons.directions_car_rounded,
+  'microbus': Icons.airport_shuttle_rounded,
+  'pickup': Icons.local_shipping_outlined,
+  'leguna': Icons.airport_shuttle_outlined,
+  'rickshaw': Icons.pedal_bike_rounded,
+};
+
+IconData vehicleIcon(String? id) => _vehicleIcons[id] ?? Icons.commute_rounded;
 
 class SajagLogo extends StatelessWidget {
   const SajagLogo({super.key, this.size = 72});
@@ -77,8 +94,23 @@ class CategoryChip extends StatelessWidget {
   );
 }
 
-String statusLabel(BuildContext context, ReportStatus status) {
+/// Traffic violations use the traffic division's words for the same stages.
+String statusLabel(BuildContext context, ReportStatus status, {bool traffic = false}) {
   final l = context.l10n;
+  if (traffic) {
+    switch (status) {
+      case ReportStatus.open:
+        return l.trafficOpen;
+      case ReportStatus.acknowledged:
+        return l.trafficAcknowledged;
+      case ReportStatus.inProgress:
+        return l.trafficInProgress;
+      case ReportStatus.resolved:
+        return l.trafficResolved;
+      case ReportStatus.hidden || ReportStatus.removed:
+        break;
+    }
+  }
   return switch (status) {
     ReportStatus.open => l.statusOpen,
     ReportStatus.acknowledged => l.statusAcknowledged,
@@ -89,9 +121,57 @@ String statusLabel(BuildContext context, ReportStatus status) {
   };
 }
 
+/// Status of a report, or its moderation state while it isn't public (only the author sees those).
+class ReportStatusChip extends StatelessWidget {
+  const ReportStatusChip(this.report, {super.key});
+  final Report report;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final (label, color, icon) = switch (report.moderation) {
+      'pending' => (l.modPending, SajagColors.progress, Icons.hourglass_top_rounded),
+      'held' => (l.modHeld, SajagColors.progress, Icons.gpp_maybe_rounded),
+      'rejected' => (l.modRejected, SajagColors.accent, Icons.block_rounded),
+      _ => (null, null, null),
+    };
+    if (label == null) return StatusChip(report.status, traffic: report.isTraffic);
+    return _Pill(label: label, color: color!, icon: icon!);
+  }
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill({required this.label, required this.color, required this.icon});
+  final String label;
+  final Color color;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(color: color.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(20)),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: color),
+        const SizedBox(width: 5),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 12),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class StatusChip extends StatelessWidget {
-  const StatusChip(this.status, {super.key});
+  const StatusChip(this.status, {super.key, this.traffic = false});
   final ReportStatus status;
+  final bool traffic;
 
   @override
   Widget build(BuildContext context) {
@@ -112,13 +192,53 @@ class StatusChip extends StatelessWidget {
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 5),
           Text(
-            statusLabel(context, status),
+            statusLabel(context, status, traffic: traffic),
             style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 12),
           ),
         ],
       ),
     );
   }
+}
+
+/// Plain-language explanation of a content-policy issue.
+String policyIssueText(BuildContext context, PolicyIssue issue) {
+  final l = context.l10n;
+  return switch (issue) {
+    PolicyIssue.political => l.policyIssuePolitical,
+    PolicyIssue.person => l.policyIssuePerson,
+    PolicyIssue.celebrity => l.policyIssueCelebrity,
+    PolicyIssue.personalGain => l.policyIssuePersonalGain,
+    PolicyIssue.contact => l.policyIssueContact,
+  };
+}
+
+/// A number plate drawn like the real thing: white plate, dark text, thin border.
+class PlateBadge extends StatelessWidget {
+  const PlateBadge(this.plate, {super.key, this.large = false});
+  final String plate;
+  final bool large;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: EdgeInsets.symmetric(horizontal: large ? 14 : 9, vertical: large ? 8 : 4),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(large ? 10 : 7),
+      border: Border.all(color: const Color(0xFF1A1D1C), width: large ? 2 : 1.4),
+    ),
+    child: Text(
+      plate,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        color: const Color(0xFF1A1D1C),
+        fontWeight: FontWeight.w700,
+        fontSize: large ? 18 : 13,
+        letterSpacing: 0.3,
+      ),
+    ),
+  );
 }
 
 /// Frosted white pill used on top of photos.

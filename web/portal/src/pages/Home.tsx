@@ -12,6 +12,7 @@ import {
   matchesDistrict,
   levelName,
   portalSource,
+  trafficCategory,
   type Report,
   useAsync,
 } from '@sajag/shared';
@@ -39,13 +40,16 @@ export default function Home() {
 
   const view = useMemo(() => {
     const all = (recent.data ?? []).filter((r) => r.photoUrl);
-    const latest = [...all].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    // The most important recent story from five different problem types, so the carousel has variety.
+    const sorted = [...all].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    // Traffic violations get their own section; the rest of the page is about hazards.
+    const latest = sorted.filter((r) => r.categoryId !== trafficCategory);
+    const traffic = sorted.filter((r) => r.categoryId === trafficCategory).slice(0, 10);
+    // The most important recent stories for the cover strip: one per problem type first, for
+    // variety, then the next most important ones, up to ten.
+    const ranked = [...latest.slice(0, 80)].sort((a, b) => impact(b) - impact(a));
     const heroes: Report[] = [];
-    for (const r of [...latest.slice(0, 60)].sort((a, b) => impact(b) - impact(a))) {
-      if (heroes.length === 5) break;
-      if (!heroes.some((h) => h.categoryId === r.categoryId)) heroes.push(r);
-    }
+    for (const r of ranked) if (heroes.length < 10 && !heroes.some((h) => h.categoryId === r.categoryId)) heroes.push(r);
+    for (const r of ranked) if (heroes.length < 10 && !heroes.includes(r)) heroes.push(r);
     const heroIds = new Set(heroes.map((r) => r.id));
     const mosaic = latest.filter((r) => !heroIds.has(r.id)).slice(0, mosaicSizes.length);
 
@@ -53,7 +57,7 @@ export default function Home() {
     for (const r of latest) byCat.set(r.categoryId, [...(byCat.get(r.categoryId) ?? []), r]);
     const cats = [...byCat.entries()].sort((a, b) => b[1].length - a[1].length);
     const resolved = latest.filter((r) => r.status === 'resolved').slice(0, 8);
-    return { heroes, mosaic, cats, resolved };
+    return { heroes, mosaic, cats, resolved, traffic };
   }, [recent.data]);
 
   if (recent.error) {
@@ -71,7 +75,15 @@ export default function Home() {
   return (
     <main>
       <div className="container">
-        {loading ? <Skeleton height="min(84vh, 820px)" radius={26} /> : <Hero slides={view.heroes} />}
+        {loading ? (
+          <div className="strip-skeleton" aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} height="min(70vh, 620px)" radius={26} />
+            ))}
+          </div>
+        ) : (
+          <Hero slides={view.heroes} />
+        )}
 
         {/* ---------------------------------------------------------------- welcome */}
         <section className="section">
@@ -142,6 +154,29 @@ export default function Home() {
             ))}
           </ScrollRow>
         </section>
+
+        {/* ---------------------------------------------------------------- traffic watch */}
+        {view.traffic.length > 0 && (
+          <section className="section" id="traffic">
+            <Reveal>
+              <SectionHead
+                eyebrow={t('navTraffic')}
+                title={t('trafficTeaserTitle')}
+                hint={t('trafficTeaserHint')}
+                end={
+                  <Link className="btn ghost sm" to="/traffic">
+                    {t('viewAll')} <ArrowRight size={15} aria-hidden="true" />
+                  </Link>
+                }
+              />
+            </Reveal>
+            <ScrollRow label={t('navTraffic')}>
+              {view.traffic.map((r) => (
+                <Card key={r.id} report={r} />
+              ))}
+            </ScrollRow>
+          </section>
+        )}
 
         {/* ---------------------------------------------------------------- data */}
         <section className="section" id="data">
@@ -248,6 +283,9 @@ export default function Home() {
               </Reveal>
             ))}
           </div>
+          <p className="rules-line">
+            {t('rulesShort')} <Link to="/rules">{t('communityRules')}</Link>
+          </p>
         </section>
 
         {/* ---------------------------------------------------------------- app + leaderboard */}

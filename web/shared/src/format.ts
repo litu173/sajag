@@ -38,8 +38,16 @@ export const statusLabels: Record<ReportStatus, { en: string; bn: string; tone: 
   removed: { en: 'Removed', bn: 'সরানো হয়েছে', tone: '#c62828' },
 };
 
-export function statusLabel(status: ReportStatus, lang: Lang): string {
-  return statusLabels[status][lang];
+/** The traffic division's words for the same stages of a traffic-violation report. */
+export const trafficStatusLabels: Partial<Record<ReportStatus, { en: string; bn: string }>> = {
+  open: { en: 'Reported', bn: 'রিপোর্ট করা হয়েছে' },
+  acknowledged: { en: 'Under verification', bn: 'যাচাই চলছে' },
+  in_progress: { en: 'Case in progress', bn: 'মামলা প্রক্রিয়াধীন' },
+  resolved: { en: 'Action taken', bn: 'ব্যবস্থা নেওয়া হয়েছে' },
+};
+
+export function statusLabel(status: ReportStatus, lang: Lang, traffic = false): string {
+  return (traffic ? trafficStatusLabels[status]?.[lang] : undefined) ?? statusLabels[status][lang];
 }
 
 /** Days between reporting and resolution, or null if unresolved. */

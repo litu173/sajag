@@ -86,8 +86,7 @@
   "emptyFollowing": "Follow citizens to see their reports here.",
   "emptyCategory": "No reports in this category yet.",
   "demoLocationNote": "Demo: showing Dhaka because you're outside Bangladesh",
-  "seeItToo": "I see it too",
-  "confirmations": "{count, plural, =0{Be the first to confirm} =1{1 person sees this} other{{count} people see this}}",
+  "confirmations": "{count, plural, =0{Be the first to verify} =1{1 person verified this} other{{count} people verified this}}",
   "@confirmations": {
     "placeholders": {
       "count": {
@@ -524,5 +523,69 @@
   "usePasswordInstead": "Use my password instead",
   "verifyContinue": "Verify and continue",
   "errReauthRequired": "Please confirm it’s you first.",
-  "passwordChooseIntro": "Choose a password so you can sign in without waiting for an SMS."
+  "passwordChooseIntro": "Choose a password so you can sign in without waiting for an SMS.",
+  "sectionHazards": "Hazards",
+  "sectionTraffic": "Traffic watch",
+  "searchPlate": "Search a number plate",
+  "allVehicles": "All vehicles",
+  "trafficIntro": "Vehicles breaking traffic law, reported by citizens. The traffic division verifies each one before taking action.",
+  "noTrafficReports": "No traffic violations reported here yet.",
+  "reportTypeHazard": "Hazard",
+  "reportTypeTraffic": "Traffic violation",
+  "vehicleTypeLabel": "Vehicle",
+  "violationsLabel": "What rule did it break?",
+  "plateLabel": "Number plate",
+  "plateHelper": "Type it as written on the plate. Leave it empty if it isn’t readable.",
+  "pickVehicle": "Choose the vehicle type.",
+  "pickViolation": "Choose at least one violation.",
+  "trafficSafety": "Stay safe: never film while driving and don’t confront anyone. Capture the vehicle and its plate, not people’s faces.",
+  "policyNote": "Report hazards, not people. Posts about any person, politician or celebrity, or for personal gain, are not published — repeated violations get the account banned.",
+  "policyWarnTitle": "This can’t be published as written",
+  "policyIssuePolitical": "It mentions politics or a political figure.",
+  "policyIssuePerson": "It seems to be about a specific person.",
+  "policyIssueCelebrity": "It mentions a celebrity or public personality.",
+  "policyIssuePersonalGain": "It looks like an ad, a private dispute or personal gain.",
+  "policyIssueContact": "It contains a phone number, link or social media handle.",
+  "policyWarnBody": "Describe only the hazard — what it is and where. If you send it anyway, a moderator reviews it first and it stays hidden until approved. Posts that break the rules count as a strike; after 3 strikes the account is banned.",
+  "editDescription": "Edit description",
+  "sendForReview": "Send for review anyway",
+  "sentForReview": "Sent for review. You’ll be notified when a moderator decides.",
+  "communityRules": "Community rules",
+  "rulesIntro": "Sajag exists to warn people about public hazards. To keep it fair and safe:",
+  "rule1": "Report only public hazards and traffic violations.",
+  "rule2": "Never post about a person, politician, political party or celebrity — no names, accusations or campaigns.",
+  "rule3": "No ads, sales, private disputes, revenge or anything for personal gain.",
+  "rule4": "No phone numbers, links or social media handles.",
+  "rule5": "Photos must be live and real. Capture the problem or the vehicle, not people’s faces.",
+  "rule6": "Posts that break these rules are not published. Each one is a strike; after 3 strikes the account is banned.",
+  "agreeRules": "I agree",
+  "modPending": "Being checked",
+  "modHeld": "Under review",
+  "modRejected": "Not published",
+  "modHeldBody": "Only you can see this post for now. A moderator is checking it against the community rules.",
+  "modRejectedBody": "This post was not published because it breaks the community rules.",
+  "nPostHeld": "Your post is under review before it can be published",
+  "nPostApproved": "Your post was approved and is now public",
+  "nPostRejected": "Your post broke the community rules and was not published. Warning {strikes} of {limit}.",
+  "@nPostRejected": {
+    "placeholders": {
+      "strikes": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "nAccountSuspended": "Your account is suspended for repeatedly breaking the community rules.",
+  "trafficOpen": "Reported",
+  "trafficAcknowledged": "Under verification",
+  "trafficInProgress": "Case in progress",
+  "trafficResolved": "Action taken",
+  "trafficDetails": "Violation details",
+  "plateUnknown": "Plate not readable",
+  "verifyAction": "I verify",
+  "verifiedAction": "Verified",
+  "verifyExplain": "Saw this too? Verify it so authorities know it’s real.",
+  "moreActions": "More"
 }

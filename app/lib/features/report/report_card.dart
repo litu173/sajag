@@ -56,7 +56,7 @@ class ReportCard extends ConsumerWidget {
                     Positioned(
                       left: 14,
                       top: 14,
-                      right: 14,
+                      right: 8,
                       child: Row(
                         children: [
                           Flexible(
@@ -76,10 +76,14 @@ class ReportCard extends ConsumerWidget {
                                 iconColor: report.status == ReportStatus.resolved
                                     ? SajagColors.resolved
                                     : SajagColors.progress,
-                                label: solvedIn ?? statusLabel(context, report.status),
+                                label: report.isTraffic
+                                    ? statusLabel(context, report.status, traffic: true)
+                                    : solvedIn ?? statusLabel(context, report.status),
                               ),
                             ),
                           ],
+                          const Spacer(),
+                          _MoreMenu(report: report),
                         ],
                       ),
                     ),
@@ -90,6 +94,7 @@ class ReportCard extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (report.isTraffic) ...[_TrafficLine(report: report), const SizedBox(height: 8)],
                           Text(
                             report.description,
                             maxLines: 2,
@@ -134,27 +139,82 @@ class ReportCard extends ConsumerWidget {
           child: Row(
             children: [
               Expanded(child: AuthorLine(report: report)),
+              const SizedBox(width: 8),
               ConfirmButton(report: report),
-              PopupMenuButton<String>(
-                tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
-                icon: const Icon(Icons.more_horiz_rounded),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                onSelected: (v) =>
-                    unawaited(v == 'flag' ? flagReport(context, ref, report) : shareReport(context, ref, report)),
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: 'share',
-                    child: ListTile(leading: const Icon(Icons.ios_share_rounded), title: Text(context.l10n.share)),
-                  ),
-                  PopupMenuItem(
-                    value: 'flag',
-                    child: ListTile(leading: const Icon(Icons.flag_outlined), title: Text(context.l10n.flagReport)),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// Vertical "more" button on the photo: share or flag.
+class _MoreMenu extends ConsumerWidget {
+  const _MoreMenu({required this.report});
+  final Report report;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => PopupMenuButton<String>(
+    tooltip: context.l10n.moreActions,
+    position: PopupMenuPosition.under,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+    onSelected: (v) => unawaited(v == 'flag' ? flagReport(context, ref, report) : shareReport(context, ref, report)),
+    itemBuilder: (_) => [
+      PopupMenuItem(
+        value: 'share',
+        child: ListTile(leading: const Icon(Icons.ios_share_rounded), title: Text(context.l10n.share)),
+      ),
+      PopupMenuItem(
+        value: 'flag',
+        child: ListTile(leading: const Icon(Icons.flag_outlined), title: Text(context.l10n.flagReport)),
+      ),
+    ],
+    child: Container(
+      width: 34,
+      height: 34,
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.92), shape: BoxShape.circle),
+      child: const Icon(Icons.more_vert_rounded, size: 20, color: Color(0xFF1A1D1C)),
+    ),
+  );
+}
+
+/// Plate and first violation on a traffic card.
+class _TrafficLine extends ConsumerWidget {
+  const _TrafficLine({required this.report});
+  final Report report;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final catalog = ref.watch(catalogProvider);
+    final violation = report.violations.isEmpty ? null : catalog.violation(report.violations.first);
+    return Row(
+      children: [
+        if (report.plateNumber != null) ...[Flexible(child: PlateBadge(report.plateNumber!)), const SizedBox(width: 8)],
+        if (violation != null)
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(color: const Color(0xCCC2185B), borderRadius: BorderRadius.circular(14)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(vehicleIcon(report.vehicleType), size: 14, color: Colors.white),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      report.violations.length > 1
+                          ? '${violation.name(context)} +${localDigits(context, '${report.violations.length - 1}')}'
+                          : violation.name(context),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -195,6 +255,7 @@ class AuthorLine extends StatelessWidget {
   }
 }
 
+/// "I verify · 12": people who saw the problem too confirm it's real. Text only, no icon.
 class ConfirmButton extends ConsumerWidget {
   const ConfirmButton({required this.report, super.key, this.expanded = false});
   final Report report;
@@ -202,31 +263,29 @@ class ConfirmButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     final state = ref.watch(confirmationsProvider);
     final on = state.isConfirmed(report.id);
     final count = report.confirmCount + state.delta(report.id);
-    final label = expanded ? context.l10n.seeItToo : compactNumber(context, count);
-    final color = on ? SajagColors.brand : Theme.of(context).colorScheme.onSurfaceVariant;
+    final action = on ? l.verifiedAction : l.verifyAction;
+    final label = expanded ? action : '$action · ${compactNumber(context, count)}';
 
     return Semantics(
       button: true,
       toggled: on,
-      label: '${context.l10n.seeItToo}, ${context.l10n.confirmations(count)}',
-      child: TextButton.icon(
+      label: '$action, ${localDigits(context, l.confirmations(count))}',
+      child: TextButton(
+        key: ValueKey('verify-${report.id}'),
         onPressed: () => toggleConfirm(context, ref, report),
         style: TextButton.styleFrom(
-          foregroundColor: expanded ? SajagColors.brand : color,
-          backgroundColor: on ? SajagColors.brand.withValues(alpha: 0.12) : Theme.of(context).cardTheme.color,
+          foregroundColor: on ? Colors.white : SajagColors.brand,
+          backgroundColor: on ? SajagColors.brand : SajagColors.brand.withValues(alpha: 0.1),
           shape: const StadiumBorder(),
-          minimumSize: Size(expanded ? double.infinity : 48, expanded ? 56 : 44),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          side: expanded && !on ? BorderSide(color: SajagColors.brand.withValues(alpha: 0.35), width: 1.2) : null,
-          textStyle: expanded ? const TextStyle(fontSize: 17) : null,
+          minimumSize: Size(expanded ? double.infinity : 48, expanded ? 56 : 40),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          textStyle: TextStyle(fontSize: expanded ? 17 : 14, fontWeight: FontWeight.w700),
         ),
-        icon: Icon(on ? Icons.visibility_rounded : Icons.visibility_outlined, size: expanded ? 24 : 20),
-        label: ExcludeSemantics(
-          child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
-        ),
+        child: ExcludeSemantics(child: Text(label)),
       ),
     );
   }

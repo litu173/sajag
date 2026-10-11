@@ -19,6 +19,9 @@ interface DemoReport {
   photo_id: string;
   photo_by: string;
   resolve_hours?: number;
+  vehicle_type?: string;
+  violations?: string[];
+  plate_number?: string | null;
   resolved_by?: 'reporter' | 'admin';
 }
 
@@ -48,6 +51,11 @@ export function demoReports(now = new Date()): Report[] {
       createdAt,
       resolvedAt: r.resolve_hours === undefined ? null : new Date(createdAt.getTime() + r.resolve_hours * 3_600_000),
       resolvedBy: r.resolved_by ?? null,
+      vehicleType: r.vehicle_type ?? null,
+      violations: r.violations ?? [],
+      plateNumber: r.plate_number ?? null,
+      moderation: 'ok',
+      moderationReason: null,
     };
   });
 }

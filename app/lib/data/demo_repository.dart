@@ -11,6 +11,7 @@ import '../core/config.dart';
 import 'badge_progress.dart';
 import 'catalog.dart';
 import 'models.dart';
+import 'policy.dart';
 import 'repository.dart';
 
 /// Fully local backend for previews and testing. Seeded from shared/demo/reports.json; anything
@@ -58,6 +59,9 @@ class DemoRepository implements SajagRepository {
       createdAt: created,
       resolvedAt: resolveHours == null ? null : created.add(Duration(minutes: (resolveHours * 60).round())),
       resolvedBy: r['resolved_by'] as String?,
+      vehicleType: r['vehicle_type'] as String?,
+      violations: ((r['violations'] as List<dynamic>?) ?? const []).cast<String>(),
+      plateNumber: r['plate_number'] as String?,
     );
   }
 
@@ -115,7 +119,7 @@ class DemoRepository implements SajagRepository {
   }
 
   List<Report> get _visible => _reports
-      .where((r) => r.status != ReportStatus.hidden && r.status != ReportStatus.removed)
+      .where((r) => r.isPublished && r.status != ReportStatus.hidden && r.status != ReportStatus.removed)
       .map(_withMyLook)
       .toList();
 
@@ -302,7 +306,7 @@ class DemoRepository implements SajagRepository {
   }
 
   Profile _profile() {
-    final mine = _myReports.where((r) => r.status != ReportStatus.removed);
+    final mine = _myReports.where((r) => r.isPublished && r.status != ReportStatus.removed);
     return Profile(
       id: myId,
       alias: _alias,
@@ -403,7 +407,10 @@ class DemoRepository implements SajagRepository {
   @override
   Future<List<Report>> feed({
     required FeedScope scope,
+    FeedSection section = FeedSection.hazards,
     LatLng? near,
+    String? vehicleType,
+    String? plate,
     String? area,
     String? categoryId,
     DateTime? before,
@@ -412,7 +419,22 @@ class DemoRepository implements SajagRepository {
     await _delay();
     const distance = Distance();
     Iterable<Report> items = _visible;
-    if (categoryId != null) items = items.where((r) => r.categoryId == categoryId);
+    if (categoryId != null) {
+      items = items.where((r) => r.categoryId == categoryId);
+    } else {
+      items = items.where((r) => r.isTraffic == (section == FeedSection.traffic));
+    }
+    if (vehicleType != null) items = items.where((r) => r.vehicleType == vehicleType);
+    if (plate != null && plateKey(plate).length >= 2) {
+      final key = plateKey(plate);
+      final digits = plateDigits(plate);
+      items = items.where(
+        (r) =>
+            r.plateNumber != null &&
+            (plateKey(r.plateNumber!).contains(key) ||
+                (digits.length >= 3 && plateDigits(r.plateNumber!).contains(digits))),
+      );
+    }
     if (area != null) items = items.where((r) => r.areaName == area);
     if (before != null) items = items.where((r) => r.createdAt.isBefore(before));
     switch (scope) {
@@ -470,8 +492,41 @@ class DemoRepository implements SajagRepository {
   Future<Report> createReport(NewReport input) async {
     await _delay();
     if (_stage != AuthStage.ready) throw const SajagException(SajagErrorCode.notVerified);
+    final traffic = input.categoryId == trafficCategory;
+    if (traffic && (input.vehicleType == null || input.violations.isEmpty)) {
+      throw const SajagException(SajagErrorCode.unknown, 'bad_traffic');
+    }
+    // Same screening as the server: anything that reads like it's about a person, politics,
+    // celebrities or personal gain waits for a moderator instead of going public.
+    final issue = _catalog.policy.check(input.description);
     if (DateTime.now().difference(input.capturedAt) > AppConfig.maxCaptureAge) {
       throw const SajagException(SajagErrorCode.staleCapture);
+    }
+    if (issue != null) {
+      final held = Report(
+        id: 'mine-${DateTime.now().microsecondsSinceEpoch}',
+        aliasId: input.showAlias ? myId : null,
+        authorAlias: input.showAlias ? _alias : null,
+        categoryId: input.categoryId,
+        description: input.description,
+        localPhotoPath: input.photoPath,
+        lat: input.lat,
+        lng: input.lng,
+        areaName: input.areaName,
+        city: input.city,
+        status: ReportStatus.open,
+        confirmCount: 0,
+        createdAt: DateTime.now(),
+        vehicleType: traffic ? input.vehicleType : null,
+        violations: traffic ? input.violations : const [],
+        plateNumber: traffic ? _cleanPlate(input.plateNumber) : null,
+        moderation: 'held',
+        moderationReason: _issueWire(issue),
+      );
+      _reports.insert(0, held);
+      _mine.add(held.id);
+      _notify('post_held', reportId: held.id, data: {'reason': _issueWire(issue)});
+      return held;
     }
     final today = DateTime.now();
     final day = DateTime(today.year, today.month, today.day);
@@ -500,6 +555,9 @@ class DemoRepository implements SajagRepository {
       status: ReportStatus.open,
       confirmCount: 0,
       createdAt: DateTime.now(),
+      vehicleType: traffic ? input.vehicleType : null,
+      violations: traffic ? input.violations : const [],
+      plateNumber: traffic ? _cleanPlate(input.plateNumber) : null,
     );
     _reports.insert(0, report);
     _mine.add(report.id);
@@ -507,6 +565,19 @@ class DemoRepository implements SajagRepository {
     _evaluateBadges();
     return report;
   }
+
+  static String? _cleanPlate(String? p) {
+    final s = p?.trim().replaceAll(RegExp(r'\s+'), ' ');
+    return s == null || s.isEmpty ? null : s;
+  }
+
+  static String _issueWire(PolicyIssue i) => switch (i) {
+    PolicyIssue.political => 'political',
+    PolicyIssue.person => 'person',
+    PolicyIssue.celebrity => 'celebrity',
+    PolicyIssue.personalGain => 'personal_gain',
+    PolicyIssue.contact => 'contact',
+  };
 
   // ---------------------------------------------------------------- interactions
   @override

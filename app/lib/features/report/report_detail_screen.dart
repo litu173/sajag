@@ -15,6 +15,7 @@ import '../../core/theme.dart';
 import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
+import '../../data/policy.dart';
 import '../feed/feed_controller.dart';
 import 'confirmations.dart';
 import 'report_actions.dart';
@@ -203,7 +204,7 @@ class _Detail extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
               sliver: SliverList.list(
                 children: [
-                  Wrap(spacing: 8, runSpacing: 8, children: [CategoryChip(category), StatusChip(report.status)]),
+                  Wrap(spacing: 8, runSpacing: 8, children: [CategoryChip(category), ReportStatusChip(report)]),
                   const SizedBox(height: 14),
                   Text(report.description, style: theme.textTheme.titleLarge?.copyWith(height: 1.35)),
                   const SizedBox(height: 10),
@@ -215,6 +216,8 @@ class _Detail extends ConsumerWidget {
                     ].join(' · '),
                     style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
+                  if (!report.isPublished) ...[const SizedBox(height: 16), _ModerationBanner(report: report)],
+                  if (report.isTraffic) ...[const SizedBox(height: 16), _TrafficPanel(report: report)],
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -223,7 +226,9 @@ class _Detail extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  if (!mine) ...[
+                  if (!mine && report.isPublished) ...[
+                    Text(l.verifyExplain, style: theme.textTheme.bodyMedium),
+                    const SizedBox(height: 10),
                     SizedBox(height: 56, child: ConfirmButton(report: report, expanded: true)),
                     const SizedBox(height: 6),
                   ],
@@ -333,13 +338,120 @@ class _FollowButton extends ConsumerWidget {
   }
 }
 
+/// Shown to the author while their post isn't public.
+class _ModerationBanner extends StatelessWidget {
+  const _ModerationBanner({required this.report});
+  final Report report;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final rejected = report.moderation == 'rejected';
+    final color = rejected ? SajagColors.accent : SajagColors.progress;
+    final issue = policyIssueFromWire(report.moderationReason?.split(':').first.trim());
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(18)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(rejected ? Icons.block_rounded : Icons.gpp_maybe_rounded, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(rejected ? l.modRejected : l.modHeld, style: theme.textTheme.titleSmall?.copyWith(color: color)),
+                const SizedBox(height: 4),
+                Text(rejected ? l.modRejectedBody : l.modHeldBody, style: theme.textTheme.bodyMedium),
+                if (issue != null) ...[
+                  const SizedBox(height: 4),
+                  Text(policyIssueText(context, issue), style: theme.textTheme.bodySmall),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Vehicle, violations and number plate of a traffic report.
+class _TrafficPanel extends ConsumerWidget {
+  const _TrafficPanel({required this.report});
+  final Report report;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final catalog = ref.watch(catalogProvider);
+    final vehicle = report.vehicleType == null ? null : catalog.vehicle(report.vehicleType!);
+    return Container(
+      key: const Key('traffic-panel'),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: SajagColors.softShadow(theme.brightness),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l.trafficDetails, style: theme.textTheme.titleSmall),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFC2185B).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(vehicleIcon(report.vehicleType), color: const Color(0xFFC2185B)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: Text(vehicle?.name(context) ?? '—', style: theme.textTheme.titleMedium)),
+              if (report.plateNumber != null)
+                Flexible(child: PlateBadge(report.plateNumber!, large: true))
+              else
+                Text(l.plateUnknown, style: theme.textTheme.bodySmall),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final v in report.violations)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC2185B).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    catalog.violation(v).name(context),
+                    style: const TextStyle(color: Color(0xFFC2185B), fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _StatusTimeline extends StatelessWidget {
   const _StatusTimeline({required this.report});
   final Report report;
 
   @override
   Widget build(BuildContext context) {
-    final l = context.l10n;
     final theme = Theme.of(context);
     if (report.status == ReportStatus.hidden || report.status == ReportStatus.removed) {
       return Card(
@@ -350,7 +462,7 @@ class _StatusTimeline extends StatelessWidget {
       );
     }
     const steps = [ReportStatus.open, ReportStatus.acknowledged, ReportStatus.inProgress, ReportStatus.resolved];
-    final labels = [l.statusOpen, l.statusAcknowledged, l.statusInProgress, l.statusResolved];
+    final labels = [for (final st in steps) statusLabel(context, st, traffic: report.isTraffic)];
     final current = steps.indexOf(report.status);
     return Card(
       child: Padding(

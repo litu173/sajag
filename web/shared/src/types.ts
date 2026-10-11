@@ -57,6 +57,13 @@ export interface Report {
   resolvedAt: Date | null;
   /** Who closed it. Until authorities are connected, reporters can mark their own reports solved. */
   resolvedBy: 'reporter' | 'admin' | 'authority' | null;
+  /** Traffic violations only. */
+  vehicleType: string | null;
+  violations: string[];
+  plateNumber: string | null;
+  /** Content-policy state; only 'ok' reports are public. */
+  moderation: 'ok' | 'pending' | 'held' | 'rejected';
+  moderationReason: string | null;
 }
 
 export interface AwarenessPost {
@@ -106,6 +113,12 @@ export interface ReportQuery {
   /** Only reports from the last N days. */
   days?: number;
   sort?: 'recent' | 'confirmed' | 'oldest_open';
+  /** Hazards (everything but traffic) or traffic violations. Omit for both. */
+  section?: 'hazards' | 'traffic';
+  vehicleType?: string;
+  violation?: string;
+  /** Number plate, matched across Bangla/English spellings by its digits. */
+  plate?: string;
   offset?: number;
   limit?: number;
 }

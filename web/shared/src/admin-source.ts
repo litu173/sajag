@@ -1,9 +1,11 @@
 import { categories as seedCategories, badges as seedBadges } from './catalog';
 import { isDemo, supabase } from './config';
 import { type FeedRow, rowToReport } from './portal-source';
+import { plateDigits, plateKey, plateMatches, trafficCategory } from './traffic';
 import type { Report, ReportStatus } from './types';
 
-export type AdminRole = 'super_admin' | 'moderator' | 'analyst';
+export type AdminRole = 'super_admin' | 'moderator' | 'analyst' | 'traffic';
+export type ModerationDecision = 'approve' | 'reject';
 export type AccountStatus = 'active' | 'suspended' | 'banned';
 export type Verification = 'pending' | 'verified' | 'rejected' | null;
 export type FlagAction = 'dismiss' | 'hide' | 'remove';
@@ -34,7 +36,22 @@ export interface ReportFilter {
   status?: ReportStatus | 'flagged';
   categoryId?: string;
   search?: string;
+  /** Only reports that aren't public yet (held for review or waiting for the automatic check). */
+  unpublished?: boolean;
+  /** Traffic division view: traffic violations only, optionally by vehicle or plate. */
+  traffic?: boolean;
+  vehicleType?: string;
+  plate?: string;
   limit?: number;
+}
+
+export interface TrafficOffender {
+  plateDigits: string;
+  plates: string[];
+  vehicleType: string | null;
+  reports: number;
+  actioned: number;
+  lastReport: Date;
 }
 
 export interface Flag {
@@ -58,6 +75,8 @@ export interface AdminUser {
   statusReason: string | null;
   verification: Verification;
   createdAt: Date;
+  /** Content-policy strikes; the account is suspended automatically at the limit. */
+  policyStrikes: number;
 }
 
 export interface Identity {
@@ -109,6 +128,10 @@ export interface AdminSource {
   flags(reportId: string): Promise<Flag[]>;
   setStatus(reportId: string, status: ReportStatus, note: string | null): Promise<void>;
   resolveFlags(reportId: string, action: FlagAction, note: string | null): Promise<void>;
+  /** Approve or reject a held report. Rejection is a strike for the author. */
+  moderate(reportId: string, decision: ModerationDecision, reason: string | null): Promise<void>;
+  trafficOffenders(days: number): Promise<TrafficOffender[]>;
+  resetStrikes(userId: string): Promise<void>;
   reportAuthor(reportId: string): Promise<{ userId: string; alias: string; status: AccountStatus; reportsCount: number; removedCount: number } | null>;
 
   users(search: string, status: string | null): Promise<AdminUser[]>;
@@ -134,6 +157,7 @@ export interface AdminSource {
 const DEMO_ACCOUNTS: Record<string, AdminSession & { password: string }> = {
   'admin@sajag.app': { userId: 'admin-1', email: 'admin@sajag.app', name: 'Super Admin', role: 'super_admin', password: 'demo1234' },
   'moderator@sajag.app': { userId: 'admin-2', email: 'moderator@sajag.app', name: 'Moderator', role: 'moderator', password: 'demo1234' },
+  'traffic@sajag.app': { userId: 'admin-3', email: 'traffic@sajag.app', name: 'DMP Traffic Division', role: 'traffic', password: 'demo1234' },
 };
 export const demoCredentials = { email: 'admin@sajag.app', password: 'demo1234' };
 
@@ -164,6 +188,21 @@ class DemoAdminSource implements AdminSource {
       r.flagCount = n;
       if (n >= 4) r.status = 'hidden';
     });
+    // A few posts the automatic screening held back, so the review queue has something to show.
+    const heldSamples: [string, string][] = [
+      ['The local MP’s supporters dump garbage here every night', 'political'],
+      ['Mr. Rahim from house 12 blocks the drain on purpose', 'person'],
+      ['Flat to-let near this road, call 01712345678', 'contact'],
+      ['নায়িকা এখানে প্রতিদিন রাস্তায় গাড়ি রাখে', 'celebrity'],
+    ];
+    reports
+      .filter((r) => r.categoryId !== 'traffic_violation' && r.status === 'open')
+      .slice(3, 3 + heldSamples.length)
+      .forEach((r, i) => {
+        r.description = heldSamples[i]![0];
+        r.moderation = 'held';
+        r.moderationReason = heldSamples[i]![1];
+      });
     const users: AdminUser[] = m.demoAuthors.map((a, i) => {
       const own = reports.filter((r) => r.aliasId === a.id);
       const xp = own.reduce((s, r) => s + 10 + r.confirmCount * 2, 0);
@@ -179,6 +218,7 @@ class DemoAdminSource implements AdminSource {
         statusReason: i === 11 ? 'Repeated false reports' : null,
         verification: i % 9 === 3 ? 'pending' : 'verified',
         createdAt: new Date(Date.now() - (60 - i) * 86_400_000),
+        policyStrikes: i === 11 ? 3 : i % 13 === 4 ? 1 : 0,
       };
     });
     const rows: Record<Resource, Row[]> = {
@@ -281,14 +321,19 @@ class DemoAdminSource implements AdminSource {
     };
   }
 
-  async reports({ status, categoryId, search, limit = 200 }: ReportFilter) {
+  async reports({ status, categoryId, search, unpublished, traffic, vehicleType, plate, limit = 200 }: ReportFilter) {
     this.require();
     const { reports, flags } = await this.state;
+    if (this.current?.role === 'traffic') traffic = true;
     const flagged = new Set(flags.filter((f) => f.status === 'pending').map((f) => f.reportId));
     const q = search?.trim().toLowerCase();
     return reports
       .filter((r) => (status === 'flagged' ? flagged.has(r.id) : !status || r.status === status))
       .filter((r) => !categoryId || r.categoryId === categoryId)
+      .filter((r) => !unpublished || r.moderation === 'held' || r.moderation === 'pending')
+      .filter((r) => !traffic || r.categoryId === trafficCategory)
+      .filter((r) => !vehicleType || r.vehicleType === vehicleType)
+      .filter((r) => !plate || plateMatches(r, plate))
       .filter((r) => !q || r.description.toLowerCase().includes(q) || (r.areaName ?? '').toLowerCase().includes(q) || r.id.includes(q))
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, limit);
@@ -300,12 +345,16 @@ class DemoAdminSource implements AdminSource {
   }
 
   async setStatus(reportId: string, status: ReportStatus, note: string | null) {
-    this.require(['super_admin', 'moderator']);
+    this.require(['super_admin', 'moderator', 'traffic']);
     const r = (await this.state).reports.find((x) => x.id === reportId);
     if (!r) throw new Error('Report not found');
+    if (this.current?.role === 'traffic' && r.categoryId !== trafficCategory) {
+      throw new Error('Traffic officers can only update traffic violation reports');
+    }
     r.status = status;
     r.statusNote = note;
     r.resolvedAt = status === 'resolved' ? new Date() : null;
+    r.resolvedBy = status === 'resolved' ? (this.current?.role === 'traffic' ? 'authority' : 'admin') : null;
     await this.log('report.status', 'report', reportId, { status, note });
   }
 
@@ -333,8 +382,58 @@ class DemoAdminSource implements AdminSource {
     return { userId: u.id, alias: u.alias, status: u.status, reportsCount: u.reportsCount, removedCount: s.reports.filter((x) => x.aliasId === u.id && x.status === 'removed').length };
   }
 
+  async moderate(reportId: string, decision: ModerationDecision, reason: string | null) {
+    this.require(['super_admin', 'moderator']);
+    const state = await this.state;
+    const r = state.reports.find((x) => x.id === reportId);
+    if (!r) throw new Error('Report not found');
+    r.moderation = decision === 'approve' ? 'ok' : 'rejected';
+    r.moderationReason = decision === 'approve' ? null : (reason ?? r.moderationReason);
+    if (decision === 'reject' && r.aliasId) {
+      const u = state.users.find((x) => x.id === r.aliasId);
+      if (u) {
+        u.policyStrikes += 1;
+        if (u.policyStrikes >= 3 && u.status === 'active') {
+          u.status = 'suspended';
+          u.statusReason = 'Repeated content policy violations';
+        }
+      }
+    }
+    await this.log('report.moderate', 'report', reportId, { decision, reason });
+  }
+
+  async trafficOffenders(days: number) {
+    this.require(['super_admin', 'moderator', 'traffic']);
+    const from = Date.now() - days * 86_400_000;
+    const groups = new Map<string, Report[]>();
+    for (const r of (await this.state).reports) {
+      if (r.categoryId !== trafficCategory || !r.plateNumber || r.moderation !== 'ok' || r.status === 'removed' || r.createdAt.getTime() < from) continue;
+      const d = plateDigits(r.plateNumber);
+      if (d.length >= 5) groups.set(d, [...(groups.get(d) ?? []), r]);
+    }
+    return [...groups.entries()]
+      .filter(([, list]) => list.length > 1)
+      .map(([plateDigits, list]) => ({
+        plateDigits,
+        plates: [...new Set(list.map((r) => r.plateNumber!))],
+        vehicleType: list[0]!.vehicleType,
+        reports: list.length,
+        actioned: list.filter((r) => r.status === 'resolved').length,
+        lastReport: new Date(Math.max(...list.map((r) => r.createdAt.getTime()))),
+      }))
+      .sort((a, b) => b.reports - a.reports);
+  }
+
+  async resetStrikes(userId: string) {
+    this.require(['super_admin', 'moderator']);
+    const u = (await this.state).users.find((x) => x.id === userId);
+    if (!u) throw new Error('User not found');
+    u.policyStrikes = 0;
+    await this.log('user.reset_strikes', 'user', userId);
+  }
+
   async users(search: string, status: string | null) {
-    this.require();
+    this.require(['super_admin', 'moderator', 'analyst']);
     const q = search.trim().toLowerCase();
     return (await this.state).users
       .filter((u) => !q || u.alias.toLowerCase().includes(q))
@@ -487,9 +586,14 @@ class SupabaseAdminSource implements AdminSource {
     return check(await (await supabase()).rpc('admin_dashboard')) as Dashboard;
   }
 
-  async reports({ status, categoryId, search, limit = 200 }: ReportFilter) {
+  async reports({ status, categoryId, search, unpublished, traffic, vehicleType, plate, limit = 200 }: ReportFilter) {
     const db = await supabase();
     let q = db.from('report_feed').select('*');
+    if (unpublished) q = q.in('moderation', ['held', 'pending']);
+    if (traffic) q = q.eq('category_id', trafficCategory);
+    if (vehicleType) q = q.eq('vehicle_type', vehicleType);
+    if (plate && plateDigits(plate).length >= 3) q = q.ilike('plate_digits', `%${plateDigits(plate)}%`);
+    else if (plate && plateKey(plate).length >= 2) q = q.ilike('plate_key', `%${plateKey(plate)}%`);
     if (status === 'flagged') {
       const ids = check(await db.from('flags').select('report_id').eq('status', 'pending')) as { report_id: string }[];
       if (ids.length === 0) return [];
@@ -521,6 +625,33 @@ class SupabaseAdminSource implements AdminSource {
     check(await (await supabase()).rpc('admin_set_report_status', { p_report: reportId, p_status: status, p_note: note }));
   }
 
+  async moderate(reportId: string, decision: ModerationDecision, reason: string | null) {
+    check(await (await supabase()).rpc('admin_moderate_report', { p_report: reportId, p_decision: decision, p_reason: reason }));
+  }
+
+  async trafficOffenders(days: number) {
+    const rows = check(await (await supabase()).rpc('traffic_offenders', { p_days: days, p_limit: 100 })) as {
+      plate_digits: string;
+      plates: string[];
+      vehicle_type: string | null;
+      reports: number;
+      actioned: number;
+      last_report: string;
+    }[];
+    return rows.map((r) => ({
+      plateDigits: r.plate_digits,
+      plates: r.plates,
+      vehicleType: r.vehicle_type,
+      reports: r.reports,
+      actioned: r.actioned,
+      lastReport: new Date(r.last_report),
+    }));
+  }
+
+  async resetStrikes(userId: string) {
+    check(await (await supabase()).rpc('admin_reset_strikes', { p_user: userId }));
+  }
+
   async resolveFlags(reportId: string, action: FlagAction, note: string | null) {
     check(await (await supabase()).rpc('admin_resolve_flags', { p_report: reportId, p_action: action, p_note: note }));
   }
@@ -550,6 +681,7 @@ class SupabaseAdminSource implements AdminSource {
       status_reason: string | null;
       verification: Verification;
       created_at: string;
+      policy_strikes?: number;
     }[];
     return rows.map((u) => ({
       id: u.id,
@@ -563,6 +695,7 @@ class SupabaseAdminSource implements AdminSource {
       statusReason: u.status_reason,
       verification: u.verification,
       createdAt: new Date(u.created_at),
+      policyStrikes: u.policy_strikes ?? 0,
     }));
   }
 

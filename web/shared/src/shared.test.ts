@@ -133,3 +133,53 @@ describe('district search (demo source)', () => {
     expect(summary.find((x) => x.districtId === 'rajshahi')!.total).toBe(s.total);
   });
 });
+
+describe('traffic', () => {
+  it('plates match across Bangla and English spellings', async () => {
+    const { plateMatches, plateDigits } = await import('./traffic');
+    const r = { plateNumber: 'ঢাকা মেট্রো-গ ১২-৩৪৫৬' };
+    expect(plateDigits(r.plateNumber)).toBe('123456');
+    expect(plateMatches(r, '12-3456')).toBe(true);
+    expect(plateMatches(r, 'ঢাকা মেট্রো')).toBe(true);
+    expect(plateMatches(r, '99-0000')).toBe(false);
+  });
+
+  it('traffic section search and summary (demo)', async () => {
+    const { portalSource } = await import('./portal-source');
+    const { summariseTraffic } = await import('./traffic');
+    const traffic = await portalSource.search({ section: 'traffic', limit: 1000 });
+    expect(traffic.total).toBeGreaterThan(0);
+    expect(traffic.items.every((r) => r.categoryId === 'traffic_violation' && r.vehicleType && r.violations.length > 0)).toBe(true);
+    const hazards = await portalSource.search({ section: 'hazards', limit: 1000 });
+    expect(hazards.items.some((r) => r.categoryId === 'traffic_violation')).toBe(false);
+    const bikes = await portalSource.search({ section: 'traffic', vehicleType: 'motorbike', limit: 1000 });
+    expect(bikes.items.every((r) => r.vehicleType === 'motorbike')).toBe(true);
+    const plated = traffic.items.find((r) => r.plateNumber)!;
+    const byPlate = await portalSource.search({ section: 'traffic', plate: plated.plateNumber!, limit: 1000 });
+    expect(byPlate.items.map((r) => r.id)).toContain(plated.id);
+    const stats = summariseTraffic(await portalSource.recent(90));
+    expect(stats.total).toBeGreaterThan(0);
+    expect(stats.byViolation[0]!.count).toBeGreaterThanOrEqual(stats.byViolation.at(-1)!.count);
+  });
+});
+
+describe('admin moderation (demo)', () => {
+  it('held posts can be approved or rejected; traffic officers only touch traffic reports', async () => {
+    await adminSource.signIn('moderator@sajag.app', 'demo1234');
+    const held = await adminSource.reports({ unpublished: true });
+    expect(held.length).toBeGreaterThanOrEqual(3);
+    await adminSource.moderate(held[0]!.id, 'approve', null);
+    await adminSource.moderate(held[1]!.id, 'reject', 'Targets a person');
+    const after = await adminSource.reports({ unpublished: true });
+    expect(after.length).toBe(held.length - 2);
+
+    await adminSource.signIn('traffic@sajag.app', 'demo1234');
+    const mine = await adminSource.reports({});
+    expect(mine.every((r) => r.categoryId === 'traffic_violation')).toBe(true);
+    await adminSource.setStatus(mine[0]!.id, 'resolved', 'Fined Tk 5,000, case DMP-1182');
+    const hazard = (await import('./demo-data')).demoReports().find((r) => r.categoryId !== 'traffic_violation')!;
+    await expect(adminSource.setStatus(hazard.id, 'resolved', null)).rejects.toThrow(/traffic/i);
+    await expect(adminSource.moderate(held[2]!.id, 'approve', null)).rejects.toThrow();
+    await adminSource.signOut();
+  });
+});

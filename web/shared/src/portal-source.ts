@@ -12,6 +12,7 @@ import type {
   ReportStatus,
   StatusFilter,
 } from './types';
+import { plateDigits, plateKey, plateMatches, trafficCategory } from './traffic';
 
 export interface PortalSource {
   feed(query: FeedQuery): Promise<Report[]>;
@@ -130,13 +131,31 @@ class DemoPortalSource implements PortalSource {
     return (await this.data).reports.filter((r) => r.createdAt.getTime() > from);
   }
 
-  async search({ districtId, categoryId, status = 'all', text, area, days, sort = 'recent', offset = 0, limit = 24 }: ReportQuery) {
+  async search({
+    districtId,
+    categoryId,
+    status = 'all',
+    text,
+    area,
+    days,
+    sort = 'recent',
+    section,
+    vehicleType,
+    violation,
+    plate,
+    offset = 0,
+    limit = 24,
+  }: ReportQuery) {
     const q = text ? cleanText(text).toLowerCase() : '';
     const from = days ? Date.now() - days * 86_400_000 : 0;
     const items = (await this.data).reports.filter(
       (r) =>
         (!districtId || r.districtId === districtId) &&
         (!categoryId || r.categoryId === categoryId) &&
+        (!section || (r.categoryId === trafficCategory) === (section === 'traffic')) &&
+        (!vehicleType || r.vehicleType === vehicleType) &&
+        (!violation || r.violations.includes(violation)) &&
+        (!plate || plateMatches(r, plate)) &&
         (status === 'all' || statusGroups[status].includes(r.status)) &&
         (!area || r.areaName === area) &&
         r.createdAt.getTime() >= from &&
@@ -198,6 +217,11 @@ export interface FeedRow {
   created_at: string;
   resolved_at: string | null;
   resolved_by: Report['resolvedBy'];
+  vehicle_type?: string | null;
+  violations?: string[] | null;
+  plate_number?: string | null;
+  moderation?: Report['moderation'];
+  moderation_reason?: string | null;
 }
 
 export function rowToReport(r: FeedRow): Report {
@@ -222,6 +246,11 @@ export function rowToReport(r: FeedRow): Report {
     createdAt: new Date(r.created_at),
     resolvedAt: r.resolved_at ? new Date(r.resolved_at) : null,
     resolvedBy: r.resolved_by ?? null,
+    vehicleType: r.vehicle_type ?? null,
+    violations: r.violations ?? [],
+    plateNumber: r.plate_number ?? null,
+    moderation: r.moderation ?? 'ok',
+    moderationReason: r.moderation_reason ?? null,
   };
 }
 
@@ -308,11 +337,34 @@ class SupabasePortalSource implements PortalSource {
     return rows.map((r) => rowToReport(r as FeedRow));
   }
 
-  async search({ districtId, categoryId, status = 'all', text, area, days, sort = 'recent', offset = 0, limit = 24 }: ReportQuery) {
+  async search({
+    districtId,
+    categoryId,
+    status = 'all',
+    text,
+    area,
+    days,
+    sort = 'recent',
+    section,
+    vehicleType,
+    violation,
+    plate,
+    offset = 0,
+    limit = 24,
+  }: ReportQuery) {
     const db = await supabase();
     let q = db.from('report_feed').select('*', { count: 'exact' }).not('status', 'in', '(hidden,removed)');
     if (districtId) q = q.eq('district_id', districtId);
     if (categoryId) q = q.eq('category_id', categoryId);
+    if (section) q = section === 'traffic' ? q.eq('category_id', trafficCategory) : q.neq('category_id', trafficCategory);
+    if (vehicleType) q = q.eq('vehicle_type', vehicleType);
+    if (violation) q = q.contains('violations', [violation]);
+    if (plate && plateKey(plate).length >= 2) {
+      const digits = plateDigits(plate);
+      q = digits.length >= 3
+        ? q.or(`plate_key.ilike.%${plateKey(plate)}%,plate_digits.ilike.%${digits}%`)
+        : q.ilike('plate_key', `%${plateKey(plate)}%`);
+    }
     if (status !== 'all') q = q.in('status', statusGroups[status]);
     if (area) q = q.eq('area_name', area);
     if (days) q = q.gte('created_at', new Date(Date.now() - days * 86_400_000).toISOString());

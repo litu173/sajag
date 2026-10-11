@@ -1,0 +1,152 @@
+{
+ "vehicles": [
+  {
+   "id": "motorbike",
+   "en": "Motorbike",
+   "bn": "মোটরসাইকেল",
+   "icon": "motorbike"
+  },
+  {
+   "id": "cng",
+   "en": "CNG auto-rickshaw",
+   "bn": "সিএনজি অটোরিকশা",
+   "icon": "cng"
+  },
+  {
+   "id": "easybike",
+   "en": "Battery auto / easybike",
+   "bn": "ব্যাটারিচালিত অটো / ইজিবাইক",
+   "icon": "easybike"
+  },
+  {
+   "id": "bus",
+   "en": "Bus / minibus",
+   "bn": "বাস / মিনিবাস",
+   "icon": "bus"
+  },
+  {
+   "id": "truck",
+   "en": "Truck / covered van",
+   "bn": "ট্রাক / কাভার্ড ভ্যান",
+   "icon": "truck"
+  },
+  {
+   "id": "car",
+   "en": "Private car",
+   "bn": "প্রাইভেট কার",
+   "icon": "car"
+  },
+  {
+   "id": "microbus",
+   "en": "Microbus / van",
+   "bn": "মাইক্রোবাস",
+   "icon": "microbus"
+  },
+  {
+   "id": "pickup",
+   "en": "Pickup",
+   "bn": "পিকআপ",
+   "icon": "pickup"
+  },
+  {
+   "id": "leguna",
+   "en": "Leguna / human hauler",
+   "bn": "লেগুনা / হিউম্যান হলার",
+   "icon": "leguna"
+  },
+  {
+   "id": "rickshaw",
+   "en": "Rickshaw / van",
+   "bn": "রিকশা / ভ্যান",
+   "icon": "rickshaw"
+  },
+  {
+   "id": "other",
+   "en": "Other vehicle",
+   "bn": "অন্য যানবাহন",
+   "icon": "other"
+  }
+ ],
+ "violations": [
+  {
+   "id": "wrong_way",
+   "en": "Wrong-way driving",
+   "bn": "উল্টো পথে চলা"
+  },
+  {
+   "id": "signal_jump",
+   "en": "Ran a red light",
+   "bn": "সিগন্যাল অমান্য"
+  },
+  {
+   "id": "no_helmet",
+   "en": "No helmet",
+   "bn": "হেলমেট ছাড়া"
+  },
+  {
+   "id": "extra_riders",
+   "en": "Too many riders",
+   "bn": "অতিরিক্ত আরোহী"
+  },
+  {
+   "id": "footpath_driving",
+   "en": "Driving on the footpath",
+   "bn": "ফুটপাতে গাড়ি চালানো"
+  },
+  {
+   "id": "reckless",
+   "en": "Reckless driving / overtaking",
+   "bn": "বেপরোয়া চালানো / ওভারটেকিং"
+  },
+  {
+   "id": "overspeeding",
+   "en": "Overspeeding",
+   "bn": "অতিরিক্ত গতি"
+  },
+  {
+   "id": "phone_driving",
+   "en": "Using a phone while driving",
+   "bn": "চালানোর সময় মোবাইল ব্যবহার"
+  },
+  {
+   "id": "illegal_stop",
+   "en": "Stopping mid-road for passengers",
+   "bn": "রাস্তার মাঝে যাত্রী ওঠানামা"
+  },
+  {
+   "id": "wrong_parking",
+   "en": "Illegal parking",
+   "bn": "অবৈধ পার্কিং"
+  },
+  {
+   "id": "overloading",
+   "en": "Overloaded",
+   "bn": "অতিরিক্ত বোঝাই"
+  },
+  {
+   "id": "no_plate",
+   "en": "No / fake number plate",
+   "bn": "নম্বরপ্লেট নেই / ভুয়া"
+  },
+  {
+   "id": "black_smoke",
+   "en": "Black smoke",
+   "bn": "কালো ধোঁয়া"
+  },
+  {
+   "id": "hydraulic_horn",
+   "en": "Hydraulic horn",
+   "bn": "হাইড্রোলিক হর্ন"
+  },
+  {
+   "id": "no_lights",
+   "en": "No lights at night",
+   "bn": "রাতে বাতি ছাড়া চলা"
+  },
+  {
+   "id": "other",
+   "en": "Other violation",
+   "bn": "অন্যান্য আইন ভঙ্গ"
+  }
+ ]
+}

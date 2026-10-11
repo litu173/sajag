@@ -19,6 +19,11 @@ const write = (p, s) => {
 const categories = read('shared/categories.json');
 const photos = read('shared/demo/photos.json');
 const achievements = read('shared/achievements.json');
+const traffic = read('shared/traffic.json');
+const moderation = read('shared/moderation.json');
+const districtNames = Object.fromEntries(read('shared/districts.json').districts.map((d) => [d.id, d.bn]));
+// Traffic violations reuse the street-traffic sample photos.
+photos.traffic_violation ??= [...photos.traffic_signal, ...photos.illegal_parking];
 
 // ---------- 1. demo reports ----------
 // Mulberry32: tiny seeded PRNG so the demo data is identical on every run.
@@ -89,6 +94,15 @@ const descriptions = {
   tree_cutting: ['Old trees being cut down along the road without notice.', 'রাস্তার পাশের পুরোনো গাছ কেটে ফেলা হচ্ছে।', 'Roadside trees chopped for a billboard.'],
   water_supply: ['Water pipe burst, clean water wasting for hours.', 'পানির লাইন ফেটে রাস্তায় পানি গড়াচ্ছে।', 'Leaking supply line making the road muddy.'],
   sanitation: ['Public toilet locked and dirty, no water.', 'গণশৌচাগার ব্যবহারের অযোগ্য।', 'No working public toilet near the bus terminal.'],
+  traffic_violation: [
+    'Bike rider going the wrong way on a one-way road, almost hit a child.',
+    'সিগন্যাল লাল থাকা অবস্থায় বাস দ্রুত পার হয়ে গেল।',
+    'Three people on one bike without helmets, weaving through traffic.',
+    'ফুটপাত দিয়ে মোটরসাইকেল চলছে, পথচারীরা ঝুঁকিতে।',
+    'CNG stopping in the middle of the road to pick up passengers.',
+    'Truck blowing thick black smoke on the main road.',
+    'উল্টো পথে ইজিবাইক, যানজট আরও বাড়ছে।',
+  ],
   other: ['Broken railing on the foot overbridge.', 'ফুটওভারব্রিজের সিঁড়ি ভাঙা।', 'Stray dogs chasing children near the school.'],
 };
 
@@ -112,10 +126,25 @@ const nextPhoto = (category) => {
   return list[i % list.length];
 };
 
+// Each traffic description comes with the vehicle and violations it describes.
+const trafficDetails = [
+  ['motorbike', ['wrong_way']],
+  ['bus', ['signal_jump']],
+  ['motorbike', ['extra_riders', 'no_helmet']],
+  ['motorbike', ['footpath_driving']],
+  ['cng', ['illegal_stop']],
+  ['truck', ['black_smoke']],
+  ['easybike', ['wrong_way']],
+];
+const bnDigits = (s) => String(s).replace(/[0-9]/g, (d) => '০১২৩৪৫৬৭৮৯'[d]);
+const plateLetters = ['ক', 'খ', 'গ', 'ঘ', 'চ', 'ছ', 'জ', 'ঝ', 'ত', 'থ', 'দ', 'ন', 'প', 'ভ', 'ম', 'হ', 'ল'];
+const plateCity = (district) => (district === 'dhaka' ? 'ঢাকা মেট্রো' : district === 'chattogram' ? 'চট্ট মেট্রো' : districtNames[district]);
+
 const reports = Array.from({ length: 320 }, (_, i) => {
   const [area, areaBn, lat, lng, city, , district] = pick(weightedAreas);
   const category = pick(catWeights);
   const author = pick(authors);
+  const descIndex = Math.floor(rand() * descriptions[category].length);
   const hoursAgo = Math.round(Math.pow(rand(), 1.8) * 24 * 45 * 10) / 10; // skew towards recent
   const anonymous = rand() < 0.25;
   const [photoId, photoBy] = nextPhoto(category);
@@ -126,7 +155,7 @@ const reports = Array.from({ length: 320 }, (_, i) => {
   return {
     id: `demo-${String(i + 1).padStart(4, '0')}`,
     category,
-    description: pick(descriptions[category]),
+    description: descriptions[category][descIndex],
     lat: +(lat + (rand() - 0.5) * 0.018).toFixed(6),
     lng: +(lng + (rand() - 0.5) * 0.018).toFixed(6),
     area,
@@ -140,6 +169,14 @@ const reports = Array.from({ length: 320 }, (_, i) => {
     hours_ago: hoursAgo,
     photo_id: photoId,
     photo_by: photoBy,
+    ...(category === 'traffic_violation' && {
+      vehicle_type: trafficDetails[descIndex][0],
+      violations: trafficDetails[descIndex][1],
+      // Most posts carry a readable plate; some (e.g. "no plate") don't.
+      plate_number:
+        // A handful of vehicles keep reappearing, as repeat offenders do.
+        i % 5 === 4 ? null : `${plateCity(district)}-${plateLetters[i % 7]} ${bnDigits(11 + (i % 7) * 7)}-${bnDigits(1000 + (i % 7) * 1237)}`,
+    }),
     ...(status === 'resolved' && { resolve_hours: Math.round(resolveHours * 10) / 10, resolved_by: i % 3 === 0 ? 'reporter' : 'admin' }),
   };
 }).sort((a, b) => a.hours_ago - b.hours_ago);
@@ -158,7 +195,7 @@ write('shared/demo/reports.json', JSON.stringify(demo, null, 1) + '\n');
 write('shared/demo/areas.json', JSON.stringify(Object.fromEntries(areas.map((a) => [a[0], a[1]])), null, 1) + '\n');
 
 // ---------- 2. copy to Flutter assets ----------
-for (const f of ['categories.json', 'achievements.json']) {
+for (const f of ['categories.json', 'achievements.json', 'traffic.json', 'moderation.json']) {
   write(`app/assets/data/${f}`, fs.readFileSync(path.join(root, 'shared', f), 'utf8'));
 }
 write('app/assets/data/demo.json', JSON.stringify(demo) + '\n');
@@ -188,6 +225,19 @@ on conflict (id) do update set group_id = excluded.group_id, tier = excluded.tie
 insert into public.app_config (key, value) values
   ('xp', ${q(JSON.stringify(achievements.xp))}::jsonb)
 on conflict (key) do update set value = excluded.value;
+
+insert into public.vehicle_types (id, name_en, name_bn, sort_order) values
+${rows(traffic.vehicles.map((v, i) => [v.id, v.en, v.bn, i]))}
+on conflict (id) do update set name_en = excluded.name_en, name_bn = excluded.name_bn, sort_order = excluded.sort_order;
+
+insert into public.traffic_violations (id, name_en, name_bn, sort_order) values
+${rows(traffic.violations.map((v, i) => [v.id, v.en, v.bn, i]))}
+on conflict (id) do update set name_en = excluded.name_en, name_bn = excluded.name_bn, sort_order = excluded.sort_order;
+
+-- Postgres regexes spell a word boundary \y rather than \b.
+insert into public.moderation_terms (pattern, kind) values
+${rows(moderation.terms.map((t) => [t.pattern.replaceAll('\\b', '\\y'), t.kind]))}
+on conflict (pattern) do update set kind = excluded.kind;
 
 insert into public.awareness_posts (slug, title_en, title_bn, body_en, body_bn, category_id, published) values
 ${rows(awareness.map((a) => [a.id, a.title_en, a.title_bn, a.body_en, a.body_bn, a.category, true]))}

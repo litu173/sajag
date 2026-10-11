@@ -235,14 +235,11 @@ class AppLocalizationsBn extends AppLocalizations {
   String get demoLocationNote => 'ডেমো: আপনি বাংলাদেশের বাইরে, তাই ঢাকা দেখানো হচ্ছে';
 
   @override
-  String get seeItToo => 'আমিও দেখেছি';
-
-  @override
   String confirmations(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count জন দেখেছেন',
+      other: '$count জন নিশ্চিত করেছেন',
       zero: 'প্রথম নিশ্চিতকারী হোন',
     );
     return '$_temp0';
@@ -987,4 +984,174 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get passwordChooseIntro => 'একটি পাসওয়ার্ড বেছে নিন, যাতে এসএমএসের অপেক্ষা ছাড়াই সাইন ইন করতে পারেন।';
+
+  @override
+  String get sectionHazards => 'সমস্যা';
+
+  @override
+  String get sectionTraffic => 'ট্রাফিক নজরদারি';
+
+  @override
+  String get searchPlate => 'নম্বরপ্লেট খুঁজুন';
+
+  @override
+  String get allVehicles => 'সব যানবাহন';
+
+  @override
+  String get trafficIntro =>
+      'নাগরিকদের রিপোর্ট করা ট্রাফিক আইন ভঙ্গকারী যানবাহন। ট্রাফিক বিভাগ প্রতিটি রিপোর্ট যাচাই করে ব্যবস্থা নেয়।';
+
+  @override
+  String get noTrafficReports => 'এখানে এখনো কোনো ট্রাফিক আইন ভঙ্গের রিপোর্ট নেই।';
+
+  @override
+  String get reportTypeHazard => 'সমস্যা';
+
+  @override
+  String get reportTypeTraffic => 'ট্রাফিক আইন ভঙ্গ';
+
+  @override
+  String get vehicleTypeLabel => 'যানবাহন';
+
+  @override
+  String get violationsLabel => 'কোন আইন ভেঙেছে?';
+
+  @override
+  String get plateLabel => 'নম্বরপ্লেট';
+
+  @override
+  String get plateHelper => 'প্লেটে যেমন লেখা তেমন লিখুন। পড়া না গেলে খালি রাখুন।';
+
+  @override
+  String get pickVehicle => 'যানবাহনের ধরন বেছে নিন।';
+
+  @override
+  String get pickViolation => 'অন্তত একটি আইন ভঙ্গ বেছে নিন।';
+
+  @override
+  String get trafficSafety =>
+      'নিরাপদ থাকুন: গাড়ি চালানোর সময় ছবি তুলবেন না, কারও সঙ্গে বিতণ্ডায় জড়াবেন না। মানুষের মুখ নয়, যানবাহন ও নম্বরপ্লেটের ছবি তুলুন।';
+
+  @override
+  String get policyNote =>
+      'মানুষ নয়, সমস্যার রিপোর্ট করুন। কোনো ব্যক্তি, রাজনীতিবিদ বা তারকাকে নিয়ে কিংবা ব্যক্তিগত স্বার্থে করা পোস্ট প্রকাশ করা হয় না — বারবার নিয়ম ভাঙলে অ্যাকাউন্ট নিষিদ্ধ করা হয়।';
+
+  @override
+  String get policyWarnTitle => 'এভাবে লিখলে পোস্টটি প্রকাশ হবে না';
+
+  @override
+  String get policyIssuePolitical => 'এতে রাজনীতি বা রাজনৈতিক ব্যক্তির উল্লেখ আছে।';
+
+  @override
+  String get policyIssuePerson => 'এটি নির্দিষ্ট কোনো ব্যক্তিকে নিয়ে মনে হচ্ছে।';
+
+  @override
+  String get policyIssueCelebrity => 'এতে তারকা বা পরিচিত ব্যক্তির উল্লেখ আছে।';
+
+  @override
+  String get policyIssuePersonalGain => 'এটি বিজ্ঞাপন, ব্যক্তিগত বিরোধ বা ব্যক্তিগত স্বার্থের মতো মনে হচ্ছে।';
+
+  @override
+  String get policyIssueContact => 'এতে ফোন নম্বর, লিংক বা সোশ্যাল মিডিয়া আইডি আছে।';
+
+  @override
+  String get policyWarnBody =>
+      'শুধু সমস্যাটি লিখুন — কী সমস্যা এবং কোথায়। তবুও পাঠালে মডারেটর আগে যাচাই করবেন, অনুমোদনের আগে পোস্টটি দেখা যাবে না। নিয়ম ভাঙা প্রতিটি পোস্ট একটি সতর্কতা হিসেবে গণ্য হয়; ৩টি হলে অ্যাকাউন্ট নিষিদ্ধ হয়।';
+
+  @override
+  String get editDescription => 'বিবরণ ঠিক করুন';
+
+  @override
+  String get sendForReview => 'তবুও যাচাইয়ে পাঠান';
+
+  @override
+  String get sentForReview => 'যাচাইয়ের জন্য পাঠানো হয়েছে। মডারেটরের সিদ্ধান্ত আপনাকে জানানো হবে।';
+
+  @override
+  String get communityRules => 'কমিউনিটির নিয়ম';
+
+  @override
+  String get rulesIntro => 'সজাগ মানুষকে জনসাধারণের বিপদ সম্পর্কে সতর্ক করার জন্য। একে ন্যায্য ও নিরাপদ রাখতে:';
+
+  @override
+  String get rule1 => 'শুধু জনসাধারণের বিপদ ও ট্রাফিক আইন ভঙ্গের রিপোর্ট করুন।';
+
+  @override
+  String get rule2 =>
+      'কোনো ব্যক্তি, রাজনীতিবিদ, রাজনৈতিক দল বা তারকাকে নিয়ে পোস্ট করবেন না — নাম, অভিযোগ বা প্রচারণা নয়।';
+
+  @override
+  String get rule3 => 'বিজ্ঞাপন, বেচাকেনা, ব্যক্তিগত বিরোধ, প্রতিশোধ বা ব্যক্তিগত স্বার্থে কিছু নয়।';
+
+  @override
+  String get rule4 => 'ফোন নম্বর, লিংক বা সোশ্যাল মিডিয়া আইডি দেবেন না।';
+
+  @override
+  String get rule5 => 'ছবি অবশ্যই সরাসরি তোলা ও সত্য হতে হবে। মানুষের মুখ নয়, সমস্যা বা যানবাহনের ছবি তুলুন।';
+
+  @override
+  String get rule6 =>
+      'নিয়ম ভাঙা পোস্ট প্রকাশ করা হয় না। প্রতিটি একটি সতর্কতা; ৩টি সতর্কতার পর অ্যাকাউন্ট নিষিদ্ধ করা হয়।';
+
+  @override
+  String get agreeRules => 'আমি সম্মত';
+
+  @override
+  String get modPending => 'যাচাই চলছে';
+
+  @override
+  String get modHeld => 'পর্যালোচনায় আছে';
+
+  @override
+  String get modRejected => 'প্রকাশিত হয়নি';
+
+  @override
+  String get modHeldBody => 'আপাতত শুধু আপনি পোস্টটি দেখতে পাচ্ছেন। মডারেটর কমিউনিটির নিয়ম অনুযায়ী এটি যাচাই করছেন।';
+
+  @override
+  String get modRejectedBody => 'কমিউনিটির নিয়ম ভাঙায় পোস্টটি প্রকাশ করা হয়নি।';
+
+  @override
+  String get nPostHeld => 'প্রকাশের আগে আপনার পোস্টটি পর্যালোচনায় আছে';
+
+  @override
+  String get nPostApproved => 'আপনার পোস্ট অনুমোদিত হয়েছে এবং এখন সবাই দেখতে পাচ্ছে';
+
+  @override
+  String nPostRejected(int strikes, int limit) {
+    return 'আপনার পোস্ট কমিউনিটির নিয়ম ভেঙেছে, তাই প্রকাশ করা হয়নি। সতর্কতা $limitটির মধ্যে $strikesটি।';
+  }
+
+  @override
+  String get nAccountSuspended => 'বারবার কমিউনিটির নিয়ম ভাঙায় আপনার অ্যাকাউন্ট স্থগিত করা হয়েছে।';
+
+  @override
+  String get trafficOpen => 'রিপোর্ট করা হয়েছে';
+
+  @override
+  String get trafficAcknowledged => 'যাচাই চলছে';
+
+  @override
+  String get trafficInProgress => 'মামলা প্রক্রিয়াধীন';
+
+  @override
+  String get trafficResolved => 'ব্যবস্থা নেওয়া হয়েছে';
+
+  @override
+  String get trafficDetails => 'আইন ভঙ্গের বিবরণ';
+
+  @override
+  String get plateUnknown => 'নম্বরপ্লেট পড়া যায়নি';
+
+  @override
+  String get verifyAction => 'আমি নিশ্চিত';
+
+  @override
+  String get verifiedAction => 'নিশ্চিত করেছেন';
+
+  @override
+  String get verifyExplain => 'আপনিও দেখেছেন? নিশ্চিত করুন, যাতে কর্তৃপক্ষ বুঝতে পারে এটি সত্যি।';
+
+  @override
+  String get moreActions => 'আরও';
 }

@@ -524,16 +524,10 @@ abstract class AppLocalizations {
   /// **'Demo: showing Dhaka because you\'re outside Bangladesh'**
   String get demoLocationNote;
 
-  /// No description provided for @seeItToo.
-  ///
-  /// In en, this message translates to:
-  /// **'I see it too'**
-  String get seeItToo;
-
   /// No description provided for @confirmations.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =0{Be the first to confirm} =1{1 person sees this} other{{count} people see this}}'**
+  /// **'{count, plural, =0{Be the first to verify} =1{1 person verified this} other{{count} people verified this}}'**
   String confirmations(int count);
 
   /// No description provided for @anonymousCitizen.
@@ -1891,6 +1885,330 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose a password so you can sign in without waiting for an SMS.'**
   String get passwordChooseIntro;
+
+  /// No description provided for @sectionHazards.
+  ///
+  /// In en, this message translates to:
+  /// **'Hazards'**
+  String get sectionHazards;
+
+  /// No description provided for @sectionTraffic.
+  ///
+  /// In en, this message translates to:
+  /// **'Traffic watch'**
+  String get sectionTraffic;
+
+  /// No description provided for @searchPlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Search a number plate'**
+  String get searchPlate;
+
+  /// No description provided for @allVehicles.
+  ///
+  /// In en, this message translates to:
+  /// **'All vehicles'**
+  String get allVehicles;
+
+  /// No description provided for @trafficIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicles breaking traffic law, reported by citizens. The traffic division verifies each one before taking action.'**
+  String get trafficIntro;
+
+  /// No description provided for @noTrafficReports.
+  ///
+  /// In en, this message translates to:
+  /// **'No traffic violations reported here yet.'**
+  String get noTrafficReports;
+
+  /// No description provided for @reportTypeHazard.
+  ///
+  /// In en, this message translates to:
+  /// **'Hazard'**
+  String get reportTypeHazard;
+
+  /// No description provided for @reportTypeTraffic.
+  ///
+  /// In en, this message translates to:
+  /// **'Traffic violation'**
+  String get reportTypeTraffic;
+
+  /// No description provided for @vehicleTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle'**
+  String get vehicleTypeLabel;
+
+  /// No description provided for @violationsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'What rule did it break?'**
+  String get violationsLabel;
+
+  /// No description provided for @plateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Number plate'**
+  String get plateLabel;
+
+  /// No description provided for @plateHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Type it as written on the plate. Leave it empty if it isn’t readable.'**
+  String get plateHelper;
+
+  /// No description provided for @pickVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the vehicle type.'**
+  String get pickVehicle;
+
+  /// No description provided for @pickViolation.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one violation.'**
+  String get pickViolation;
+
+  /// No description provided for @trafficSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay safe: never film while driving and don’t confront anyone. Capture the vehicle and its plate, not people’s faces.'**
+  String get trafficSafety;
+
+  /// No description provided for @policyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Report hazards, not people. Posts about any person, politician or celebrity, or for personal gain, are not published — repeated violations get the account banned.'**
+  String get policyNote;
+
+  /// No description provided for @policyWarnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This can’t be published as written'**
+  String get policyWarnTitle;
+
+  /// No description provided for @policyIssuePolitical.
+  ///
+  /// In en, this message translates to:
+  /// **'It mentions politics or a political figure.'**
+  String get policyIssuePolitical;
+
+  /// No description provided for @policyIssuePerson.
+  ///
+  /// In en, this message translates to:
+  /// **'It seems to be about a specific person.'**
+  String get policyIssuePerson;
+
+  /// No description provided for @policyIssueCelebrity.
+  ///
+  /// In en, this message translates to:
+  /// **'It mentions a celebrity or public personality.'**
+  String get policyIssueCelebrity;
+
+  /// No description provided for @policyIssuePersonalGain.
+  ///
+  /// In en, this message translates to:
+  /// **'It looks like an ad, a private dispute or personal gain.'**
+  String get policyIssuePersonalGain;
+
+  /// No description provided for @policyIssueContact.
+  ///
+  /// In en, this message translates to:
+  /// **'It contains a phone number, link or social media handle.'**
+  String get policyIssueContact;
+
+  /// No description provided for @policyWarnBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe only the hazard — what it is and where. If you send it anyway, a moderator reviews it first and it stays hidden until approved. Posts that break the rules count as a strike; after 3 strikes the account is banned.'**
+  String get policyWarnBody;
+
+  /// No description provided for @editDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit description'**
+  String get editDescription;
+
+  /// No description provided for @sendForReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Send for review anyway'**
+  String get sendForReview;
+
+  /// No description provided for @sentForReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent for review. You’ll be notified when a moderator decides.'**
+  String get sentForReview;
+
+  /// No description provided for @communityRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Community rules'**
+  String get communityRules;
+
+  /// No description provided for @rulesIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Sajag exists to warn people about public hazards. To keep it fair and safe:'**
+  String get rulesIntro;
+
+  /// No description provided for @rule1.
+  ///
+  /// In en, this message translates to:
+  /// **'Report only public hazards and traffic violations.'**
+  String get rule1;
+
+  /// No description provided for @rule2.
+  ///
+  /// In en, this message translates to:
+  /// **'Never post about a person, politician, political party or celebrity — no names, accusations or campaigns.'**
+  String get rule2;
+
+  /// No description provided for @rule3.
+  ///
+  /// In en, this message translates to:
+  /// **'No ads, sales, private disputes, revenge or anything for personal gain.'**
+  String get rule3;
+
+  /// No description provided for @rule4.
+  ///
+  /// In en, this message translates to:
+  /// **'No phone numbers, links or social media handles.'**
+  String get rule4;
+
+  /// No description provided for @rule5.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos must be live and real. Capture the problem or the vehicle, not people’s faces.'**
+  String get rule5;
+
+  /// No description provided for @rule6.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts that break these rules are not published. Each one is a strike; after 3 strikes the account is banned.'**
+  String get rule6;
+
+  /// No description provided for @agreeRules.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree'**
+  String get agreeRules;
+
+  /// No description provided for @modPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Being checked'**
+  String get modPending;
+
+  /// No description provided for @modHeld.
+  ///
+  /// In en, this message translates to:
+  /// **'Under review'**
+  String get modHeld;
+
+  /// No description provided for @modRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not published'**
+  String get modRejected;
+
+  /// No description provided for @modHeldBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Only you can see this post for now. A moderator is checking it against the community rules.'**
+  String get modHeldBody;
+
+  /// No description provided for @modRejectedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This post was not published because it breaks the community rules.'**
+  String get modRejectedBody;
+
+  /// No description provided for @nPostHeld.
+  ///
+  /// In en, this message translates to:
+  /// **'Your post is under review before it can be published'**
+  String get nPostHeld;
+
+  /// No description provided for @nPostApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Your post was approved and is now public'**
+  String get nPostApproved;
+
+  /// No description provided for @nPostRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Your post broke the community rules and was not published. Warning {strikes} of {limit}.'**
+  String nPostRejected(int strikes, int limit);
+
+  /// No description provided for @nAccountSuspended.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is suspended for repeatedly breaking the community rules.'**
+  String get nAccountSuspended;
+
+  /// No description provided for @trafficOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Reported'**
+  String get trafficOpen;
+
+  /// No description provided for @trafficAcknowledged.
+  ///
+  /// In en, this message translates to:
+  /// **'Under verification'**
+  String get trafficAcknowledged;
+
+  /// No description provided for @trafficInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Case in progress'**
+  String get trafficInProgress;
+
+  /// No description provided for @trafficResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Action taken'**
+  String get trafficResolved;
+
+  /// No description provided for @trafficDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Violation details'**
+  String get trafficDetails;
+
+  /// No description provided for @plateUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate not readable'**
+  String get plateUnknown;
+
+  /// No description provided for @verifyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'I verify'**
+  String get verifyAction;
+
+  /// No description provided for @verifiedAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get verifiedAction;
+
+  /// No description provided for @verifyExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Saw this too? Verify it so authorities know it’s real.'**
+  String get verifyExplain;
+
+  /// No description provided for @moreActions.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get moreActions;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

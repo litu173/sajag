@@ -36,6 +36,28 @@ class Category {
   String name(BuildContext context) => isBangla(context) ? nameBn : nameEn;
 }
 
+/// The category for traffic-law violations (vehicle, violations, number plate).
+const trafficCategory = 'traffic_violation';
+
+/// A vehicle type or a violation (shared/traffic.json).
+class TrafficOption {
+  const TrafficOption({required this.id, required this.nameEn, required this.nameBn, this.icon});
+
+  factory TrafficOption.fromJson(Json j) => TrafficOption(
+    id: j['id'] as String,
+    nameEn: j['en'] as String,
+    nameBn: j['bn'] as String,
+    icon: j['icon'] as String?,
+  );
+
+  final String id;
+  final String nameEn;
+  final String nameBn;
+  final String? icon;
+
+  String name(BuildContext context) => isBangla(context) ? nameBn : nameEn;
+}
+
 class Level {
   const Level({required this.level, required this.minXp, required this.nameEn, required this.nameBn});
 
@@ -147,6 +169,11 @@ class Report {
     this.statusNote,
     this.resolvedAt,
     this.resolvedBy,
+    this.vehicleType,
+    this.violations = const [],
+    this.plateNumber,
+    this.moderation = 'ok',
+    this.moderationReason,
   });
 
   factory Report.fromRow(Json r, {required String Function(String path) photoUrl}) => Report(
@@ -170,6 +197,11 @@ class Report {
     createdAt: DateTime.parse(r['created_at'] as String),
     resolvedAt: r['resolved_at'] == null ? null : DateTime.parse(r['resolved_at'] as String),
     resolvedBy: r['resolved_by'] as String?,
+    vehicleType: r['vehicle_type'] as String?,
+    violations: ((r['violations'] as List<dynamic>?) ?? const []).cast<String>(),
+    plateNumber: r['plate_number'] as String?,
+    moderation: (r['moderation'] ?? 'ok') as String,
+    moderationReason: r['moderation_reason'] as String?,
   );
 
   final String id;
@@ -198,9 +230,24 @@ class Report {
   /// 'reporter' (self-marked, phase 1), 'admin' or 'authority'.
   final String? resolvedBy;
 
+  /// Traffic violations only.
+  final String? vehicleType;
+  final List<String> violations;
+  final String? plateNumber;
+
+  /// 'ok' (published), 'pending' (automatic check), 'held' (moderator review) or 'rejected'.
+  final String moderation;
+  final String? moderationReason;
+
+  bool get isTraffic => categoryId == trafficCategory;
+  bool get isPublished => moderation == 'ok';
+
   /// The reporter can close their own report while authorities aren't connected yet.
+  /// Traffic violations are closed by the traffic division, not the reporter.
   bool get canBeMarkedSolved =>
-      status == ReportStatus.open || status == ReportStatus.acknowledged || status == ReportStatus.inProgress;
+      !isTraffic &&
+      isPublished &&
+      (status == ReportStatus.open || status == ReportStatus.acknowledged || status == ReportStatus.inProgress);
 
   String get place => [areaName, city].whereType<String>().where((s) => s.isNotEmpty).join(', ');
 
@@ -226,6 +273,11 @@ class Report {
     createdAt: createdAt,
     resolvedAt: resolvedAt,
     resolvedBy: resolvedBy,
+    vehicleType: vehicleType,
+    violations: violations,
+    plateNumber: plateNumber,
+    moderation: moderation,
+    moderationReason: moderationReason,
   );
 }
 
@@ -243,6 +295,9 @@ class NewReport {
     this.areaName,
     this.city,
     this.districtId,
+    this.vehicleType,
+    this.violations = const [],
+    this.plateNumber,
   });
 
   final String photoPath;
@@ -257,6 +312,9 @@ class NewReport {
   final String? areaName;
   final String? city;
   final String? districtId;
+  final String? vehicleType;
+  final List<String> violations;
+  final String? plateNumber;
 }
 
 class Profile {
@@ -433,6 +491,18 @@ enum FlagReason {
 }
 
 enum FeedScope { nearby, latest, following }
+
+/// Home has two sections: public hazards, and traffic violations.
+enum FeedSection { hazards, traffic }
+
+/// Plate as typed → comparable key: Bangla digits to ASCII, lower case, letters and digits only
+/// (same as public.plate_key).
+String plateKey(String plate) => _asciiDigits(plate).toLowerCase().replaceAll(RegExp(r'[^0-9a-z\u0980-\u09FF]'), '');
+
+/// Just the digits of a plate (series + number), e.g. "ঢাকা মেট্রো-গ ১২-৩৪৫৬" → "123456".
+String plateDigits(String plate) => _asciiDigits(plate).replaceAll(RegExp(r'[^0-9]'), '');
+
+String _asciiDigits(String s) => s.replaceAllMapped(RegExp('[০-৯]'), (m) => '${m[0]!.codeUnitAt(0) - 0x09E6}');
 
 enum AuthStage { signedOut, needsIdentity, pendingReview, ready }
 

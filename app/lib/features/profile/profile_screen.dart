@@ -14,6 +14,7 @@ import '../../core/widgets/settings.dart';
 import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models.dart';
+import '../create/community_rules.dart';
 import '../shell/home_shell.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -345,7 +346,7 @@ class _ReportStrip extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          StatusChip(r.status),
+                          ReportStatusChip(r),
                           const SizedBox(height: 6),
                           Text(
                             r.description,
@@ -515,6 +516,14 @@ class _HelpInfo extends StatelessWidget {
           tint: SajagColors.brand,
           title: l.privacy,
           onTap: () => _info(context, l.privacy, l.privacyBody),
+        ),
+        Consumer(
+          builder: (context, ref, _) => SettingsRow(
+            icon: Icons.gpp_good_rounded,
+            tint: SajagColors.accent,
+            title: l.communityRules,
+            onTap: () => showCommunityRules(context, ref),
+          ),
         ),
         _AboutRow(onOpen: () => _about(context)),
       ],
@@ -715,7 +724,7 @@ class CompactReportTile extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 8),
-            StatusChip(report.status),
+            ReportStatusChip(report),
           ],
         ),
       ),

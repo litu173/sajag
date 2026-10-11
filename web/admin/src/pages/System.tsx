@@ -94,7 +94,7 @@ export function Admins() {
       <div className="page-head">
         <div>
           <h1>Admin team</h1>
-          <p>Super admins manage everything; moderators handle reports, flags and accounts; analysts can only view.</p>
+          <p>Super admins manage everything; moderators handle reports, flags, held posts and accounts; traffic officers verify traffic violations and record the action taken; analysts can only view.</p>
         </div>
         {manage && (
           <div className="actions">
@@ -164,6 +164,7 @@ export function Admins() {
             <select id="a-role" className="select" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as AdminRole })}>
               <option value="moderator">Moderator</option>
               <option value="analyst">Analyst (read-only)</option>
+              <option value="traffic">Traffic division (traffic violations only)</option>
               <option value="super_admin">Super admin</option>
             </select>
           </div>

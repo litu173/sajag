@@ -25,7 +25,7 @@ void main() {
   setUpAll(() async => catalog = await Catalog.load());
 
   test('catalog loads every category, level and badge', () {
-    expect(catalog.categories, hasLength(17));
+    expect(catalog.categories, hasLength(18));
     expect(catalog.levels.first.minXp, 0);
     expect(catalog.badges.length, greaterThanOrEqualTo(30));
     expect(catalog.category('does-not-exist').id, 'other');

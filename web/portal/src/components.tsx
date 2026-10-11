@@ -17,6 +17,8 @@ import {
   type Report,
   statusLabel,
   timeAgo,
+  trafficCategory,
+  violationName,
 } from '@sajag/shared';
 import { useLang } from './i18n';
 import { ThemeToggle } from './theme';
@@ -108,8 +110,31 @@ export function StatusChip({ report }: { report: Report }) {
   return (
     <span className={`chip${report.status === 'resolved' ? ' good' : ''}`}>
       {report.status === 'resolved' && <CheckCircle2 size={14} />}
-      {statusLabel(report.status, lang)}
+      {statusLabel(report.status, lang, report.categoryId === trafficCategory)}
     </span>
+  );
+}
+
+/** A number plate drawn like the real thing. */
+export function PlateTag({ plate, large = false }: { plate: string; large?: boolean }) {
+  return <span className={`plate${large ? ' large' : ''}`}>{plate}</span>;
+}
+
+/** Plate + first violation, for traffic cards. */
+export function TrafficLine({ report }: { report: Report }) {
+  const { lang } = useLang();
+  if (report.categoryId !== trafficCategory) return null;
+  const first = report.violations[0];
+  return (
+    <div className="traffic-line">
+      {report.plateNumber && <PlateTag plate={report.plateNumber} />}
+      {first && (
+        <span className="violation">
+          {violationName(first, lang)}
+          {report.violations.length > 1 && ` +${digits(report.violations.length - 1, lang)}`}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -154,6 +179,7 @@ export function Card({ report }: { report: Report }) {
           <StatusChip report={report} />
         </div>
       </Photo>
+      <TrafficLine report={report} />
       <h3>{headline(report.description, 90)}</h3>
       <div className="m">
         {report.resolvedAt && (
@@ -250,6 +276,9 @@ export function Header() {
           <Link to="/areas" aria-current={location.pathname.startsWith('/areas') || location.pathname.startsWith('/district') ? 'page' : undefined}>
             {t('navAreas')}
           </Link>
+          <Link to="/traffic" aria-current={location.pathname.startsWith('/traffic') ? 'page' : undefined}>
+            {t('navTraffic')}
+          </Link>
           <button type="button" onClick={() => go('latest')}>{t('navStories')}</button>
           <button type="button" onClick={() => go('data')}>{t('navData')}</button>
           <button type="button" onClick={() => go('map')}>{t('navMap')}</button>
@@ -307,7 +336,7 @@ export function Footer() {
           <span>{t('rights')}</span>
           <span>
             {isDemo && <>{t('samplePhoto')}: Unsplash · </>}
-            <a href={`${import.meta.env.BASE_URL}admin/`}>{t('admin')}</a>
+            <Link to="/rules">{t('communityRules')}</Link> · <a href={`${import.meta.env.BASE_URL}admin/`}>{t('admin')}</a>
           </span>
         </div>
       </div>

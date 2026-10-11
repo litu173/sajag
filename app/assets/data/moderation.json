@@ -1,0 +1,433 @@
+{
+ "_comment": "Content-policy screening. Patterns use JavaScript/Dart regex syntax (case-insensitive); \\b is converted to \\y for Postgres. Matching posts are held for review, never auto-rejected. Admins can add terms in public.moderation_terms.",
+ "terms": [
+  {
+   "kind": "political",
+   "pattern": "\\bawami\\s*league\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "আওয়ামী"
+  },
+  {
+   "kind": "political",
+   "pattern": "আওয়ামি"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\bbnp\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "বিএনপি"
+  },
+  {
+   "kind": "political",
+   "pattern": "জামায়াত"
+  },
+  {
+   "kind": "political",
+   "pattern": "জামাত"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\bjama+t\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\bjatiya\\s+party\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "জাতীয় পার্টি"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\bncp\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "এনসিপি"
+  },
+  {
+   "kind": "political",
+   "pattern": "ছাত্রলীগ"
+  },
+  {
+   "kind": "political",
+   "pattern": "ছাত্রদল"
+  },
+  {
+   "kind": "political",
+   "pattern": "শিবির"
+  },
+  {
+   "kind": "political",
+   "pattern": "যুবলীগ"
+  },
+  {
+   "kind": "political",
+   "pattern": "যুবদল"
+  },
+  {
+   "kind": "political",
+   "pattern": "স্বেচ্ছাসেবক লীগ"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\bchh?atra\\s*(league|dal)\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\bshibir\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\bjubo\\s*(league|dal)\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\bminister\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "মন্ত্রী"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\bmp\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "এমপি"
+  },
+  {
+   "kind": "political",
+   "pattern": "সংসদ সদস্য"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\bpoliticians?\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "রাজনীতি"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\belection\\b"
+  },
+  {
+   "kind": "political",
+   "pattern": "নির্বাচন"
+  },
+  {
+   "kind": "political",
+   "pattern": "নেতা"
+  },
+  {
+   "kind": "political",
+   "pattern": "\\bparty leader\\b"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bmr\\.?\\s"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bmrs\\.?\\s"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bms\\.\\s"
+  },
+  {
+   "kind": "person",
+   "pattern": "জনাব"
+  },
+  {
+   "kind": "person",
+   "pattern": "মোঃ"
+  },
+  {
+   "kind": "person",
+   "pattern": "সাহেব"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bhis name\\b"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bher name\\b"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bnamed\\b"
+  },
+  {
+   "kind": "person",
+   "pattern": "নামের এক"
+  },
+  {
+   "kind": "person",
+   "pattern": "চোর"
+  },
+  {
+   "kind": "person",
+   "pattern": "দুর্নীতিবাজ"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bcorrupt"
+  },
+  {
+   "kind": "person",
+   "pattern": "ঘুষ"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bbribe"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bthief\\b"
+  },
+  {
+   "kind": "person",
+   "pattern": "বাটপার"
+  },
+  {
+   "kind": "person",
+   "pattern": "প্রতারক"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bfraud\\b"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bscammer\\b"
+  },
+  {
+   "kind": "person",
+   "pattern": "দালাল"
+  },
+  {
+   "kind": "person",
+   "pattern": "\\bharass"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "\\bactor\\b"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "\\bactress\\b"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "নায়ক"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "নায়িকা"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "অভিনেতা"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "অভিনেত্রী"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "\\bsinger\\b"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "গায়ক"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "গায়িকা"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "\\bcricketer\\b"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "ক্রিকেটার"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "\\binfluencer\\b"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "\\byoutuber\\b"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "ইউটিউবার"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "\\btiktoker\\b"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "টিকটকার"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "\\bcelebrity\\b"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "সেলিব্রিটি"
+  },
+  {
+   "kind": "celebrity",
+   "pattern": "তারকা"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\bfor sale\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "বিক্রি হবে"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "বিক্রয়"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\bdiscount\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\boffer\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "অফার"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\bpromo"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\bbuy now\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\bto[- ]?let\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "টু-?লেট"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "ভাড়া দেওয়া হবে"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\bhiring\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "নিয়োগ"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\bbkash\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "বিকাশ"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\bnagad\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "প্রতিবেশী"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\bneighbou?rs?\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "বাড়িওয়ালা"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\blandlord\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "প্রতিশোধ"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\brevenge\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\bsubscribe\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "\\bfollow (me|my)\\b"
+  },
+  {
+   "kind": "personal_gain",
+   "pattern": "লাইক দিন"
+  },
+  {
+   "kind": "contact",
+   "pattern": "(\\+?88)?01[3-9][0-9]{8}"
+  },
+  {
+   "kind": "contact",
+   "pattern": "০১[৩-৯][০-৯]{8}"
+  },
+  {
+   "kind": "contact",
+   "pattern": "facebook\\.com"
+  },
+  {
+   "kind": "contact",
+   "pattern": "\\bfb\\.com"
+  },
+  {
+   "kind": "contact",
+   "pattern": "\\bwa\\.me"
+  },
+  {
+   "kind": "contact",
+   "pattern": "\\bwhatsapp\\b"
+  },
+  {
+   "kind": "contact",
+   "pattern": "হোয়াটসঅ্যাপ"
+  },
+  {
+   "kind": "contact",
+   "pattern": "https?://"
+  },
+  {
+   "kind": "contact",
+   "pattern": "(^|\\s)@[a-z0-9_.]{3,}"
+  }
+ ]
+}

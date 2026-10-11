@@ -9,6 +9,8 @@ import CategoryPage from './pages/CategoryPage';
 import DistrictPage from './pages/DistrictPage';
 import Home from './pages/Home';
 import ReportPage from './pages/ReportPage';
+import RulesPage from './pages/RulesPage';
+import TrafficPage from './pages/TrafficPage';
 import './styles.css';
 
 function ScrollOnNavigate() {
@@ -53,6 +55,8 @@ function App() {
           <Route path="/category/:id" element={<CategoryPage />} />
           <Route path="/areas" element={<AreasPage />} />
           <Route path="/district/:id" element={<DistrictPage />} />
+          <Route path="/traffic" element={<TrafficPage />} />
+          <Route path="/rules" element={<RulesPage />} />
           <Route path="/report/:id" element={<ReportPage />} />
           <Route path="*" element={<Home />} />
         </Routes>

@@ -279,4 +279,117 @@ select tests.ok((select total >= 1 from public.district_summary() where district
 select tests.ok(not exists (select 1 from public.report_feed where district_id is null), 'every visible report has a district');
 reset role;
 
+-- ================================================================ content policy
+update public.app_config set value = '50' where key = 'max_reports_per_day';
+insert into auth.users (id, phone) values ('00000000-0000-0000-0000-000000000004', '+8801700000004'),
+  ('00000000-0000-0000-0000-0000000000a7', null);
+insert into public.admin_users (user_id, role, display_name) values ('00000000-0000-0000-0000-0000000000a7', 'traffic', 'DMP Traffic');
+select tests.ok(public.screen_text('Garbage dumped by the local MP every night') = 'political'
+                and public.screen_text('রাস্তায় খোলা ম্যানহোল, বাচ্চারা পড়ে যেতে পারে') is null
+                and public.screen_text('call 01712345678 for details') = 'contact'
+                and public.screen_text('নায়িকা এখানে গাড়ি পার্ক করেছে') = 'celebrity'
+                and public.screen_text('Campaign of damp walls') is null, 'policy screening (word boundaries respected)');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000004';
+select public.submit_identity('4444444444', '1990-04-04');
+insert into public.reports (category_id, description, photo_path, lat, lng, captured_at)
+values ('garbage', 'Garbage dumped by the local MP every night', 'r/p/1.jpg', 23.75, 90.39, now()),
+       ('road_damage', 'Pothole here, call 01712345678 to complain', 'r/p/2.jpg', 23.75, 90.39, now()),
+       ('open_manhole', 'Open manhole beside the school gate', 'r/p/3.jpg', 23.75, 90.39, now());
+select tests.ok((select count(*) = 3 from public.my_reports()), 'author sees all own reports');
+select tests.ok((select moderation = 'held' and moderation_reason = 'political' from public.my_reports() where description like '%local MP%'),
+                'post about a political figure is held');
+select tests.ok(exists (select 1 from public.notifications where type = 'post_held'), 'author alerted that the post is on hold');
+reset role;
+create temp table p_before as select xp, reports_count from public.profiles where id = '00000000-0000-0000-0000-000000000004';
+grant select on p_before to anon, authenticated;
+set role anon;
+reset request.jwt.claim.sub;
+select tests.ok(not exists (select 1 from public.report_feed where description like '%local MP%' or description like '%01712345678%'),
+                'held posts are not published');
+select tests.ok(exists (select 1 from public.report_feed where description = 'Open manhole beside the school gate'), 'clean post is published');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+select tests.expect_error($$select public.admin_moderate_report((select id from public.reports where description like '%local MP%'), 'approve')$$, 'admin');
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000ad';
+select public.admin_moderate_report((select id from public.reports where description like '%local MP%'), 'approve');
+select public.admin_moderate_report((select id from public.reports where description like '%01712345678%'), 'reject', 'Contact details');
+reset role;
+select tests.ok((select p.xp > b.xp and p.reports_count = b.reports_count + 1 from public.profiles p, p_before b
+                  where p.id = '00000000-0000-0000-0000-000000000004'), 'approval publishes the post (XP and count)');
+select tests.ok((select policy_strikes = 1 and status = 'active' from public.profiles where id = '00000000-0000-0000-0000-000000000004'),
+                'rejection is a strike');
+select tests.ok(exists (select 1 from public.notifications where user_id = '00000000-0000-0000-0000-000000000004' and type = 'post_rejected'
+                         and (data ->> 'strikes')::int = 1 and (data ->> 'limit')::int = 3), 'author alerted with strike count');
+
+-- ================================================================ traffic violations
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000004';
+select tests.expect_error($$insert into public.reports (category_id, description, photo_path, lat, lng, captured_at)
+  values ('traffic_violation', 'Bike on the footpath', 'r/t/0.jpg', 23.75, 90.39, now())$$, 'vehicle type required');
+select tests.expect_error($$insert into public.reports (category_id, description, photo_path, lat, lng, captured_at, vehicle_type, violations)
+  values ('traffic_violation', 'Bike on the footpath', 'r/t/0.jpg', 23.75, 90.39, now(), 'motorbike', array['flying'])$$, 'violation required');
+insert into public.reports (category_id, description, photo_path, lat, lng, captured_at, vehicle_type, violations, plate_number)
+values ('traffic_violation', 'Bike riding on the footpath at rush hour', 'r/t/1.jpg', 23.75, 90.39, now(), 'motorbike',
+        array['footpath_driving', 'no_helmet', 'no_helmet'], ' ঢাকা মেট্রো-ল  ১২-৩৪৫৬ '),
+       ('traffic_violation', 'Same bike again, wrong way this time', 'r/t/2.jpg', 23.75, 90.39, now(), 'motorbike',
+        array['wrong_way'], 'DHAKA METRO LA 12 3456');
+insert into public.reports (category_id, description, photo_path, lat, lng, captured_at, vehicle_type, violations, plate_number)
+values ('garbage', 'Plastic bags piling up', 'r/t/3.jpg', 23.75, 90.39, now(), 'bus', array['wrong_way'], 'X-1');
+select tests.ok((select plate_number = 'ঢাকা মেট্রো-ল ১২-৩৪৫৬' and plate_key = 'ঢাকামেট্রোল123456' and plate_digits = '123456'
+                        and violations = array['footpath_driving', 'no_helmet']
+                   from public.report_feed where description like 'Bike riding%'), 'traffic details stored and plate normalised');
+select tests.ok((select vehicle_type is null and plate_number is null from public.report_feed where description = 'Plastic bags piling up'),
+                'traffic fields ignored for other categories');
+select tests.expect_error($$select public.mark_my_report_resolved((select id from public.report_feed where description like 'Bike riding%'))$$, 'current state');
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a7';
+select public.admin_set_report_status((select id from public.reports where description like 'Bike riding%'), 'resolved', 'Case DMP-2026-1182, fined');
+select tests.expect_error($$select public.admin_set_report_status((select id from public.reports where description = 'Plastic bags piling up'), 'acknowledged')$$,
+                          'traffic officers can only');
+select tests.expect_error($$select public.admin_moderate_report((select id from public.reports where description = 'Plastic bags piling up'), 'reject')$$, 'admin');
+select tests.ok((select reports = 2 and actioned = 1 and cardinality(plates) = 2 from public.traffic_offenders() where plate_digits = '123456'),
+                'repeat offender found across Bangla and English spellings');
+reset role;
+select tests.ok((select status = 'resolved' and resolved_by = 'authority' from public.reports where description like 'Bike riding%'),
+                'traffic division records the action taken');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+select tests.ok(not exists (select 1 from public.traffic_offenders()), 'offender list is only for officers');
+reset role;
+
+-- ================================================================ AI moderation + repeated violations
+update public.app_config set value = 'true' where key = 'ai_moderation';
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000004';
+insert into public.reports (category_id, description, photo_path, lat, lng, captured_at)
+values ('waterlogging', 'Knee-deep water near the bazaar', 'r/a/1.jpg', 23.75, 90.39, now());
+select tests.ok((select moderation = 'pending' from public.my_reports() where description like 'Knee-deep%'), 'with AI on, posts wait for the check');
+select tests.expect_error($$select public.apply_ai_moderation((select id from public.my_reports() where description like 'Knee-deep%'), 'approve')$$,
+                          'permission denied');
+reset role;
+create temp table ai_target as select id from public.reports where description like 'Knee-deep%';
+grant select on ai_target to service_role;
+set role service_role;
+select public.apply_ai_moderation(id, 'approve') from ai_target;
+reset role;
+select tests.ok((select moderation = 'ok' from public.reports where description like 'Knee-deep%'), 'AI approval publishes');
+update public.app_config set value = 'false' where key = 'ai_moderation';
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000004';
+insert into public.reports (category_id, description, photo_path, lat, lng, captured_at)
+values ('other', 'The actor who lives here blocks the lane', 'r/s/1.jpg', 23.75, 90.39, now()),
+       ('other', 'My landlord dumps trash, teach him a lesson', 'r/s/2.jpg', 23.75, 90.39, now());
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000ad';
+select public.admin_moderate_report(id, 'reject') from public.reports where description like 'The actor%' or description like 'My landlord%';
+reset role;
+select tests.ok((select policy_strikes = 3 and status = 'suspended' from public.profiles where id = '00000000-0000-0000-0000-000000000004'),
+                'third strike suspends the account');
+select tests.ok(exists (select 1 from public.notifications where user_id = '00000000-0000-0000-0000-000000000004' and type = 'account_suspended'),
+                'author alerted about the suspension');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000004';
+select tests.expect_error($$insert into public.reports (category_id, description, photo_path, lat, lng, captured_at)
+  values ('garbage', 'Trash again', 'r/s/3.jpg', 23.75, 90.39, now())$$, 'suspended');
+reset role;
+
 \echo 'ALL DATABASE TESTS PASSED'
