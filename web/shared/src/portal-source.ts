@@ -12,7 +12,7 @@ import type {
   ReportStatus,
   StatusFilter,
 } from './types';
-import { plateDigits, plateKey, plateMatches, trafficCategory } from './traffic';
+import { trafficCategory } from './traffic';
 
 export interface PortalSource {
   feed(query: FeedQuery): Promise<Report[]>;
@@ -142,7 +142,6 @@ class DemoPortalSource implements PortalSource {
     section,
     vehicleType,
     violation,
-    plate,
     offset = 0,
     limit = 24,
   }: ReportQuery) {
@@ -155,7 +154,6 @@ class DemoPortalSource implements PortalSource {
         (!section || (r.categoryId === trafficCategory) === (section === 'traffic')) &&
         (!vehicleType || r.vehicleType === vehicleType) &&
         (!violation || r.violations.includes(violation)) &&
-        (!plate || plateMatches(r, plate)) &&
         (status === 'all' || statusGroups[status].includes(r.status)) &&
         (!area || r.areaName === area) &&
         r.createdAt.getTime() >= from &&
@@ -348,7 +346,6 @@ class SupabasePortalSource implements PortalSource {
     section,
     vehicleType,
     violation,
-    plate,
     offset = 0,
     limit = 24,
   }: ReportQuery) {
@@ -359,12 +356,6 @@ class SupabasePortalSource implements PortalSource {
     if (section) q = section === 'traffic' ? q.eq('category_id', trafficCategory) : q.neq('category_id', trafficCategory);
     if (vehicleType) q = q.eq('vehicle_type', vehicleType);
     if (violation) q = q.contains('violations', [violation]);
-    if (plate && plateKey(plate).length >= 2) {
-      const digits = plateDigits(plate);
-      q = digits.length >= 3
-        ? q.or(`plate_key.ilike.%${plateKey(plate)}%,plate_digits.ilike.%${digits}%`)
-        : q.ilike('plate_key', `%${plateKey(plate)}%`);
-    }
     if (status !== 'all') q = q.in('status', statusGroups[status]);
     if (area) q = q.eq('area_name', area);
     if (days) q = q.gte('created_at', new Date(Date.now() - days * 86_400_000).toISOString());

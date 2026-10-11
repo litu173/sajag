@@ -50,7 +50,7 @@ Claude only publishes clear hazard/traffic reports; anything borderline is held 
 
 ## 3b. Traffic division
 
-Traffic-violation reports carry the vehicle type, violations and number plate. Create accounts for traffic officers in **Admin → Admin team** with the **Traffic division** role: they see only Dashboard, Live map and **Traffic violations**, where they verify reports, record a case or the action taken, or dismiss them, and see repeat offenders (vehicles reported more than once, grouped by plate digits so Bangla and English spellings match). The repeat-offender list is not public.
+Traffic-violation reports carry the vehicle type, violations and number plate. Create accounts for traffic officers in **Admin → Admin team** with the **Traffic division** role: they see only Dashboard, Live map and **Traffic violations**, where they verify reports, record a case or the action taken, or dismiss them, and see repeat offenders (vehicles reported more than once, grouped by plate digits so Bangla and English spellings match). Number plates are private: they are not in the public `report_feed` view or the app/site, not even returned to the citizen who submitted them; officers and moderators read them only through `admin_traffic_reports()` and `traffic_offenders()`.
 
 ## 4. First super admin
 

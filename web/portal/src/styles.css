@@ -501,8 +501,6 @@ footer a:hover { color: #fff; }
 }
 
 /* ------------------------------------------------------------------ traffic */
-.plate { display: inline-block; padding: 3px 9px; border-radius: 7px; background: #fff; color: #1a1d1c; border: 1.5px solid #1a1d1c; font-weight: 700; font-size: 13px; letter-spacing: 0.02em; white-space: nowrap; }
-.plate.large { padding: 8px 16px; border-radius: 10px; border-width: 2px; font-size: 20px; }
 .traffic-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
 .traffic-line + h3 { margin-top: 8px; }
 .traffic-line .violation { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, #c2185b 12%, transparent); color: #c2185b; font-size: 13px; font-weight: 600; }
@@ -549,3 +547,5 @@ footer a:hover { color: #fff; }
 }
 .rules-line { margin: 28px 0 0; color: var(--ink-2); font-size: 15px; }
 .rules-line a { color: var(--brand); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.privacy-note { display: flex; gap: 10px; align-items: flex-start; margin: 18px 0 0; padding: 14px 16px; border-radius: var(--r); background: var(--brand-soft); color: var(--ink); font-size: 15px; line-height: 1.5; max-width: 62ch; }
+.privacy-note svg { flex: none; margin-top: 3px; color: var(--brand); }

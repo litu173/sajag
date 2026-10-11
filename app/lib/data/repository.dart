@@ -66,7 +66,6 @@ abstract interface class SajagRepository {
 
     /// Traffic section filters.
     String? vehicleType,
-    String? plate,
 
     /// Restrict to one named area (overrides [near]).
     String? area,

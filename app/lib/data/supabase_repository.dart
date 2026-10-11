@@ -244,7 +244,6 @@ class SupabaseRepository implements SajagRepository {
     FeedSection section = FeedSection.hazards,
     LatLng? near,
     String? vehicleType,
-    String? plate,
     String? area,
     String? categoryId,
     DateTime? before,
@@ -257,12 +256,6 @@ class SupabaseRepository implements SajagRepository {
       q = section == FeedSection.traffic ? q.eq('category_id', trafficCategory) : q.neq('category_id', trafficCategory);
     }
     if (vehicleType != null) q = q.eq('vehicle_type', vehicleType);
-    if (plate != null && plateKey(plate).length >= 2) {
-      final digits = plateDigits(plate);
-      q = digits.length >= 3
-          ? q.or('plate_key.ilike.%${plateKey(plate)}%,plate_digits.ilike.%$digits%')
-          : q.ilike('plate_key', '%${plateKey(plate)}%');
-    }
     if (area != null) q = q.eq('area_name', area);
     if (before != null) q = q.lt('created_at', before.toUtc().toIso8601String());
     if (scope == FeedScope.nearby && area == null && near != null) {

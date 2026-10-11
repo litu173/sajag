@@ -169,7 +169,7 @@ const strings = {
   districtNotFound: { bn: 'জেলাটি পাওয়া যায়নি।', en: 'District not found.' },
   navTraffic: { bn: 'ট্রাফিক', en: 'Traffic' },
   trafficTeaserTitle: { bn: 'আইন ভাঙলে, রেকর্ডে থাকবে', en: 'Break traffic law, and it’s on record' },
-  trafficTeaserHint: { bn: 'নাগরিকদের তোলা ছবিতে উল্টো পথ, সিগন্যাল অমান্য, ফুটপাতে বাইক — নম্বরপ্লেটসহ। যাচাইয়ের পর ব্যবস্থা নেয় ট্রাফিক বিভাগ।', en: 'Wrong-way riding, red-light running, bikes on footpaths — captured by citizens, number plate included. The traffic division verifies and acts.' },
+  trafficTeaserHint: { bn: 'নাগরিকদের তোলা ছবিতে উল্টো পথ, সিগন্যাল অমান্য, ফুটপাতে বাইক। নম্বরপ্লেট শুধু ট্রাফিক বিভাগ দেখে, যাচাইয়ের পর তারাই ব্যবস্থা নেয়।', en: 'Wrong-way riding, red-light running, bikes on footpaths — captured by citizens. Number plates go only to the traffic division, which verifies and acts.' },
   trafficEyebrow: { bn: 'ট্রাফিক নজরদারি', en: 'Traffic watch' },
   trafficTitle: { bn: 'প্রতিটি আইন ভঙ্গ, রেকর্ডে', en: 'Every violation, on record' },
   trafficLede: { bn: 'এআই ক্যামেরা বসানোর পর সিগন্যাল মানা বেড়েছে, কারণ চালকেরা জানেন কেউ দেখছে। সজাগে প্রত্যেক নাগরিকই সেই ক্যামেরা: আইন ভাঙা যানবাহনের ছবি নম্বরপ্লেটসহ তুলুন, ট্রাফিক বিভাগ যাচাই করে ব্যবস্থা নেবে। ধরা পড়ার ভয়ই আইন ভাঙা কমানোর সবচেয়ে কার্যকর ওষুধ।', en: 'Signals started working once AI cameras went up, because drivers knew they were being watched. On Sajag every citizen is that camera: capture a vehicle breaking the law, plate included, and the traffic division verifies it and acts. Knowing you\'ll be caught is the best cure for breaking the rules.' },
@@ -184,15 +184,11 @@ const strings = {
   statActioned: { bn: 'ব্যবস্থা নেওয়া হয়েছে', en: 'Action taken' },
   topViolations: { bn: 'সবচেয়ে বেশি যে আইন ভাঙা হয়', en: 'Most common violations' },
   byVehicle: { bn: 'যানবাহন অনুযায়ী', en: 'By vehicle' },
-  checkPlate: { bn: 'নম্বরপ্লেট খুঁজুন', en: 'Look up a number plate' },
-  platePlaceholder: { bn: 'যেমন ঢাকা মেট্রো-গ ১২-৩৪৫৬ বা 12-3456', en: 'e.g. ঢাকা মেট্রো-গ ১২-৩৪৫৬ or 12-3456' },
   allVehicles: { bn: 'সব যানবাহন', en: 'All vehicles' },
   allViolations: { bn: 'সব আইন ভঙ্গ', en: 'All violations' },
   trafficDisclaimer: { bn: 'নাগরিকদের রিপোর্ট ট্রাফিক বিভাগ যাচাই না করা পর্যন্ত অভিযোগ মাত্র। চালকদের হয়রানি করবেন না — ব্যবস্থা নেওয়ার দায়িত্ব কর্তৃপক্ষের।', en: 'Citizen reports are claims until the traffic division verifies them. Don’t harass drivers — taking action is the authorities’ job.' },
   trafficDetails: { bn: 'আইন ভঙ্গের বিবরণ', en: 'Violation details' },
   vehicleLabel: { bn: 'যানবাহন', en: 'Vehicle' },
-  plateLabel: { bn: 'নম্বরপ্লেট', en: 'Number plate' },
-  plateUnreadable: { bn: 'পড়া যায়নি', en: 'Not readable' },
   rulesShort: { bn: 'কোনো ব্যক্তি, রাজনীতি বা ব্যক্তিগত স্বার্থ নিয়ে পোস্ট কখনো প্রকাশ হয় না; নিয়ম ভাঙলে অ্যাকাউন্ট নিষিদ্ধ।', en: 'Posts about people, politics or personal gain are never published; rule-breakers are banned.' },
   communityRules: { bn: 'কমিউনিটির নিয়ম', en: 'Community rules' },
   rulesLede: { bn: 'সজাগ মানুষকে জনসাধারণের বিপদ সম্পর্কে সতর্ক করার জন্য — কাউকে আক্রমণ, প্রচারণা বা ব্যক্তিগত লাভের জন্য নয়। প্রতিটি পোস্ট প্রকাশের আগে স্বয়ংক্রিয়ভাবে যাচাই হয়।', en: 'Sajag exists to warn people about public hazards — not to attack anyone, campaign or profit. Every post is screened automatically before it’s published.' },
@@ -204,6 +200,8 @@ const strings = {
   rule6: { bn: 'নিয়ম ভাঙা পোস্ট প্রকাশ করা হয় না এবং লেখককে সতর্ক করা হয়। ৩টি সতর্কতার পর অ্যাকাউন্ট নিষিদ্ধ।', en: 'Posts that break these rules are not published and the author is warned. After 3 warnings the account is banned.' },
   rulesHow: { bn: 'যেভাবে যাচাই হয়', en: 'How posts are checked' },
   rulesHowBody: { bn: 'প্রতিটি পোস্ট প্রকাশের আগে স্বয়ংক্রিয়ভাবে পরীক্ষা করা হয়। কোনো ব্যক্তি, রাজনীতি, তারকা বা ব্যক্তিগত স্বার্থের ইঙ্গিত থাকলে পোস্টটি আটকে মডারেটরের কাছে যায়। নিয়ম ভাঙলে পোস্ট বাতিল হয় এবং লেখক একটি সতর্কতা পান।', en: 'Every post is checked automatically before it goes public. Anything that points to a person, politics, a celebrity or personal gain is held for a moderator. If it breaks the rules it is rejected and the author gets a warning.' },
+  platePrivate: { bn: 'নম্বরপ্লেট ও অন্য যেকোনো ব্যক্তিগত তথ্য কখনো প্রকাশ্যে দেখানো হয় না — শুধু ট্রাফিক বিভাগ দেখতে পায়, যাতে সজাগের মাধ্যমে কাউকে নিশানা বা আক্রমণ করা না যায়।', en: 'Number plates and any other personal details are never shown publicly — only the traffic division can see them, so no one can be targeted or attacked through Sajag.' },
+  rule7: { bn: 'ব্যক্তিগত তথ্য — নাম, মুখ, ফোন নম্বর ও নম্বরপ্লেট — কখনো প্রকাশ্যে দেখানো হয় না। নম্বরপ্লেট যায় শুধু ট্রাফিক বিভাগের কাছে।', en: 'Personal details — names, faces, phone numbers and number plates — are never shown publicly. Plates go only to the traffic division.' },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type StringKey = keyof typeof strings;

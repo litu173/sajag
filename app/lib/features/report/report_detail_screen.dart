@@ -415,10 +415,6 @@ class _TrafficPanel extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               Expanded(child: Text(vehicle?.name(context) ?? '—', style: theme.textTheme.titleMedium)),
-              if (report.plateNumber != null)
-                Flexible(child: PlateBadge(report.plateNumber!, large: true))
-              else
-                Text(l.plateUnknown, style: theme.textTheme.bodySmall),
             ],
           ),
           const SizedBox(height: 14),

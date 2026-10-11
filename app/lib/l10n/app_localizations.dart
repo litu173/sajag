@@ -1913,7 +1913,7 @@ abstract class AppLocalizations {
   /// No description provided for @trafficIntro.
   ///
   /// In en, this message translates to:
-  /// **'Vehicles breaking traffic law, reported by citizens. The traffic division verifies each one before taking action.'**
+  /// **'Vehicles breaking traffic law, reported by citizens. Number plates are never shown publicly — only the traffic division sees them, verifies each report and takes action.'**
   String get trafficIntro;
 
   /// No description provided for @noTrafficReports.
@@ -1955,7 +1955,7 @@ abstract class AppLocalizations {
   /// No description provided for @plateHelper.
   ///
   /// In en, this message translates to:
-  /// **'Type it as written on the plate. Leave it empty if it isn’t readable.'**
+  /// **'Only the traffic division sees the plate — it’s never shown publicly, not even to you after posting. Leave it empty if it isn’t readable.'**
   String get plateHelper;
 
   /// No description provided for @pickVehicle.
@@ -2180,12 +2180,6 @@ abstract class AppLocalizations {
   /// **'Violation details'**
   String get trafficDetails;
 
-  /// No description provided for @plateUnknown.
-  ///
-  /// In en, this message translates to:
-  /// **'Plate not readable'**
-  String get plateUnknown;
-
   /// No description provided for @verifyAction.
   ///
   /// In en, this message translates to:
@@ -2209,6 +2203,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'More'**
   String get moreActions;
+
+  /// No description provided for @rule7.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal details — names, faces, phone numbers and number plates — are never shown publicly. Plates go only to the traffic division, so no one can be targeted or attacked through Sajag.'**
+  String get rule7;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

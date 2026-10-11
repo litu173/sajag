@@ -1,8 +1,8 @@
-import { CheckCircle2, Gavel, Search, ShieldCheck, XCircle } from 'lucide-react';
+import { CheckCircle2, ExternalLink, Gavel, Search, ShieldCheck, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { type Report, type ReportStatus, trafficStatusLabels, useAsync, vehicleName, vehicles, violationName } from '@sajag/shared';
 import { adminSource } from '@sajag/shared/src/admin-source';
-import { Failed, fmtDate, Loading, PromptModal, Thumb, useApp } from '../ui';
+import { Drawer, Failed, fmtDate, Loading, PromptModal, Thumb, useApp } from '../ui';
 
 const actions: { status: ReportStatus; label: string; icon: typeof ShieldCheck; prompt: string; min: number; tone: string }[] = [
   { status: 'acknowledged', label: 'Start verification', icon: ShieldCheck, prompt: 'Note (optional)', min: 0, tone: '' },
@@ -21,6 +21,7 @@ export default function Traffic() {
   const [plate, setPlate] = useState('');
   const [query, setQuery] = useState('');
   const [acting, setActing] = useState<{ report: Report; status: ReportStatus } | null>(null);
+  const [open, setOpen] = useState<Report | null>(null);
   const list = useAsync(
     () => adminSource.reports({ traffic: true, vehicleType: vehicle || undefined, status: status || undefined, plate: query || undefined }),
     [vehicle, status, query],
@@ -141,7 +142,14 @@ export default function Traffic() {
             </thead>
             <tbody>
               {list.data.map((r) => (
-                <tr key={r.id}>
+                <tr
+                  key={r.id}
+                  className="clickable"
+                  tabIndex={0}
+                  onClick={() => setOpen(r)}
+                  onKeyDown={(e) => e.key === 'Enter' && setOpen(r)}
+                  title="Open report"
+                >
                   <td>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                       <Thumb report={r} />
@@ -167,7 +175,7 @@ export default function Traffic() {
                   <td>{r.confirmCount} citizens</td>
                   <td className="muted">{fmtDate(r.createdAt)}</td>
                   {canAct && (
-                    <td>
+                    <td onClick={(e) => e.stopPropagation()}>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {actions
                           .filter((a) => a.status !== r.status)
@@ -184,6 +192,17 @@ export default function Traffic() {
             </tbody>
           </table>
         </div>
+      )}
+      {open && (
+        <TrafficDrawer
+          report={open}
+          canAct={canAct}
+          onClose={() => setOpen(null)}
+          onAct={(status) => {
+            setActing({ report: open, status });
+            setOpen(null);
+          }}
+        />
       )}
       {acting && pending && (
         <PromptModal
@@ -204,5 +223,80 @@ export default function Traffic() {
         />
       )}
     </>
+  );
+}
+
+/** Full details of one traffic report: photo, plate, vehicle, violations, place and history. */
+function TrafficDrawer({
+  report: r,
+  canAct,
+  onClose,
+  onAct,
+}: {
+  report: Report;
+  canAct: boolean;
+  onClose: () => void;
+  onAct: (status: ReportStatus) => void;
+}) {
+  return (
+    <Drawer title="Traffic violation" onClose={onClose}>
+      {r.photoUrl ? (
+        <a href={r.photoUrl} target="_blank" rel="noreferrer" className="drawer-photo" title="Open full-size photo">
+          <img src={r.photoUrl} alt={r.description} />
+        </a>
+      ) : (
+        <Thumb report={r} size={160} />
+      )}
+      <p style={{ fontSize: 16, margin: '14px 0 6px' }}>{r.description}</p>
+      <div style={{ margin: '10px 0 4px' }}>
+        {r.plateNumber ? <span className="plate large">{r.plateNumber}</span> : <span className="muted">Plate not readable</span>}
+      </div>
+      <dl className="kv">
+        <dt>Vehicle</dt>
+        <dd>{vehicleName(r.vehicleType, 'en')}</dd>
+        <dt>Violations</dt>
+        <dd>{r.violations.map((v) => violationName(v, 'en')).join(', ') || '—'}</dd>
+        <dt>Stage</dt>
+        <dd>
+          <span className={`pill${r.status === 'resolved' ? ' good' : r.status === 'removed' ? ' bad' : ''}`}>{label(r.status)}</span>
+          {r.statusNote && <span className="muted"> — {r.statusNote}</span>}
+        </dd>
+        <dt>Reported</dt>
+        <dd>{fmtDate(r.createdAt)}</dd>
+        {r.resolvedAt && (
+          <>
+            <dt>Action recorded</dt>
+            <dd>{fmtDate(r.resolvedAt)}</dd>
+          </>
+        )}
+        <dt>Location</dt>
+        <dd>
+          {[r.areaName, r.city].filter(Boolean).join(', ') || '—'}{' '}
+          <a href={`https://www.google.com/maps/search/?api=1&query=${r.lat},${r.lng}`} target="_blank" rel="noreferrer">
+            {r.lat.toFixed(5)}, {r.lng.toFixed(5)} <ExternalLink size={12} />
+          </a>
+        </dd>
+        <dt>Verified by</dt>
+        <dd>{r.confirmCount} citizens who saw it too</dd>
+        <dt>Posted as</dt>
+        <dd>{r.authorAlias ?? 'Anonymous (alias hidden)'}</dd>
+        <dt>Report ID</dt>
+        <dd className="muted">{r.id}</dd>
+      </dl>
+      {canAct && (
+        <section>
+          <h2>Record an outcome</h2>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {actions
+              .filter((a) => a.status !== r.status)
+              .map((a) => (
+                <button key={a.status} type="button" className={`btn ${a.tone}`} onClick={() => onAct(a.status)}>
+                  <a.icon size={15} /> {a.label}
+                </button>
+              ))}
+          </div>
+        </section>
+      )}
+    </Drawer>
   );
 }

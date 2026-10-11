@@ -336,11 +336,27 @@ values ('traffic_violation', 'Bike riding on the footpath at rush hour', 'r/t/1.
         array['wrong_way'], 'DHAKA METRO LA 12 3456');
 insert into public.reports (category_id, description, photo_path, lat, lng, captured_at, vehicle_type, violations, plate_number)
 values ('garbage', 'Plastic bags piling up', 'r/t/3.jpg', 23.75, 90.39, now(), 'bus', array['wrong_way'], 'X-1');
+reset role;
 select tests.ok((select plate_number = 'ঢাকা মেট্রো-ল ১২-৩৪৫৬' and plate_key = 'ঢাকামেট্রোল123456' and plate_digits = '123456'
                         and violations = array['footpath_driving', 'no_helmet']
-                   from public.report_feed where description like 'Bike riding%'), 'traffic details stored and plate normalised');
-select tests.ok((select vehicle_type is null and plate_number is null from public.report_feed where description = 'Plastic bags piling up'),
+                   from public.reports where description like 'Bike riding%'), 'traffic details stored and plate normalised');
+select tests.ok((select vehicle_type is null and plate_number is null from public.reports where description = 'Plastic bags piling up'),
                 'traffic fields ignored for other categories');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000004';
+select tests.expect_error($$select plate_number from public.reports limit 1$$, 'permission denied');
+select tests.ok(not exists (select 1 from information_schema.columns where table_name = 'report_feed' and column_name like 'plate%'),
+                'public report view has no plate columns');
+select tests.ok((select to_jsonb(m) ? 'plate_number' from public.my_reports() m limit 1) is false, 'not even the author gets the plate back');
+select tests.expect_error($$select * from public.admin_traffic_reports()$$, 'admin');
+set role anon;
+reset request.jwt.claim.sub;
+select tests.expect_error($$select plate_digits from public.reports limit 1$$, 'permission denied');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a7';
+select tests.ok((select count(*) = 2 from public.admin_traffic_reports(p_plate => '12-3456')), 'traffic division finds plates in any spelling');
+select tests.ok((select bool_and(r ->> 'plate_number' is not null) from public.admin_traffic_reports(p_plate => '12-3456') r), 'traffic division sees plates');
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000004';
 select tests.expect_error($$select public.mark_my_report_resolved((select id from public.report_feed where description like 'Bike riding%'))$$, 'current state');
 set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a7';
 select public.admin_set_report_status((select id from public.reports where description like 'Bike riding%'), 'resolved', 'Case DMP-2026-1182, fined');

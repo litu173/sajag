@@ -1,7 +1,7 @@
 import { categories as seedCategories, badges as seedBadges } from './catalog';
 import { isDemo, supabase } from './config';
 import { type FeedRow, rowToReport } from './portal-source';
-import { plateDigits, plateKey, plateMatches, trafficCategory } from './traffic';
+import { plateDigits, plateMatches, trafficCategory } from './traffic';
 import type { Report, ReportStatus } from './types';
 
 export type AdminRole = 'super_admin' | 'moderator' | 'analyst' | 'traffic';
@@ -176,7 +176,7 @@ class DemoAdminSource implements AdminSource {
   private auditId = 1;
 
   private async seed(m: typeof import('./demo-data')) {
-    const reports = m.demoReports();
+    const reports = m.demoReports(new Date(), { withPlates: true });
     const flags: Flag[] = [];
     let flagId = 1;
     // A handful of reports carry community flags so the moderation queue has something to show.
@@ -588,12 +588,21 @@ class SupabaseAdminSource implements AdminSource {
 
   async reports({ status, categoryId, search, unpublished, traffic, vehicleType, plate, limit = 200 }: ReportFilter) {
     const db = await supabase();
+    if (traffic || plate) {
+      // Plates aren't in the public view; officers read them through an admin-only function.
+      const rows = check(
+        await db.rpc('admin_traffic_reports', {
+          p_status: status && status !== 'flagged' ? status : null,
+          p_vehicle: vehicleType ?? null,
+          p_plate: plate ?? null,
+          p_limit: limit,
+        }),
+      ) as FeedRow[];
+      return rows.map(rowToReport);
+    }
     let q = db.from('report_feed').select('*');
     if (unpublished) q = q.in('moderation', ['held', 'pending']);
-    if (traffic) q = q.eq('category_id', trafficCategory);
     if (vehicleType) q = q.eq('vehicle_type', vehicleType);
-    if (plate && plateDigits(plate).length >= 3) q = q.ilike('plate_digits', `%${plateDigits(plate)}%`);
-    else if (plate && plateKey(plate).length >= 2) q = q.ilike('plate_key', `%${plateKey(plate)}%`);
     if (status === 'flagged') {
       const ids = check(await db.from('flags').select('report_id').eq('status', 'pending')) as { report_id: string }[];
       if (ids.length === 0) return [];

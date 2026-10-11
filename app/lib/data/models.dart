@@ -171,7 +171,6 @@ class Report {
     this.resolvedBy,
     this.vehicleType,
     this.violations = const [],
-    this.plateNumber,
     this.moderation = 'ok',
     this.moderationReason,
   });
@@ -199,7 +198,6 @@ class Report {
     resolvedBy: r['resolved_by'] as String?,
     vehicleType: r['vehicle_type'] as String?,
     violations: ((r['violations'] as List<dynamic>?) ?? const []).cast<String>(),
-    plateNumber: r['plate_number'] as String?,
     moderation: (r['moderation'] ?? 'ok') as String,
     moderationReason: r['moderation_reason'] as String?,
   );
@@ -230,10 +228,10 @@ class Report {
   /// 'reporter' (self-marked, phase 1), 'admin' or 'authority'.
   final String? resolvedBy;
 
-  /// Traffic violations only.
+  /// Traffic violations only. The number plate is never part of a report as read back: it is
+  /// personal information, visible only to the traffic division.
   final String? vehicleType;
   final List<String> violations;
-  final String? plateNumber;
 
   /// 'ok' (published), 'pending' (automatic check), 'held' (moderator review) or 'rejected'.
   final String moderation;
@@ -275,7 +273,6 @@ class Report {
     resolvedBy: resolvedBy,
     vehicleType: vehicleType,
     violations: violations,
-    plateNumber: plateNumber,
     moderation: moderation,
     moderationReason: moderationReason,
   );
@@ -314,6 +311,8 @@ class NewReport {
   final String? districtId;
   final String? vehicleType;
   final List<String> violations;
+
+  /// Sent to the server for the traffic division only; never shown in the app.
   final String? plateNumber;
 }
 
@@ -494,15 +493,6 @@ enum FeedScope { nearby, latest, following }
 
 /// Home has two sections: public hazards, and traffic violations.
 enum FeedSection { hazards, traffic }
-
-/// Plate as typed → comparable key: Bangla digits to ASCII, lower case, letters and digits only
-/// (same as public.plate_key).
-String plateKey(String plate) => _asciiDigits(plate).toLowerCase().replaceAll(RegExp(r'[^0-9a-z\u0980-\u09FF]'), '');
-
-/// Just the digits of a plate (series + number), e.g. "ঢাকা মেট্রো-গ ১২-৩৪৫৬" → "123456".
-String plateDigits(String plate) => _asciiDigits(plate).replaceAll(RegExp(r'[^0-9]'), '');
-
-String _asciiDigits(String s) => s.replaceAllMapped(RegExp('[০-৯]'), (m) => '${m[0]!.codeUnitAt(0) - 0x09E6}');
 
 enum AuthStage { signedOut, needsIdentity, pendingReview, ready }
 

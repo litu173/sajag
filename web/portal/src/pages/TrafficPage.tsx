@@ -1,4 +1,4 @@
-import { Camera, Gavel, Search, ShieldCheck, Siren, X } from 'lucide-react';
+import { Camera, Gavel, Lock, ShieldCheck, Siren, X } from 'lucide-react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -29,12 +29,11 @@ const statuses: [StatusFilter, StringKey | null][] = [
   ['resolved', null],
 ];
 
-/** Traffic watch: citizen-reported traffic violations, searchable by number plate. */
+/** Traffic watch: citizen-reported traffic violations. Number plates stay with the traffic division. */
 export default function TrafficPage() {
   const { lang, t } = useLang();
   const [params, setParams] = useSearchParams();
   const filters = {
-    plate: params.get('plate') ?? '',
     vehicleType: params.get('vehicle') ?? '',
     violation: params.get('violation') ?? '',
     districtId: params.get('district') ?? '',
@@ -46,15 +45,8 @@ export default function TrafficPage() {
     else next.delete(key);
     setParams(next, { replace: true });
   };
-  const active = [filters.plate, filters.vehicleType, filters.violation, filters.districtId].filter(Boolean).length + (filters.status !== 'all' ? 1 : 0);
+  const active = [filters.vehicleType, filters.violation, filters.districtId].filter(Boolean).length + (filters.status !== 'all' ? 1 : 0);
 
-  const [plate, setPlate] = useState(filters.plate);
-  useEffect(() => setPlate(filters.plate), [filters.plate]);
-  useEffect(() => {
-    if (plate === filters.plate) return;
-    const timer = setTimeout(() => set('plate', plate.trim()), 300);
-    return () => clearTimeout(timer);
-  }, [plate]);
 
   const recent = useAsync(() => portalSource.recent(90), []);
   const stats = useMemo(() => (recent.data ? summariseTraffic(recent.data) : null), [recent.data]);
@@ -66,7 +58,6 @@ export default function TrafficPage() {
     () =>
       portalSource.search({
         section: 'traffic',
-        plate: filters.plate || undefined,
         vehicleType: filters.vehicleType || undefined,
         violation: filters.violation || undefined,
         districtId: filters.districtId || undefined,
@@ -107,6 +98,9 @@ export default function TrafficPage() {
       <section className="traffic-intro">
         <Reveal>
           <p className="lede">{t('trafficLede')}</p>
+          <p className="privacy-note">
+            <Lock size={16} aria-hidden="true" /> {t('platePrivate')}
+          </p>
         </Reveal>
         <div className="stats district-stats">
           {(
@@ -168,13 +162,6 @@ export default function TrafficPage() {
       )}
 
       <section className="filter-bar" aria-label={t('filters')}>
-        <div className="filter-top">
-          <label className="search-field">
-            <Search size={18} aria-hidden="true" />
-            <span className="vh">{t('checkPlate')}</span>
-            <input type="search" value={plate} placeholder={t('platePlaceholder')} onChange={(e) => setPlate(e.target.value)} />
-          </label>
-        </div>
         <div className="filter-grid open-wide">
           <Select label={t('vehicleLabel')} value={filters.vehicleType} onChange={(v) => set('vehicle', v)}>
             <option value="">{t('allVehicles')}</option>

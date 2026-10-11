@@ -6,8 +6,8 @@ import { CategoryChip, Photo, place, StatusChip } from './components';
 import { useLang } from './i18n';
 import { prefersReducedMotion } from './motion';
 
-const BASE_SPEED = 38; // px per second, right → left
-const BOOST_SPEED = 420; // while hovering an edge
+const BASE_SPEED = 46; // px per second, right → left
+const BOOST_SPEED = 504; // while hovering an edge
 const MAX_SLIDES = 10;
 
 /**

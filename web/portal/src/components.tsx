@@ -115,19 +115,13 @@ export function StatusChip({ report }: { report: Report }) {
   );
 }
 
-/** A number plate drawn like the real thing. */
-export function PlateTag({ plate, large = false }: { plate: string; large?: boolean }) {
-  return <span className={`plate${large ? ' large' : ''}`}>{plate}</span>;
-}
-
-/** Plate + first violation, for traffic cards. */
+/** Violations on a traffic card. Number plates are never shown publicly. */
 export function TrafficLine({ report }: { report: Report }) {
   const { lang } = useLang();
   if (report.categoryId !== trafficCategory) return null;
   const first = report.violations[0];
   return (
     <div className="traffic-line">
-      {report.plateNumber && <PlateTag plate={report.plateNumber} />}
       {first && (
         <span className="violation">
           {violationName(first, lang)}

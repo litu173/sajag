@@ -60,6 +60,7 @@ export interface Report {
   /** Traffic violations only. */
   vehicleType: string | null;
   violations: string[];
+  /** Private: only filled in for the traffic division / moderators (admin panel), never on the public site. */
   plateNumber: string | null;
   /** Content-policy state; only 'ok' reports are public. */
   moderation: 'ok' | 'pending' | 'held' | 'rejected';
@@ -117,8 +118,6 @@ export interface ReportQuery {
   section?: 'hazards' | 'traffic';
   vehicleType?: string;
   violation?: string;
-  /** Number plate, matched across Bangla/English spellings by its digits. */
-  plate?: string;
   offset?: number;
   limit?: number;
 }

@@ -32,7 +32,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   FeedSection _section = FeedSection.hazards;
   String? _category;
   String? _vehicle;
-  String _plate = '';
 
   /// A chosen area name; null means "near my current location".
   String? _area;
@@ -145,27 +144,21 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                 _section = s;
                 _category = null;
                 _vehicle = null;
-                _plate = '';
               }),
             ),
             if (_section == FeedSection.hazards)
               _CategoryFilter(selected: _category, onSelected: (c) => setState(() => _category = c))
             else
-              _TrafficFilter(
-                vehicle: _vehicle,
-                onVehicle: (v) => setState(() => _vehicle = v),
-                onPlate: (p) => setState(() => _plate = p),
-              ),
+              _TrafficFilter(vehicle: _vehicle, onVehicle: (v) => setState(() => _vehicle = v)),
             Expanded(
               child: _FeedList(
-                key: ValueKey((_scope, _section, _category, _area, _vehicle, _plate)),
+                key: ValueKey((_scope, _section, _category, _area, _vehicle)),
                 feedKey: (
                   scope: _scope,
                   section: _section,
                   categoryId: _category,
                   area: _scope == FeedScope.nearby ? _area : null,
                   vehicleType: _vehicle,
-                  plate: _plate.isEmpty ? null : _plate,
                 ),
               ),
             ),
@@ -426,80 +419,43 @@ class _SectionSwitch extends StatelessWidget {
   }
 }
 
-/// Traffic section: number-plate search and vehicle-type chips.
-class _TrafficFilter extends ConsumerStatefulWidget {
-  const _TrafficFilter({required this.vehicle, required this.onVehicle, required this.onPlate});
+/// Traffic section: vehicle-type chips. (No plate search: plates are private to the traffic division.)
+class _TrafficFilter extends ConsumerWidget {
+  const _TrafficFilter({required this.vehicle, required this.onVehicle});
   final String? vehicle;
   final ValueChanged<String?> onVehicle;
-  final ValueChanged<String> onPlate;
 
   @override
-  ConsumerState<_TrafficFilter> createState() => _TrafficFilterState();
-}
-
-class _TrafficFilterState extends ConsumerState<_TrafficFilter> {
-  Timer? _debounce;
-
-  @override
-  void dispose() {
-    _debounce?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final theme = Theme.of(context);
     final vehicles = ref.watch(catalogProvider).vehicles;
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-          child: TextField(
-            key: const Key('plate-search'),
-            textInputAction: TextInputAction.search,
-            onChanged: (v) {
-              _debounce?.cancel();
-              _debounce = Timer(const Duration(milliseconds: 400), () => widget.onPlate(v.trim()));
-            },
-            decoration: InputDecoration(
-              hintText: l.searchPlate,
-              prefixIcon: const Icon(Icons.search_rounded),
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+    return SizedBox(
+      height: 58,
+      child: ListView(
+        key: const Key('vehicle-chips'),
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+        children: [
+          CategoryFilterChip(
+            label: l.allVehicles,
+            icon: Icons.commute_rounded,
+            color: theme.colorScheme.primary,
+            selected: vehicle == null,
+            onTap: () => onVehicle(null),
+          ),
+          for (final v in vehicles.where((v) => v.id != 'other')) ...[
+            const SizedBox(width: 8),
+            CategoryFilterChip(
+              label: v.name(context),
+              icon: vehicleIcon(v.id),
+              color: const Color(0xFFC2185B),
+              selected: vehicle == v.id,
+              onTap: () => onVehicle(vehicle == v.id ? null : v.id),
             ),
-          ),
-        ),
-        SizedBox(
-          height: 58,
-          child: ListView(
-            key: const Key('vehicle-chips'),
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-            children: [
-              CategoryFilterChip(
-                label: l.allVehicles,
-                icon: Icons.commute_rounded,
-                color: theme.colorScheme.primary,
-                selected: widget.vehicle == null,
-                onTap: () => widget.onVehicle(null),
-              ),
-              for (final v in vehicles.where((v) => v.id != 'other')) ...[
-                const SizedBox(width: 8),
-                CategoryFilterChip(
-                  label: v.name(context),
-                  icon: vehicleIcon(v.id),
-                  color: const Color(0xFFC2185B),
-                  selected: widget.vehicle == v.id,
-                  onTap: () => widget.onVehicle(widget.vehicle == v.id ? null : v.id),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ],
+          ],
+        ],
+      ),
     );
   }
 }

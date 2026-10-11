@@ -154,9 +154,9 @@ describe('traffic', () => {
     expect(hazards.items.some((r) => r.categoryId === 'traffic_violation')).toBe(false);
     const bikes = await portalSource.search({ section: 'traffic', vehicleType: 'motorbike', limit: 1000 });
     expect(bikes.items.every((r) => r.vehicleType === 'motorbike')).toBe(true);
-    const plated = traffic.items.find((r) => r.plateNumber)!;
-    const byPlate = await portalSource.search({ section: 'traffic', plate: plated.plateNumber!, limit: 1000 });
-    expect(byPlate.items.map((r) => r.id)).toContain(plated.id);
+    // Number plates are private: never part of public data.
+    expect(traffic.items.every((r) => r.plateNumber === null)).toBe(true);
+    expect((await portalSource.recent(90)).every((r) => r.plateNumber === null)).toBe(true);
     const stats = summariseTraffic(await portalSource.recent(90));
     expect(stats.total).toBeGreaterThan(0);
     expect(stats.byViolation[0]!.count).toBeGreaterThanOrEqual(stats.byViolation.at(-1)!.count);
@@ -176,6 +176,7 @@ describe('admin moderation (demo)', () => {
     await adminSource.signIn('traffic@sajag.app', 'demo1234');
     const mine = await adminSource.reports({});
     expect(mine.every((r) => r.categoryId === 'traffic_violation')).toBe(true);
+    expect(mine.some((r) => r.plateNumber), 'officers see plates').toBe(true);
     await adminSource.setStatus(mine[0]!.id, 'resolved', 'Fined Tk 5,000, case DMP-1182');
     const hazard = (await import('./demo-data')).demoReports().find((r) => r.categoryId !== 'traffic_violation')!;
     await expect(adminSource.setStatus(hazard.id, 'resolved', null)).rejects.toThrow(/traffic/i);

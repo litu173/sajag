@@ -38,6 +38,7 @@ class _RulesSheet extends StatelessWidget {
       (Icons.money_off_rounded, SajagColors.accent, l.rule3),
       (Icons.phone_disabled_rounded, SajagColors.accent, l.rule4),
       (Icons.photo_camera_rounded, SajagColors.brand, l.rule5),
+      (Icons.privacy_tip_rounded, SajagColors.brand, l.rule7),
       (Icons.gavel_rounded, SajagColors.gold, l.rule6),
     ];
     return SafeArea(

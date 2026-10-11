@@ -528,14 +528,14 @@
   "sectionTraffic": "Traffic watch",
   "searchPlate": "Search a number plate",
   "allVehicles": "All vehicles",
-  "trafficIntro": "Vehicles breaking traffic law, reported by citizens. The traffic division verifies each one before taking action.",
+  "trafficIntro": "Vehicles breaking traffic law, reported by citizens. Number plates are never shown publicly — only the traffic division sees them, verifies each report and takes action.",
   "noTrafficReports": "No traffic violations reported here yet.",
   "reportTypeHazard": "Hazard",
   "reportTypeTraffic": "Traffic violation",
   "vehicleTypeLabel": "Vehicle",
   "violationsLabel": "What rule did it break?",
   "plateLabel": "Number plate",
-  "plateHelper": "Type it as written on the plate. Leave it empty if it isn’t readable.",
+  "plateHelper": "Only the traffic division sees the plate — it’s never shown publicly, not even to you after posting. Leave it empty if it isn’t readable.",
   "pickVehicle": "Choose the vehicle type.",
   "pickViolation": "Choose at least one violation.",
   "trafficSafety": "Stay safe: never film while driving and don’t confront anyone. Capture the vehicle and its plate, not people’s faces.",
@@ -583,9 +583,9 @@
   "trafficInProgress": "Case in progress",
   "trafficResolved": "Action taken",
   "trafficDetails": "Violation details",
-  "plateUnknown": "Plate not readable",
   "verifyAction": "I verify",
   "verifiedAction": "Verified",
   "verifyExplain": "Saw this too? Verify it so authorities know it’s real.",
-  "moreActions": "More"
+  "moreActions": "More",
+  "rule7": "Personal details — names, faces, phone numbers and number plates — are never shown publicly. Plates go only to the traffic division, so no one can be targeted or attacked through Sajag."
 }

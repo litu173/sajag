@@ -61,7 +61,6 @@ class DemoRepository implements SajagRepository {
       resolvedBy: r['resolved_by'] as String?,
       vehicleType: r['vehicle_type'] as String?,
       violations: ((r['violations'] as List<dynamic>?) ?? const []).cast<String>(),
-      plateNumber: r['plate_number'] as String?,
     );
   }
 
@@ -410,7 +409,6 @@ class DemoRepository implements SajagRepository {
     FeedSection section = FeedSection.hazards,
     LatLng? near,
     String? vehicleType,
-    String? plate,
     String? area,
     String? categoryId,
     DateTime? before,
@@ -425,16 +423,6 @@ class DemoRepository implements SajagRepository {
       items = items.where((r) => r.isTraffic == (section == FeedSection.traffic));
     }
     if (vehicleType != null) items = items.where((r) => r.vehicleType == vehicleType);
-    if (plate != null && plateKey(plate).length >= 2) {
-      final key = plateKey(plate);
-      final digits = plateDigits(plate);
-      items = items.where(
-        (r) =>
-            r.plateNumber != null &&
-            (plateKey(r.plateNumber!).contains(key) ||
-                (digits.length >= 3 && plateDigits(r.plateNumber!).contains(digits))),
-      );
-    }
     if (area != null) items = items.where((r) => r.areaName == area);
     if (before != null) items = items.where((r) => r.createdAt.isBefore(before));
     switch (scope) {
@@ -519,7 +507,6 @@ class DemoRepository implements SajagRepository {
         createdAt: DateTime.now(),
         vehicleType: traffic ? input.vehicleType : null,
         violations: traffic ? input.violations : const [],
-        plateNumber: traffic ? _cleanPlate(input.plateNumber) : null,
         moderation: 'held',
         moderationReason: _issueWire(issue),
       );
@@ -557,18 +544,12 @@ class DemoRepository implements SajagRepository {
       createdAt: DateTime.now(),
       vehicleType: traffic ? input.vehicleType : null,
       violations: traffic ? input.violations : const [],
-      plateNumber: traffic ? _cleanPlate(input.plateNumber) : null,
     );
     _reports.insert(0, report);
     _mine.add(report.id);
     _award(10);
     _evaluateBadges();
     return report;
-  }
-
-  static String? _cleanPlate(String? p) {
-    final s = p?.trim().replaceAll(RegExp(r'\s+'), ' ');
-    return s == null || s.isEmpty ? null : s;
   }
 
   static String _issueWire(PolicyIssue i) => switch (i) {

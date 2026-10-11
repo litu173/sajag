@@ -1005,7 +1005,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trafficIntro =>
-      'Vehicles breaking traffic law, reported by citizens. The traffic division verifies each one before taking action.';
+      'Vehicles breaking traffic law, reported by citizens. Number plates are never shown publicly — only the traffic division sees them, verifies each report and takes action.';
 
   @override
   String get noTrafficReports => 'No traffic violations reported here yet.';
@@ -1026,7 +1026,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get plateLabel => 'Number plate';
 
   @override
-  String get plateHelper => 'Type it as written on the plate. Leave it empty if it isn’t readable.';
+  String get plateHelper =>
+      'Only the traffic division sees the plate — it’s never shown publicly, not even to you after posting. Leave it empty if it isn’t readable.';
 
   @override
   String get pickVehicle => 'Choose the vehicle type.';
@@ -1148,9 +1149,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trafficDetails => 'Violation details';
 
   @override
-  String get plateUnknown => 'Plate not readable';
-
-  @override
   String get verifyAction => 'I verify';
 
   @override
@@ -1161,4 +1159,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moreActions => 'More';
+
+  @override
+  String get rule7 =>
+      'Personal details — names, faces, phone numbers and number plates — are never shown publicly. Plates go only to the traffic division, so no one can be targeted or attacked through Sajag.';
 }

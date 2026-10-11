@@ -25,8 +25,11 @@ interface DemoReport {
   resolved_by?: 'reporter' | 'admin';
 }
 
-/** Sample reports with timestamps relative to "now", so the demo always looks current. */
-export function demoReports(now = new Date()): Report[] {
+/**
+ * Sample reports with timestamps relative to "now". Number plates are private (traffic division only),
+ * so they are left out unless the admin preview asks for them.
+ */
+export function demoReports(now = new Date(), { withPlates = false } = {}): Report[] {
   return (demoJson.reports as DemoReport[]).map((r) => {
     const createdAt = new Date(now.getTime() - r.hours_ago * 3_600_000);
     const status = r.status as ReportStatus;
@@ -53,7 +56,7 @@ export function demoReports(now = new Date()): Report[] {
       resolvedBy: r.resolved_by ?? null,
       vehicleType: r.vehicle_type ?? null,
       violations: r.violations ?? [],
-      plateNumber: r.plate_number ?? null,
+      plateNumber: withPlates ? (r.plate_number ?? null) : null,
       moderation: 'ok',
       moderationReason: null,
     };

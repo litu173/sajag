@@ -213,34 +213,6 @@ String policyIssueText(BuildContext context, PolicyIssue issue) {
   };
 }
 
-/// A number plate drawn like the real thing: white plate, dark text, thin border.
-class PlateBadge extends StatelessWidget {
-  const PlateBadge(this.plate, {super.key, this.large = false});
-  final String plate;
-  final bool large;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: EdgeInsets.symmetric(horizontal: large ? 14 : 9, vertical: large ? 8 : 4),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(large ? 10 : 7),
-      border: Border.all(color: const Color(0xFF1A1D1C), width: large ? 2 : 1.4),
-    ),
-    child: Text(
-      plate,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        color: const Color(0xFF1A1D1C),
-        fontWeight: FontWeight.w700,
-        fontSize: large ? 18 : 13,
-        letterSpacing: 0.3,
-      ),
-    ),
-  );
-}
-
 /// Frosted white pill used on top of photos.
 class GlassChip extends StatelessWidget {
   const GlassChip({required this.label, required this.icon, required this.iconColor, super.key});

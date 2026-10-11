@@ -999,7 +999,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get trafficIntro =>
-      'নাগরিকদের রিপোর্ট করা ট্রাফিক আইন ভঙ্গকারী যানবাহন। ট্রাফিক বিভাগ প্রতিটি রিপোর্ট যাচাই করে ব্যবস্থা নেয়।';
+      'নাগরিকদের রিপোর্ট করা ট্রাফিক আইন ভঙ্গ। নম্বরপ্লেট কখনো প্রকাশ্যে দেখানো হয় না — শুধু ট্রাফিক বিভাগ দেখে, যাচাই করে ব্যবস্থা নেয়।';
 
   @override
   String get noTrafficReports => 'এখানে এখনো কোনো ট্রাফিক আইন ভঙ্গের রিপোর্ট নেই।';
@@ -1020,7 +1020,8 @@ class AppLocalizationsBn extends AppLocalizations {
   String get plateLabel => 'নম্বরপ্লেট';
 
   @override
-  String get plateHelper => 'প্লেটে যেমন লেখা তেমন লিখুন। পড়া না গেলে খালি রাখুন।';
+  String get plateHelper =>
+      'নম্বরপ্লেট শুধু ট্রাফিক বিভাগ দেখতে পায় — প্রকাশ্যে কখনো দেখানো হয় না, পোস্টের পর আপনাকেও না। পড়া না গেলে খালি রাখুন।';
 
   @override
   String get pickVehicle => 'যানবাহনের ধরন বেছে নিন।';
@@ -1141,9 +1142,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String get trafficDetails => 'আইন ভঙ্গের বিবরণ';
 
   @override
-  String get plateUnknown => 'নম্বরপ্লেট পড়া যায়নি';
-
-  @override
   String get verifyAction => 'আমি নিশ্চিত';
 
   @override
@@ -1154,4 +1152,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get moreActions => 'আরও';
+
+  @override
+  String get rule7 =>
+      'ব্যক্তিগত তথ্য — নাম, মুখ, ফোন নম্বর ও নম্বরপ্লেট — কখনো প্রকাশ্যে দেখানো হয় না। নম্বরপ্লেট যায় শুধু ট্রাফিক বিভাগের কাছে, যাতে সজাগের মাধ্যমে কাউকে নিশানা বা আক্রমণ করা না যায়।';
 }

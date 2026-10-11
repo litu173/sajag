@@ -179,7 +179,7 @@ class _MoreMenu extends ConsumerWidget {
   );
 }
 
-/// Plate and first violation on a traffic card.
+/// Vehicle and first violation on a traffic card (never the plate: that's private).
 class _TrafficLine extends ConsumerWidget {
   const _TrafficLine({required this.report});
   final Report report;
@@ -190,7 +190,6 @@ class _TrafficLine extends ConsumerWidget {
     final violation = report.violations.isEmpty ? null : catalog.violation(report.violations.first);
     return Row(
       children: [
-        if (report.plateNumber != null) ...[Flexible(child: PlateBadge(report.plateNumber!)), const SizedBox(width: 8)],
         if (violation != null)
           Flexible(
             child: Container(

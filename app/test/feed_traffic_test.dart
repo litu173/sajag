@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sajag/core/location.dart';
 import 'package:sajag/core/providers.dart';
-import 'package:sajag/core/widgets/visuals.dart';
 import 'package:sajag/data/catalog.dart';
 import 'package:sajag/data/demo_repository.dart';
 import 'package:sajag/main.dart';
@@ -55,7 +54,11 @@ void main() {
     expect(find.byIcon(Icons.more_vert_rounded), findsWidgets);
     expect(find.textContaining('I verify ·'), findsWidgets);
     expect(find.byIcon(Icons.visibility_outlined), findsNothing, reason: 'no eye icon any more');
-    expect(find.byType(PlateBadge), findsNothing, reason: 'no traffic posts among hazards');
+    expect(
+      find.byIcon(Icons.local_police_outlined),
+      findsOneWidget,
+      reason: 'only the section tab, no traffic posts among hazards',
+    );
 
     // Verifying toggles the label.
     await tester.tap(find.textContaining('I verify ·').first);
@@ -65,9 +68,9 @@ void main() {
     // Traffic watch: plate search, vehicle chips and traffic cards with plates.
     await tester.tap(find.text('Traffic watch'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('plate-search')), findsOneWidget);
     expect(find.byKey(const Key('vehicle-chips')), findsOneWidget);
-    expect(find.byType(PlateBadge), findsWidgets);
-    expect(find.textContaining('traffic division verifies'), findsOneWidget);
+    expect(find.byKey(const Key('plate-search')), findsNothing, reason: 'plates are private');
+    expect(find.textContaining('never shown publicly'), findsOneWidget);
+    expect(find.textContaining('ঢাকা মেট্রো'), findsNothing, reason: 'no plate text anywhere in the feed');
   });
 }

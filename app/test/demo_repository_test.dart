@@ -306,7 +306,6 @@ void main() {
       );
       await expectLater(repo.createReport(traffic()), throwsA(isA<SajagException>()));
       final r = await repo.createReport(traffic(vehicle: 'motorbike', violations: ['footpath_driving']));
-      expect(r.plateNumber, 'ঢাকা মেট্রো-ল ৯৯-৮৮৭৭');
       expect(r.canBeMarkedSolved, isFalse, reason: 'the traffic division closes these');
 
       final hazards = await repo.feed(scope: FeedScope.latest, limit: 1000);
@@ -315,14 +314,6 @@ void main() {
       expect(trafficFeed.every((x) => x.isTraffic), isTrue);
       expect(trafficFeed.any((x) => x.id == r.id), isTrue);
 
-      // Plate search works across scripts: Bangla digits typed as English digits.
-      final byPlate = await repo.feed(
-        scope: FeedScope.latest,
-        section: FeedSection.traffic,
-        plate: '99-8877',
-        limit: 1000,
-      );
-      expect(byPlate.map((x) => x.id), [r.id]);
       final byVehicle = await repo.feed(
         scope: FeedScope.latest,
         section: FeedSection.traffic,
@@ -330,12 +321,6 @@ void main() {
         limit: 1000,
       );
       expect(byVehicle.every((x) => x.vehicleType == 'bus'), isTrue);
-    });
-
-    test('plate normalisation', () {
-      expect(plateDigits('ঢাকা মেট্রো-গ ১২-৩৪৫৬'), '123456');
-      expect(plateKey('DHAKA METRO-GA 12-3456'), 'dhakametroga123456');
-      expect(plateKey('ঢাকা মেট্রো-গ ১২-৩৪৫৬'), 'ঢাকামেট্রোগ123456');
     });
   });
 }

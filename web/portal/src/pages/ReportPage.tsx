@@ -2,7 +2,7 @@ import { ExternalLink, Share2, ShieldCheck } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { daysToFix, digits, fixDuration, headline, longDate, photoSources, portalSource, type ReportStatus, statusLabel, timeAgo, trafficCategory, useAsync, vehicleName, violationName } from '@sajag/shared';
-import { Avatar, Card, CategoryChip, Photo, place, PlateTag, ScrollRow, SectionHead, Skeleton, StatusChip, useToast } from '../components';
+import { Avatar, Card, CategoryChip, Photo, place, ScrollRow, SectionHead, Skeleton, StatusChip, useToast } from '../components';
 import { useLang } from '../i18n';
 import { Reveal } from '../motion';
 
@@ -125,10 +125,7 @@ export default function ReportPage() {
           {traffic && (
             <div className="box traffic-box">
               <h4>{t('trafficDetails')}</h4>
-              <div style={{ margin: '6px 0 14px' }}>
-                {r.plateNumber ? <PlateTag plate={r.plateNumber} large /> : <span className="muted">{t('plateLabel')}: {t('plateUnreadable')}</span>}
-              </div>
-              <p style={{ margin: '0 0 10px' }}>
+              <p style={{ margin: '6px 0 10px' }}>
                 <span className="muted">{t('vehicleLabel')}:</span> <strong>{vehicleName(r.vehicleType, lang)}</strong>
               </p>
               <div className="traffic-line" style={{ marginTop: 0 }}>
@@ -138,6 +135,7 @@ export default function ReportPage() {
                   </span>
                 ))}
               </div>
+              <p className="muted" style={{ margin: '12px 0 0', fontSize: 13 }}>{t('platePrivate')}</p>
             </div>
           )}
           {r.resolvedAt && (

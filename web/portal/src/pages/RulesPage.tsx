@@ -1,4 +1,4 @@
-import { Ban, Camera, Gavel, PhoneOff, ShieldCheck, TriangleAlert, UserX } from 'lucide-react';
+import { Ban, Camera, Gavel, Lock, PhoneOff, ShieldCheck, TriangleAlert, UserX } from 'lucide-react';
 import { useLang } from '../i18n';
 import { Reveal } from '../motion';
 
@@ -11,6 +11,7 @@ export default function RulesPage() {
     [Ban, 'rule3', true],
     [PhoneOff, 'rule4', true],
     [Camera, 'rule5', false],
+    [Lock, 'rule7', false],
     [Gavel, 'rule6', true],
   ] as const;
   return (

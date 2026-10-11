@@ -6,14 +6,7 @@ import '../../core/providers.dart';
 import '../../data/models.dart';
 import '../report/confirmations.dart';
 
-typedef FeedKey = ({
-  FeedScope scope,
-  FeedSection section,
-  String? categoryId,
-  String? area,
-  String? vehicleType,
-  String? plate,
-});
+typedef FeedKey = ({FeedScope scope, FeedSection section, String? categoryId, String? area, String? vehicleType});
 
 class FeedState {
   const FeedState({required this.items, required this.hasMore, this.loadingMore = false});
@@ -37,7 +30,6 @@ class FeedController extends AsyncNotifier<FeedState> {
           scope: key.scope,
           section: key.section,
           vehicleType: key.vehicleType,
-          plate: key.plate,
           near: near,
           area: key.area,
           categoryId: key.categoryId,
