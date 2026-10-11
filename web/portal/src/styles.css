@@ -71,7 +71,7 @@
 }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
+html { -webkit-text-size-adjust: 100%; overflow-x: hidden; overflow-x: clip; } /* hidden = fallback for older Safari */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 body {
@@ -386,7 +386,6 @@ footer a:hover { color: #fff; }
 
 /* ------------------------------------------------------------------ theme toggle & area shortcut */
 .site-header .icon-btn { width: 40px; height: 40px; flex: none; }
-.areas-btn { display: none !important; }
 .site-nav a[aria-current='page'] { background: var(--surface-2); color: var(--ink); }
 
 /* ------------------------------------------------------------------ search field (shared) */
@@ -483,7 +482,6 @@ footer a:hover { color: #fff; }
 .results-head strong { color: var(--ink); font-size: 20px; }
 
 @media (max-width: 1199px) {
-  .areas-btn { display: grid !important; }
   .gateway, .district-insights { grid-template-columns: 1fr; }
   .district-feature { grid-template-columns: repeat(2, 1fr); }
   .seg { margin-left: 0; }
@@ -608,13 +606,22 @@ footer .cols > :nth-child(n+2) { grid-column: span 7; }
   .rules-grid > * { grid-column: span 12; }
 }
 
-/* mobile spans */
+/* mobile: content flows one block after another (a 24-column grid with gaps doesn't fit a phone).
+   Only short figures (stats) sit two across. */
 @media (max-width: 767px) {
-  .stats > *, .fix-stats > * { grid-column: span 12; }
-    .mosaic > * { grid-column: span 12; }
-  .mosaic > .big, .mosaic > .wide { grid-column: 1 / -1; }
-  .cards-grid > *, .aware-grid > *, .how > *, .downloads > *, .rules-grid > *, footer .cols > :nth-child(n+2) { grid-column: 1 / -1; }
-  .district-feature > *, .district-grid > * { grid-column: span 12; }
+  .welcome, .mosaic, .cards-grid, .data-grid, .map-wrap, .aware-grid, .how, .cta, .article, footer .cols, .downloads,
+  .gateway, .district-feature, .district-grid, .district-insights, .rules-grid, .rules-band {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .welcome > *, .mosaic > *, .cards-grid > *, .data-grid > *, .map-wrap > *, .aware-grid > *, .how > *, .cta > *, .article > *,
+  footer .cols > *, .downloads > *, .gateway > *, .district-feature > *, .district-grid > *, .district-insights > *, .rules-grid > *,
+  .rules-band > *, .mosaic > .big, .mosaic > .wide, .aware-grid > :first-child, .welcome > .stats {
+    grid-column: 1 / -1;
+  }
+  .stats, .fix-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats > *, .fix-stats > * { grid-column: auto; }
+  .mosaic { grid-auto-rows: 220px; }
+  .mosaic > .tall { grid-row: span 1; }
 }
 
 /* ------------------------------------------------------------------ app-only notice + rules band */
@@ -623,7 +630,6 @@ footer .cols > :nth-child(n+2) { grid-column: span 7; }
 .app-only strong { display: block; font-size: clamp(18px, 1.6vw, 21px); }
 .app-only p { margin: 4px 0 0; color: var(--ink-2); font-size: 15px; max-width: 70ch; }
 .app-only .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.how { grid-template-columns: var(--grid); }
 .how > * { grid-column: span 6; }
 .rules-band-wrap { padding-top: clamp(40px, 6vw, 72px); }
 .rules-band { display: grid; grid-template-columns: var(--grid); column-gap: var(--gap); row-gap: 20px; align-items: center; padding: clamp(24px, 4vw, 48px); border-radius: var(--r-lg); color: #fff;
@@ -647,4 +653,47 @@ footer .cols > :nth-child(n+2) { grid-column: span 7; }
 @media (max-width: 767px) {
   .how > * { grid-column: 1 / -1; }
   .app-only { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------------------------------ never break chips or buttons */
+.chip, .pill, .btn, .lang button, .seg button, .pills button, .area-chips button, .traffic-line .violation, .site-nav a, .site-nav button { white-space: nowrap; }
+.card .ph .top, .tile .top, .strip-cap .chips, .hero-text > div:first-child { flex-wrap: wrap; gap: 6px; }
+.card .ph .top { justify-content: flex-start; }
+
+/* ------------------------------------------------------------------ navigation drawer (tablet + mobile) */
+.menu-btn { display: none !important; }
+html.drawer-open, html.drawer-open body { overflow: hidden; }
+.drawer-wrap { position: fixed; inset: 0; z-index: 1000; background: rgba(10, 12, 11, 0.45); backdrop-filter: blur(4px); animation: drawer-fade 0.25s var(--ease); }
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: min(360px, 88vw); display: flex; flex-direction: column; gap: 8px; padding: 14px 18px calc(18px + env(safe-area-inset-bottom)); background: var(--bg); box-shadow: var(--shadow-lg); overflow-y: auto; animation: drawer-in 0.3s var(--ease); }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; min-height: 48px; }
+.drawer-head .brand { font-size: 22px; }
+.drawer-nav { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+.drawer-nav a, .drawer-nav button { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 12px; border: 0; border-radius: 14px; background: none; font: inherit; font-size: 17px; font-weight: 500; color: var(--ink); text-align: left; }
+.drawer-nav svg { color: var(--ink-3); flex: none; }
+.drawer-nav a:hover, .drawer-nav button:hover, .drawer-nav [aria-current='page'] { background: var(--surface-2); }
+.drawer-nav [aria-current='page'] svg { color: var(--brand); }
+.drawer-foot { margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+.drawer-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 500; }
+.drawer-cta { justify-content: center; height: 50px; }
+.drawer-foot .demo-note { display: inline-block !important; align-self: flex-start; }
+@keyframes drawer-in { from { transform: translateX(100%); } }
+@keyframes drawer-fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .drawer, .drawer-wrap { animation: none; } }
+@media (max-width: 1199px) {
+  .menu-btn { display: grid !important; }
+  .site-header .get-app { display: none; }
+}
+@media (max-width: 767px) {
+  .site-header .bar > .lang, .site-header .bar > .theme-btn, .site-header .bar > .demo-note { display: none; }
+}
+
+/* ------------------------------------------------------------------ phone layout: final word (keep last) */
+@media (max-width: 767px) {
+  .how, .rules-band, .app-only { grid-template-columns: minmax(0, 1fr); }
+  .how > *, .rules-band > *, .rules-band .head, .rules-band ul, .rules-band .btn, .app-only > *, .app-only .actions { grid-column: 1 / -1; }
+  .rules-band .btn { justify-self: stretch; justify-content: center; }
+  .app-only .actions .btn { width: 100%; justify-content: center; }
+  /* Chart tooltip: centred and allowed to wrap, so it never runs off a narrow screen. */
+  .tip { left: 50% !important; white-space: normal; width: max-content; max-width: calc(100% - 16px); text-align: center; }
+  .finder .btn { width: 100%; }
 }

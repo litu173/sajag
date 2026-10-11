@@ -209,6 +209,8 @@ const strings = {
   rulesBandTitle: { bn: 'মানুষ নয়, সমস্যার কথা বলুন', en: 'Report problems, never people' },
   readAllRules: { bn: 'সব নিয়ম পড়ুন', en: 'Read all the rules' },
   statActionRate: { bn: 'ব্যবস্থা নেওয়ার হার', en: 'Action rate' },
+  menu: { bn: 'মেনু', en: 'Menu' },
+  language: { bn: 'ভাষা', en: 'Language' },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type StringKey = keyof typeof strings;

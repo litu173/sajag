@@ -1,5 +1,21 @@
-import { ArrowLeft, ArrowRight, CheckCircle2, Download, MapPin } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  Download,
+  Home,
+  Map as MapIcon,
+  MapPin,
+  Megaphone,
+  Menu,
+  Newspaper,
+  ShieldCheck,
+  Siren,
+  X,
+} from 'lucide-react';
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   areaNamesBn,
@@ -243,6 +259,8 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => setMenuOpen(false), [location.pathname]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -280,9 +298,6 @@ export function Header() {
         </nav>
         <span className="spacer" />
         {isDemo && <span className="demo-note">{t('demo')}</span>}
-        <Link to="/areas" className="icon-btn areas-btn" aria-label={t('navAreas')} title={t('navAreas')}>
-          <MapPin size={18} aria-hidden="true" />
-        </Link>
         <ThemeToggle />
         <div className="lang" role="group" aria-label="Language">
           <button type="button" aria-pressed={lang === 'bn'} onClick={() => setLang('bn')}>বাংলা</button>
@@ -291,8 +306,108 @@ export function Header() {
         <button type="button" className="btn sm get-app" onClick={() => go('download')}>
           <Download size={16} aria-hidden="true" /> {t('getApp')}
         </button>
+        <button
+          type="button"
+          className="icon-btn menu-btn"
+          aria-label={t('menu')}
+          aria-expanded={menuOpen}
+          aria-controls="site-drawer"
+          onClick={() => setMenuOpen(true)}
+        >
+          <Menu size={20} aria-hidden="true" />
+        </button>
       </div>
+      {/* Portalled to <body>: the header's backdrop-filter would otherwise trap a fixed drawer. */}
+      {menuOpen && createPortal(<MenuDrawer onClose={() => setMenuOpen(false)} go={go} />, document.body)}
     </header>
+  );
+}
+
+/** Navigation drawer for phones and tablets: every section, plus language, theme and the app. */
+function MenuDrawer({ onClose, go }: { onClose: () => void; go: (id: string) => void }) {
+  const { lang, setLang, t } = useLang();
+  const location = useLocation();
+  const panel = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onKey);
+    document.documentElement.classList.add('drawer-open');
+    panel.current?.querySelector<HTMLElement>('a, button')?.focus();
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.documentElement.classList.remove('drawer-open');
+    };
+  }, [onClose]);
+  const section = (id: string) => () => {
+    onClose();
+    go(id);
+  };
+  const current = (path: string) => (location.pathname.startsWith(path) ? 'page' : undefined);
+  return (
+    <div className="drawer-wrap" role="presentation" onClick={onClose}>
+      <div
+        id="site-drawer"
+        className="drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('menu')}
+        ref={panel}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="drawer-head">
+          <Link to="/" className="brand" onClick={onClose}>
+            <img src={logoUrl} alt="" width={34} height={34} />
+            {lang === 'bn' ? 'সজাগ' : 'Sajag'}
+          </Link>
+          <button type="button" className="icon-btn" aria-label={t('close')} onClick={onClose}>
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
+        <nav className="drawer-nav" aria-label="Sections">
+          <Link to="/" onClick={onClose} aria-current={location.pathname === '/' ? 'page' : undefined}>
+            <Home size={19} aria-hidden="true" /> {t('frontPage')}
+          </Link>
+          <Link to="/areas" onClick={onClose} aria-current={current('/areas') ?? current('/district')}>
+            <MapPin size={19} aria-hidden="true" /> {t('navAreas')}
+          </Link>
+          <Link to="/traffic" onClick={onClose} aria-current={current('/traffic')}>
+            <Siren size={19} aria-hidden="true" /> {t('navTraffic')}
+          </Link>
+          <button type="button" onClick={section('latest')}>
+            <Newspaper size={19} aria-hidden="true" /> {t('navStories')}
+          </button>
+          <button type="button" onClick={section('data')}>
+            <BarChart3 size={19} aria-hidden="true" /> {t('navData')}
+          </button>
+          <button type="button" onClick={section('map')}>
+            <MapIcon size={19} aria-hidden="true" /> {t('navMap')}
+          </button>
+          <button type="button" onClick={section('awareness')}>
+            <Megaphone size={19} aria-hidden="true" /> {t('navAwareness')}
+          </button>
+          <Link to="/rules" onClick={onClose} aria-current={current('/rules')}>
+            <ShieldCheck size={19} aria-hidden="true" /> {t('communityRules')}
+          </Link>
+        </nav>
+        <div className="drawer-foot">
+          <div className="drawer-row">
+            <span>{t('language')}</span>
+            <div className="lang" role="group" aria-label="Language">
+              <button type="button" aria-pressed={lang === 'bn'} onClick={() => setLang('bn')}>বাংলা</button>
+              <button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>EN</button>
+            </div>
+          </div>
+          <div className="drawer-row">
+            <span>{t('theme')}</span>
+            <ThemeToggle />
+          </div>
+          <button type="button" className="btn brand drawer-cta" onClick={section('download')}>
+            <Download size={16} aria-hidden="true" /> {t('getApp')}
+          </button>
+          {isDemo && <span className="demo-note">{t('demo')}</span>}
+        </div>
+      </div>
+    </div>
   );
 }
 

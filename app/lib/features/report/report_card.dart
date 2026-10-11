@@ -12,6 +12,9 @@ import '../../data/models.dart';
 import 'confirmations.dart';
 import 'report_actions.dart';
 
+/// Inset of the chips and the ⋮ button from the photo's edges.
+const double _photoInset = 14;
+
 /// Photo-first feed card: the image carries the story; text is a short caption over it.
 class ReportCard extends ConsumerWidget {
   const ReportCard({required this.report, super.key});
@@ -53,37 +56,48 @@ class ReportCard extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    // Same inset on both sides: the category chip sits 14 from the left edge,
+                    // the ⋮ button 14 from the right, both vertically centred on one line.
                     Positioned(
-                      left: 14,
-                      top: 14,
-                      right: 8,
+                      left: _photoInset,
+                      top: _photoInset,
+                      right: _photoInset,
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Flexible(
-                            child: GlassChip(
-                              icon: categoryIcon(category),
-                              iconColor: category.color,
-                              label: category.name(context),
+                          // Chips use all the space up to the button; the button is always last.
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Flexible(
+                                  child: GlassChip(
+                                    key: const Key('card-category'),
+                                    icon: categoryIcon(category),
+                                    iconColor: category.color,
+                                    label: category.name(context),
+                                  ),
+                                ),
+                                if (report.status != ReportStatus.open) ...[
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: GlassChip(
+                                      icon: report.status == ReportStatus.resolved
+                                          ? Icons.check_circle_rounded
+                                          : Icons.schedule_rounded,
+                                      iconColor: report.status == ReportStatus.resolved
+                                          ? SajagColors.resolved
+                                          : SajagColors.progress,
+                                      label: report.isTraffic
+                                          ? statusLabel(context, report.status, traffic: true)
+                                          : solvedIn ?? statusLabel(context, report.status),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
-                          if (report.status != ReportStatus.open) ...[
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: GlassChip(
-                                icon: report.status == ReportStatus.resolved
-                                    ? Icons.check_circle_rounded
-                                    : Icons.schedule_rounded,
-                                iconColor: report.status == ReportStatus.resolved
-                                    ? SajagColors.resolved
-                                    : SajagColors.progress,
-                                label: report.isTraffic
-                                    ? statusLabel(context, report.status, traffic: true)
-                                    : solvedIn ?? statusLabel(context, report.status),
-                              ),
-                            ),
-                          ],
-                          const Spacer(),
-                          _MoreMenu(report: report),
+                          const SizedBox(width: 8),
+                          _MoreMenu(key: const Key('card-more'), report: report),
                         ],
                       ),
                     ),
@@ -136,12 +150,19 @@ class ReportCard extends ConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(4, 10, 0, 0),
-          child: Row(
-            children: [
-              Expanded(child: AuthorLine(report: report)),
-              const SizedBox(width: 8),
-              ConfirmButton(report: report),
-            ],
+          // "I verify" hugs the right edge (in line with the photo) at its natural width, capped
+          // so the alias always keeps room; on narrow screens / large text both shorten with "…".
+          child: LayoutBuilder(
+            builder: (context, box) => Row(
+              children: [
+                Expanded(child: AuthorLine(report: report)),
+                const SizedBox(width: 8),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: box.maxWidth * 0.45),
+                  child: ConfirmButton(key: const Key('card-verify'), report: report),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -151,7 +172,7 @@ class ReportCard extends ConsumerWidget {
 
 /// Vertical "more" button on the photo: share or flag.
 class _MoreMenu extends ConsumerWidget {
-  const _MoreMenu({required this.report});
+  const _MoreMenu({required this.report, super.key});
   final Report report;
 
   @override
@@ -171,8 +192,8 @@ class _MoreMenu extends ConsumerWidget {
       ),
     ],
     child: Container(
-      width: 34,
-      height: 34,
+      width: 32,
+      height: 32,
       decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.92), shape: BoxShape.circle),
       child: const Icon(Icons.more_vert_rounded, size: 20, color: Color(0xFF1A1D1C)),
     ),
@@ -284,7 +305,7 @@ class ConfirmButton extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           textStyle: TextStyle(fontSize: expanded ? 17 : 14, fontWeight: FontWeight.w700),
         ),
-        child: ExcludeSemantics(child: Text(label)),
+        child: ExcludeSemantics(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, softWrap: false)),
       ),
     );
   }
