@@ -14,7 +14,7 @@ abstract interface class SajagRepository {
   /// Optional password sign-in, for citizens who set one in account settings.
   Future<void> signInWithPassword(String phone, String password);
 
-  /// Returns the resulting stage: [AuthStage.ready] or [AuthStage.pendingReview].
+  /// Returns the resulting stage: [AuthStage.needsPassword], [AuthStage.ready] or [AuthStage.pendingReview].
   Future<AuthStage> submitIdentity({required String nid, required DateTime dob});
   Future<void> signOut();
 

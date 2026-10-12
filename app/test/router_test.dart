@@ -40,6 +40,14 @@ void main() {
     expect(go('/auth/otp', stage: AuthStage.pendingReview), '/auth/pending');
   });
 
+  test('after identity, a password is created before anything else (location comes next)', () {
+    expect(go('/feed', stage: AuthStage.needsPassword), '/auth/password');
+    expect(go('/location', stage: AuthStage.needsPassword, access: LocationAccess.denied), '/auth/password');
+    expect(go('/auth/password', stage: AuthStage.needsPassword), isNull);
+    expect(go('/auth/password'), '/feed', reason: 'done: ready users leave the step');
+    expect(go('/auth/password', access: LocationAccess.denied), '/location');
+  });
+
   test('location permission is mandatory once verified', () {
     expect(go('/feed', access: LocationAccess.denied), '/location');
     expect(go('/map', access: LocationAccess.deniedForever), '/location');

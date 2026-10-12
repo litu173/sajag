@@ -491,7 +491,8 @@ enum FlagReason {
 
 enum FeedScope { nearby, latest, following }
 
-enum AuthStage { signedOut, needsIdentity, pendingReview, ready }
+/// Sign-up order: phone code → identity (NID) → password → (location) → app.
+enum AuthStage { signedOut, needsIdentity, pendingReview, needsPassword, ready }
 
 /// The signed-in citizen's private account details. Only ever shown to themselves.
 class AccountInfo {

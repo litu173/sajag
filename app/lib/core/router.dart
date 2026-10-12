@@ -7,6 +7,7 @@ import '../features/account/account_screen.dart';
 import '../features/achievements/achievements_screen.dart';
 import '../features/auth/identity_screen.dart';
 import '../features/auth/otp_screen.dart';
+import '../features/auth/password_setup_screen.dart';
 import '../features/auth/pending_screen.dart';
 import '../features/auth/phone_screen.dart';
 import '../features/create/create_report_flow.dart';
@@ -39,6 +40,7 @@ const _entryRoutes = {
   '/auth/otp',
   '/auth/identity',
   '/auth/pending',
+  '/auth/password',
   '/location',
 };
 
@@ -61,6 +63,8 @@ String? decideRedirect({
       return goTo('/auth/identity');
     case AuthStage.pendingReview:
       return goTo('/auth/pending');
+    case AuthStage.needsPassword:
+      return goTo('/auth/password');
     case AuthStage.ready:
       if (locationAccess != null && locationAccess != LocationAccess.granted) return goTo('/location');
       return _entryRoutes.contains(location) ? '/feed' : null;
@@ -96,6 +100,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/auth/identity', builder: (_, _) => const IdentityScreen()),
       GoRoute(path: '/auth/pending', builder: (_, _) => const PendingScreen()),
+      GoRoute(path: '/auth/password', builder: (_, _) => const PasswordSetupScreen()),
       GoRoute(path: '/location', builder: (_, _) => const LocationGateScreen()),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => HomeShell(shell: shell),

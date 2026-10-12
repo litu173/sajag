@@ -1149,4 +1149,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get setNewPassword => 'Forgot it? Set a new password';
+
+  @override
+  String get passwordSetupTitle => 'Create your password';
+
+  @override
+  String get passwordSetupBody =>
+      'You’ll use it to confirm changes to your mobile number, NID, date of birth or password — and you can sign in with it too.';
 }

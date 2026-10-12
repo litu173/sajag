@@ -29,7 +29,7 @@ class _FakeLocation extends LocationService {
 }
 
 void main() {
-  testWidgets('first run: onboarding -> phone -> OTP -> NID -> feed', (tester) async {
+  testWidgets('first run: onboarding -> phone -> OTP -> NID -> password -> feed', (tester) async {
     SharedPreferences.setMockInitialValues({'settings.locale': 'en'});
     final prefs = await SharedPreferences.getInstance();
     final catalog = await tester.runAsync(Catalog.load);
@@ -86,6 +86,17 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Verify identity'));
+    await tester.pumpAndSettle();
+
+    // Password (after identity, before location): confirms account changes later
+    expect(find.text('Create your password'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('password-setup-new')), 'river2026');
+    await tester.enterText(find.byKey(const Key('password-setup-confirm')), 'river2027');
+    await tester.tap(find.byKey(const Key('password-setup-continue')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('match'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('password-setup-confirm')), 'river2026');
+    await tester.tap(find.byKey(const Key('password-setup-continue')));
     await tester.pumpAndSettle();
 
     // Home feed: location pill, icon-only tab bar with the central Report action, report cards

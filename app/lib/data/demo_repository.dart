@@ -32,7 +32,9 @@ class DemoRepository implements SajagRepository {
     final reports = [for (final r in raw['reports'] as List<dynamic>) _fromDemo(r as Json, t)];
     final awareness = [for (final a in raw['awareness'] as List<dynamic>) AwarenessPost.fromJson(a as Json)];
     final repo = DemoRepository._(prefs, catalog, reports, awareness, latency: latency);
-    if (repo._stage == AuthStage.ready) repo._evaluateBadges();
+    // Accounts verified before passwords were part of sign-up are asked to create one now.
+    if (repo._stage == AuthStage.ready && prefs.getString(_kPassword) == null) repo._setStage(AuthStage.needsPassword);
+    if (repo._identityVerified) repo._evaluateBadges();
     return repo;
   }
 
@@ -99,6 +101,11 @@ class DemoRepository implements SajagRepository {
 
   Future<void> _delay() => _latency == Duration.zero ? Future.value() : Future.delayed(_latency);
 
+  bool get _identityVerified => _stage == AuthStage.ready || _stage == AuthStage.needsPassword;
+
+  /// After identity verification: create a password first, unless there is one already.
+  AuthStage _afterIdentity() => _prefs.getString(_kPassword) == null ? AuthStage.needsPassword : AuthStage.ready;
+
   void _setStage(AuthStage s) {
     _stage = s;
     unawaited(_prefs.setString(_kStage, s.name));
@@ -156,7 +163,7 @@ class DemoRepository implements SajagRepository {
       await _prefs.setString(_kPhone, phone);
     }
     _signedInAt = DateTime.now();
-    _setStage(_prefs.getString(_kNid4) == null ? AuthStage.needsIdentity : AuthStage.ready);
+    _setStage(_prefs.getString(_kNid4) == null ? AuthStage.needsIdentity : _afterIdentity());
   }
 
   @override
@@ -167,7 +174,7 @@ class DemoRepository implements SajagRepository {
       throw const SajagException(SajagErrorCode.wrongPassword);
     }
     _signedInAt = DateTime.now();
-    _setStage(_prefs.getString(_kNid4) == null ? AuthStage.needsIdentity : AuthStage.ready);
+    _setStage(_prefs.getString(_kNid4) == null ? AuthStage.needsIdentity : _afterIdentity());
   }
 
   @override
@@ -183,9 +190,9 @@ class DemoRepository implements SajagRepository {
     _alias; // assign alias on verification
     await _prefs.setString(_kNid4, digits.substring(digits.length - 4));
     await _prefs.setString(_kDob, dob.toIso8601String());
-    _setStage(AuthStage.ready);
+    _setStage(_afterIdentity());
     _evaluateBadges();
-    return AuthStage.ready;
+    return _stage;
   }
 
   @override
@@ -211,7 +218,7 @@ class DemoRepository implements SajagRepository {
       phone: _prefs.getString(_kPhone) ?? '01700000000',
       nidLast4: _prefs.getString(_kNid4) ?? '7890',
       dob: dob == null ? DateTime(1990) : DateTime.parse(dob),
-      verification: _stage == AuthStage.ready ? 'verified' : 'pending',
+      verification: _identityVerified ? 'verified' : 'pending',
       hasPassword: _prefs.getString(_kPassword) != null,
       aliasChangedAt: changed == null ? null : DateTime.parse(changed),
     );
@@ -269,6 +276,7 @@ class DemoRepository implements SajagRepository {
     if (!isStrongPassword(password)) throw const SajagException(SajagErrorCode.weakPassword);
     await _prefs.setString(_kPassword, _hash(_prefs.getString(_kPhone) ?? '', password));
     _verifiedAt = DateTime.now();
+    if (_stage == AuthStage.needsPassword) _setStage(AuthStage.ready);
   }
 
   @override
@@ -329,7 +337,7 @@ class DemoRepository implements SajagRepository {
       followingCount: _following.length,
       currentStreak: _streak,
       longestStreak: _longestStreak,
-      verified: _stage == AuthStage.ready,
+      verified: _identityVerified,
     );
   }
 

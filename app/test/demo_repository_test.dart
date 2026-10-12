@@ -18,9 +18,14 @@ void main() {
     repo = await DemoRepository.create(await SharedPreferences.getInstance(), catalog, latency: Duration.zero);
   });
 
+  /// Full sign-up (phone → NID → password 'river2026'), then a fresh session: ready, not yet
+  /// re-verified for sensitive changes.
   Future<void> signIn() async {
     await repo.verifyOtp('01712345678', '123456');
     await repo.submitIdentity(nid: '1234567890', dob: DateTime(1990));
+    await repo.createPassword('river2026');
+    await repo.signOut();
+    await repo.verifyOtp('01712345678', '123456');
   }
 
   NewReport newReport({String category = 'open_manhole', bool showAlias = true, DateTime? capturedAt}) => NewReport(
@@ -35,6 +40,20 @@ void main() {
     areaName: 'Dhanmondi',
   );
 
+  test('sign-up asks for a password after identity, then the account is ready', () async {
+    await repo.verifyOtp('01712345678', '123456');
+    expect(repo.currentStage, AuthStage.needsIdentity);
+    await repo.submitIdentity(nid: '1234567890', dob: DateTime(1990));
+    expect(repo.currentStage, AuthStage.needsPassword);
+    expect((await repo.myProfile()).verified, isTrue);
+    await repo.createPassword('river2026');
+    expect(repo.currentStage, AuthStage.ready);
+    // Signing in again later goes straight to ready.
+    await repo.signOut();
+    await repo.verifyOtp('01712345678', '123456');
+    expect(repo.currentStage, AuthStage.ready);
+  });
+
   test('sign-in walks through OTP then identity', () async {
     expect(repo.currentStage, AuthStage.signedOut);
     await expectLater(repo.verifyOtp('01712345678', '000000'), throwsA(isA<SajagException>()));
@@ -42,7 +61,7 @@ void main() {
     expect(repo.currentStage, AuthStage.needsIdentity);
     await expectLater(repo.submitIdentity(nid: '123', dob: DateTime(1990)), throwsA(isA<SajagException>()));
     await expectLater(repo.submitIdentity(nid: '1234567890', dob: DateTime.now()), throwsA(isA<SajagException>()));
-    expect(await repo.submitIdentity(nid: '1234567890123', dob: DateTime(1990)), AuthStage.ready);
+    expect(await repo.submitIdentity(nid: '1234567890123', dob: DateTime(1990)), AuthStage.needsPassword);
     expect((await repo.myProfile()).verified, isTrue);
   });
 
@@ -187,7 +206,7 @@ void main() {
       final a = await repo.myAccount();
       expect(
         (a.phone, a.nidLast4, a.dob, a.verification, a.hasPassword),
-        ('01712345678', '7890', DateTime(1990), 'verified', false),
+        ('01712345678', '7890', DateTime(1990), 'verified', true),
       );
     });
 
@@ -200,26 +219,23 @@ void main() {
       );
       await expectLater(repo.submitIdentity(nid: '9876543210', dob: DateTime(1988)), throwsA(isA<SajagException>()));
       await expectLater(repo.deleteAccount(), throwsA(isA<SajagException>()));
-      // No password yet: creating one is the verification.
-      await expectLater(repo.createPassword('short1'), throwsA(isA<SajagException>()));
-      await repo.createPassword('river2026');
+      await expectLater(
+        repo.verifyPassword('wrong123'),
+        throwsA(isA<SajagException>().having((e) => e.code, 'code', SajagErrorCode.wrongPassword)),
+      );
+      await repo.verifyPassword('river2026');
       expect(repo.recentlyVerified, isTrue);
       await expectLater(repo.createPassword('another22'), throwsA(isA<SajagException>()), reason: 'only the first one');
     });
 
-    test('password: verify, change, and sign in with it', () async {
+    test('password: sign in with it, verify and change it', () async {
       await signIn();
-      await repo.createPassword('river2026');
       expect((await repo.myAccount()).hasPassword, isTrue);
       await repo.signOut();
       await expectLater(repo.signInWithPassword('01712345678', 'wrong123'), throwsA(isA<SajagException>()));
       await repo.signInWithPassword('01712345678', 'river2026');
       expect(repo.currentStage, AuthStage.ready);
       expect(repo.recentlyVerified, isFalse);
-      await expectLater(
-        repo.verifyPassword('wrong123'),
-        throwsA(isA<SajagException>().having((e) => e.code, 'code', SajagErrorCode.wrongPassword)),
-      );
       await repo.verifyPassword('river2026');
       await expectLater(repo.setPassword('short1'), throwsA(isA<SajagException>()));
       await repo.setPassword('lake2027x');
@@ -228,9 +244,6 @@ void main() {
 
     test('forgot password: right after signing in a new one can be set', () async {
       await signIn();
-      await repo.createPassword('river2026');
-      await repo.signOut();
-      await repo.verifyOtp('01712345678', '123456');
       expect(repo.recentlySignedIn, isTrue);
       await repo.setPassword('fresh2028');
       await repo.verifyPassword('fresh2028');
@@ -238,7 +251,7 @@ void main() {
 
     test('phone change needs the code sent to the new number', () async {
       await signIn();
-      await repo.createPassword('river2026');
+      await repo.verifyPassword('river2026');
       await repo.requestPhoneChange('01898765432');
       await expectLater(repo.confirmPhoneChange('01898765432', '000000'), throwsA(isA<SajagException>()));
       await repo.confirmPhoneChange('01898765432', '123456');
@@ -247,7 +260,7 @@ void main() {
 
     test('NID and date of birth can be updated', () async {
       await signIn();
-      await repo.createPassword('river2026');
+      await repo.verifyPassword('river2026');
       await repo.submitIdentity(nid: '9876543210123', dob: DateTime(1988, 5, 4));
       final a = await repo.myAccount();
       expect((a.nidLast4, a.dob), ('0123', DateTime(1988, 5, 4)));
@@ -256,7 +269,7 @@ void main() {
     test('deleting the account removes my reports and signs out', () async {
       await signIn();
       final r = await repo.createReport(newReport());
-      await repo.createPassword('river2026');
+      await repo.verifyPassword('river2026');
       await repo.deleteAccount();
       expect(repo.currentStage, AuthStage.signedOut);
       expect(await repo.report(r.id), isNull);

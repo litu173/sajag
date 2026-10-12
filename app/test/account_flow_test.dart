@@ -40,6 +40,12 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final catalog = await tester.runAsync(Catalog.load);
     final repo = await tester.runAsync(() => DemoRepository.create(prefs, catalog!, latency: Duration.zero));
+    // Signed-up citizens have a password (part of sign-up); this one has just signed in with it.
+    await tester.runAsync(() async {
+      await repo!.createPassword('river2026');
+      await repo.signOut();
+      await repo.signInWithPassword('01712345678', 'river2026');
+    });
 
     await tester.pumpWidget(
       ProviderScope(
@@ -79,9 +85,9 @@ void main() {
     expect(find.text('+88 01712345678'), findsOneWidget);
     expect(find.text('•••• •••• 7890'), findsOneWidget);
     expect(find.text('Verified'), findsOneWidget);
-    await tester.dragUntilVisible(find.text('Set password'), find.byType(Scrollable).first, const Offset(0, -200));
+    await tester.dragUntilVisible(find.text('Change password'), find.byType(Scrollable).first, const Offset(0, -200));
     await tester.pumpAndSettle();
-    expect(find.text('Set password'), findsOneWidget);
+    expect(find.text('Change password'), findsOneWidget, reason: 'the password was created during sign-up');
     await tester.fling(find.byType(Scrollable).first, const Offset(0, 2000), 4000);
     await tester.pumpAndSettle();
 
@@ -106,12 +112,14 @@ void main() {
     // Changing the phone first asks for the password (never an SMS code).
     await tester.tap(find.text('Mobile number'));
     await tester.pumpAndSettle();
-    // No password yet: create one first (that is the verification), then the editor opens.
-    expect(find.text('Create a password'), findsOneWidget);
+    expect(find.text('Confirm it’s you'), findsOneWidget);
     expect(find.text('Change mobile number'), findsNothing);
-    await tester.enterText(find.byType(TextField).at(0), 'river2026');
-    await tester.enterText(find.byType(TextField).at(1), 'river2026');
-    await tester.tap(find.byKey(const Key('create-password')));
+    await tester.enterText(find.byKey(const Key('verify-password')), 'wrong123');
+    await tester.tap(find.byKey(const Key('verify-continue')));
+    await tester.pumpAndSettle();
+    expect(find.text('Change mobile number'), findsNothing, reason: 'wrong password');
+    await tester.enterText(find.byKey(const Key('verify-password')), 'river2026');
+    await tester.tap(find.byKey(const Key('verify-continue')));
     await tester.pumpAndSettle();
     expect(find.text('Change mobile number'), findsOneWidget, reason: 'verified, so the editor opens');
     await tester.tapAt(const Offset(20, 40)); // dismiss the sheet

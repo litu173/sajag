@@ -2185,6 +2185,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Forgot it? Set a new password'**
   String get setNewPassword;
+
+  /// No description provided for @passwordSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your password'**
+  String get passwordSetupTitle;
+
+  /// No description provided for @passwordSetupBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You’ll use it to confirm changes to your mobile number, NID, date of birth or password — and you can sign in with it too.'**
+  String get passwordSetupBody;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -39,6 +39,7 @@ void main() {
         'settings.locale': 'bn',
         'settings.onboarded': true,
         'demo.stage': 'ready',
+        'demo.password': 'set',
       });
       final prefs = await SharedPreferences.getInstance();
       final catalog = await tester.runAsync(Catalog.load);

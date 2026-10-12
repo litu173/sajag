@@ -38,7 +38,8 @@ class SupabaseRepository implements SajagRepository {
     } else {
       final status = await _guard(() => _db.rpc<String?>('my_verification_status'));
       next = switch (status) {
-        'verified' => AuthStage.ready,
+        // Verified citizens create a password before using the app (it confirms sensitive changes).
+        'verified' => (await myAccount()).hasPassword ? AuthStage.ready : AuthStage.needsPassword,
         'pending' => AuthStage.pendingReview,
         _ => AuthStage.needsIdentity,
       };
@@ -190,6 +191,7 @@ class SupabaseRepository implements SajagRepository {
   Future<void> verifyPassword(String password) => _guard(() async {
     await _db.auth.signInWithPassword(phone: _currentPhone, password: password);
     _verifiedAt = DateTime.now();
+    await _refreshStage();
   });
 
   @override

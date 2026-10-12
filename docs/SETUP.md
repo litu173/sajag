@@ -20,7 +20,7 @@ Authentication → Providers → **Phone**: enable it and connect an SMS provide
 
 Account settings in the app also rely on these Auth options:
 
-- **Password sign-in (optional for citizens):** keep the Phone provider's password sign-in enabled, and turn on **Secure password change** (Authentication → Providers → Phone/Email settings). Password sign-in must stay enabled: the app uses it to confirm sensitive changes.
+- **Password:** every citizen creates one during sign-up, right after NID verification and before location access (accounts from before this step are asked once on their next launch). Keep the Phone provider's password sign-in enabled: the app uses it to confirm sensitive changes, and people can sign in with it.
 - **Change mobile number:** works out of the box; Supabase texts a code to the new number and the `on_auth_user_phone_changed` trigger keeps the private identity record in step.
 - **Delete account:** handled by the `delete_my_account()` RPC, which removes the auth user and cascades to the profile, identity and reports (photos are removed by the app first).
 - **Confirm it's you:** changing the phone, NID/date of birth or password, and deleting the account, first ask for the account password (never an SMS code). Accounts without a password create one at that point, which counts as the confirmation. Right after a fresh sign-in, a forgotten password can be replaced. The database checks the JWT `amr` sign-in time (`recent_auth()`, 10 minutes) before NID changes and deletion; password confirmation signs in again with the password, which refreshes it.

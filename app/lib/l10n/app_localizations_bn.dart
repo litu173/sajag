@@ -1142,4 +1142,11 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get setNewPassword => 'ভুলে গেছেন? নতুন পাসওয়ার্ড দিন';
+
+  @override
+  String get passwordSetupTitle => 'পাসওয়ার্ড তৈরি করুন';
+
+  @override
+  String get passwordSetupBody =>
+      'মোবাইল নম্বর, এনআইডি, জন্মতারিখ বা পাসওয়ার্ড পরিবর্তনের সময় এটি দিয়ে নিশ্চিত করবেন — চাইলে এটি দিয়ে সাইন ইনও করতে পারবেন।';
 }
