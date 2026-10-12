@@ -49,7 +49,7 @@ void main() {
 
     // Splash
     expect(find.text('See it. Snap it. Fix it.'), findsOneWidget);
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
 
     // Onboarding: three pages, language switch visible

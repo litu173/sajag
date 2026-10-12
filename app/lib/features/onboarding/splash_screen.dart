@@ -12,6 +12,9 @@ import '../../core/widgets/visuals.dart';
 
 /// Continues the native splash (same colour and mark) with a short brand animation while the
 /// location permission is checked, then hands over to the router.
+/// How long the splash stays before the next page loads.
+const splashDuration = Duration(milliseconds: 2500);
+
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -35,7 +38,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
 
   Future<void> _finish() async {
     await Future.wait<Object?>([
-      Future<void>.delayed(const Duration(milliseconds: 1400)),
+      // The logo animation plays for ~2.5 s, then the app moves on by itself.
+      Future<void>.delayed(splashDuration),
       ref.read(locationAccessProvider.future),
     ]);
     if (mounted) ref.read(splashDoneProvider.notifier).complete();

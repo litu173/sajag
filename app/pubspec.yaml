@@ -2,7 +2,7 @@ name: sajag
 description: "Sajag — report civic issues, anonymously."
 publish_to: "none"
 
-version: 1.6.5+12
+version: 1.6.6+13
 
 environment:
   sdk: ^3.13.5

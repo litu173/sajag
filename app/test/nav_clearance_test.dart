@@ -86,7 +86,7 @@ void main() {
         child: const SajagApp(),
       ),
     );
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
 
     await expectClearOfTabBar(tester, 'Home feed');

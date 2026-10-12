@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { type PointerEvent as ReactPointerEvent, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { type CSSProperties, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { headline, type Report, timeAgo } from '@sajag/shared';
 import { CategoryChip, Photo, place, StatusChip } from './components';
 import { useLang } from './i18n';
@@ -18,6 +18,7 @@ const MAX_SLIDES = 10;
 export default function Hero({ slides }: { slides: Report[] }) {
   const { lang, t } = useLang();
   const items = slides.slice(0, MAX_SLIDES);
+  const phone = useMediaQuery('(max-width: 767px)');
   const trackRef = useRef<HTMLDivElement>(null);
   const motion = useRef({ x: 0, velocity: -BASE_SPEED, target: -BASE_SPEED, dragging: false, moved: 0, lastX: 0, lastT: 0, dragVelocity: 0 });
 
@@ -56,6 +57,7 @@ export default function Hero({ slides }: { slides: Report[] }) {
   }, [items.length]);
 
   if (items.length === 0) return null;
+  if (phone) return <CoverFlow items={items} />;
 
   const base = () => (prefersReducedMotion() ? 0 : -BASE_SPEED);
   const boost = (dir: 'left' | 'right' | null) => {
@@ -152,6 +154,145 @@ export default function Hero({ slides }: { slides: Report[] }) {
             <ChevronRight size={26} />
           </button>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const on = () => setMatches(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [query]);
+  return matches;
+}
+
+/**
+ * Phone cover: no auto-play. One photo large in the centre, the neighbours smaller and tucked
+ * behind it on both sides. Swiping brings the next one in, growing from small to full size; the
+ * photos loop endlessly in both directions. Tap the centre photo to open it, a side one to bring it in.
+ */
+function CoverFlow({ items }: { items: Report[] }) {
+  const { lang, t } = useLang();
+  const navigate = useNavigate();
+  const n = items.length;
+  const [index, setIndex] = useState(0);
+  const [drag, setDrag] = useState(0); // live swipe offset in px
+  const box = useRef<HTMLDivElement>(null);
+  const gesture = useRef<{ x: number; y: number; horizontal: boolean | null; moved: boolean } | null>(null);
+  // The click that follows a swipe must not open (or select) a photo.
+  const swiped = useRef(false);
+
+  const wrap = (i: number) => ((i % n) + n) % n;
+  // Shortest signed distance from the current photo, so the loop has no ends.
+  const offset = (i: number) => {
+    let d = wrap(i - index);
+    if (d > n / 2) d -= n;
+    return d;
+  };
+  const width = () => box.current?.clientWidth ?? 1;
+
+  const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    gesture.current = { x: e.clientX, y: e.clientY, horizontal: null, moved: false };
+  };
+  const onMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const g = gesture.current;
+    if (!g) return;
+    const dx = e.clientX - g.x;
+    const dy = e.clientY - g.y;
+    if (g.horizontal === null && Math.abs(dx) + Math.abs(dy) > 8) {
+      g.horizontal = Math.abs(dx) > Math.abs(dy);
+      if (g.horizontal) e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    if (g.horizontal) {
+      g.moved = true;
+      setDrag(dx);
+    }
+  };
+  const onUp = () => {
+    const g = gesture.current;
+    gesture.current = null;
+    if (!g?.horizontal) return;
+    swiped.current = true;
+    setTimeout(() => (swiped.current = false), 0);
+    const threshold = width() * 0.18;
+    if (drag < -threshold) setIndex((i) => wrap(i + 1));
+    else if (drag > threshold) setIndex((i) => wrap(i - 1));
+    setDrag(0);
+  };
+
+  const current = items[index]!;
+  return (
+    <section className="cover-flow" aria-roledescription="carousel" aria-label={t('heroLabel')}>
+      <div className="strip-head container">
+        <span className="eyebrow">{t('heroLabel')}</span>
+      </div>
+      <div
+        ref={box}
+        className={`cf-stage${drag !== 0 ? ' dragging' : ''}`}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+      >
+        {items.map((r, i) => {
+          // Fractional position while swiping: 0 = centre, ±1 = beside it.
+          const p = offset(i) + drag / (width() * 0.62);
+          const a = Math.abs(p);
+          const scale = a <= 1 ? 1 - a * 0.24 : Math.max(0.6, 0.76 - (a - 1) * 0.16);
+          const style = {
+            transform: `translateX(calc(-50% + ${p * 58}%)) scale(${scale})`,
+            zIndex: 10 - Math.round(a * 2),
+            opacity: a > 1.7 ? 0 : 1,
+          } as CSSProperties;
+          const centre = offset(i) === 0;
+          return (
+            <Link
+              key={r.id}
+              to={`/report/${r.id}`}
+              className={`cf-slide${centre ? ' centre' : ''}`}
+              style={style}
+              draggable={false}
+              tabIndex={centre ? 0 : -1}
+              aria-hidden={!centre}
+              onClick={(e) => {
+                if (swiped.current) {
+                  e.preventDefault();
+                } else if (!centre) {
+                  e.preventDefault();
+                  setIndex(i);
+                }
+              }}
+            >
+              <Photo report={r} sizes="80vw" width={900} eager={Math.abs(offset(i)) <= 1} />
+              <div className="cf-cap">
+                <div className="chips">
+                  <CategoryChip id={r.categoryId} />
+                  <StatusChip report={r} />
+                </div>
+                <h2 className="display">{headline(r.description, 80)}</h2>
+                <div className="meta">
+                  {place(r, lang)} · {timeAgo(r.createdAt, lang)}
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+      <div className="cf-dots" role="tablist" aria-label={t('heroLabel')}>
+        {items.map((r, i) => (
+          <button
+            key={r.id}
+            type="button"
+            role="tab"
+            aria-selected={i === index}
+            aria-label={`${i + 1} / ${n}`}
+            onClick={() => (i === index ? navigate(`/report/${current.id}`) : setIndex(i))}
+          />
+        ))}
       </div>
     </section>
   );

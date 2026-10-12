@@ -171,3 +171,8 @@ td .desc { max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-sp
 .plate.large { padding: 8px 16px; border-radius: 10px; border-width: 2px; font-size: 20px; }
 .drawer-photo { display: block; border-radius: 12px; overflow: hidden; background: #111; }
 .drawer-photo img { display: block; width: 100%; max-height: 340px; object-fit: cover; }
+
+/* ------------------------------------------------------------------ maps stay under the header
+   Leaflet gives its panes and controls (zoom +/−, attribution) z-indexes of 400–1000, above the
+   sticky header. A stacking context per map keeps all of that inside the map. */
+.leaflet-container { isolation: isolate; z-index: 0; }

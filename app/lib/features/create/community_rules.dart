@@ -9,15 +9,14 @@ const _acceptedKey = 'rules.accepted.v1';
 
 bool rulesAccepted(WidgetRef ref) => ref.read(prefsProvider).getBool(_acceptedKey) ?? false;
 
-/// The community rules. With [requireAgree] (before someone's first post) it returns true only
-/// when they tap "I agree", and remembers that.
+/// The community rules, as the same sheet everywhere (drag handle on top). With [requireAgree]
+/// (before someone's first post) it returns true only when they tap "I agree", and remembers that;
+/// swiping it away or tapping Cancel counts as not agreeing.
 Future<bool> showCommunityRules(BuildContext context, WidgetRef ref, {bool requireAgree = false}) async {
   final agreed = await showModalBottomSheet<bool>(
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
-    isDismissible: !requireAgree,
-    enableDrag: !requireAgree,
     builder: (context) => _RulesSheet(requireAgree: requireAgree),
   );
   if (agreed ?? false) await ref.read(prefsProvider).setBool(_acceptedKey, true);

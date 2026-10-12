@@ -46,7 +46,7 @@ void main() {
         child: const SajagApp(),
       ),
     );
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
 
     // No section tabs on Home: one feed, with traffic violations as a category chip.
