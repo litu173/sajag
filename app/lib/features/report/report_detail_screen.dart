@@ -237,10 +237,10 @@ class _Detail extends ConsumerWidget {
                     textAlign: mine ? TextAlign.start : TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
-                  const SizedBox(height: 24),
-                  _StatusTimeline(report: report),
+                  // No status timeline: authorities aren't connected yet, so the only outcome is the
+                  // reporter marking it solved, shown here.
                   if (solvedIn != null) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 24),
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -437,83 +437,6 @@ class _TrafficPanel extends ConsumerWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _StatusTimeline extends StatelessWidget {
-  const _StatusTimeline({required this.report});
-  final Report report;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    if (report.status == ReportStatus.hidden || report.status == ReportStatus.removed) {
-      return Card(
-        child: ListTile(
-          leading: StatusChip(report.status),
-          subtitle: report.statusNote == null ? null : Text(report.statusNote!),
-        ),
-      );
-    }
-    const steps = [ReportStatus.open, ReportStatus.acknowledged, ReportStatus.inProgress, ReportStatus.resolved];
-    final labels = [for (final st in steps) statusLabel(context, st, traffic: report.isTraffic)];
-    final current = steps.indexOf(report.status);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                for (var i = 0; i < steps.length; i++) ...[
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: i <= current ? SajagColors.resolved : theme.colorScheme.surfaceContainerHighest,
-                    ),
-                    child: Icon(
-                      i <= current ? Icons.check : Icons.circle,
-                      size: i <= current ? 16 : 8,
-                      color: Colors.white,
-                    ),
-                  ),
-                  if (i < steps.length - 1)
-                    Expanded(
-                      child: Container(
-                        height: 3,
-                        color: i < current ? SajagColors.resolved : theme.colorScheme.surfaceContainerHighest,
-                      ),
-                    ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                for (var i = 0; i < steps.length; i++)
-                  Expanded(
-                    child: Text(
-                      labels[i],
-                      textAlign: i == 0 ? TextAlign.start : (i == steps.length - 1 ? TextAlign.end : TextAlign.center),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: i == current ? FontWeight.w700 : FontWeight.w500,
-                        color: i <= current ? theme.colorScheme.onSurface : theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            if (report.statusNote != null) ...[
-              const SizedBox(height: 12),
-              Text(report.statusNote!, style: theme.textTheme.bodyMedium),
-            ],
-          ],
-        ),
       ),
     );
   }

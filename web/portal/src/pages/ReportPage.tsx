@@ -1,13 +1,12 @@
 import { ExternalLink, Share2, ShieldCheck } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { daysToFix, digits, fixDuration, headline, longDate, photoSources, portalSource, type ReportStatus, statusLabel, timeAgo, trafficCategory, useAsync, vehicleName, violationName } from '@sajag/shared';
+import { daysToFix, digits, fixDuration, headline, longDate, photoSources, portalSource, timeAgo, trafficCategory, useAsync, vehicleName, violationName } from '@sajag/shared';
 import { Avatar, Card, CategoryChip, Photo, place, ScrollRow, SectionHead, Skeleton, StatusChip, useToast } from '../components';
 import { useLang } from '../i18n';
 import { Reveal } from '../motion';
 
 const PointMap = lazy(() => import('../PointMap'));
-const steps: ReportStatus[] = ['open', 'acknowledged', 'in_progress', 'resolved'];
 
 export default function ReportPage() {
   const { id = '' } = useParams();
@@ -67,7 +66,6 @@ export default function ReportPage() {
       // the user dismissed the share sheet
     }
   };
-  const current = steps.indexOf(r.status);
   const traffic = r.categoryId === trafficCategory;
 
   return (
@@ -106,19 +104,6 @@ export default function ReportPage() {
             </div>
             <span style={{ marginLeft: 'auto' }} className="muted">{longDate(r.createdAt, lang)}</span>
           </div>
-          <span className="eyebrow">{t('status')}</span>
-          {current >= 0 ? (
-            <div className="timeline">
-              {steps.map((s, i) => (
-                <div key={s} className={i <= current ? 'done' : undefined}>
-                  {statusLabel(s, lang, traffic)}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p>{statusLabel(r.status, lang, traffic)}</p>
-          )}
-          {r.statusNote && <p className="muted">{r.statusNote}</p>}
         </Reveal>
 
         <aside className="aside">
@@ -147,6 +132,7 @@ export default function ReportPage() {
                 {' · '}
                 {longDate(r.resolvedAt, lang)}
               </p>
+              {r.statusNote && <p style={{ margin: '10px 0 0', fontSize: 14 }}>“{r.statusNote}”</p>}
             </div>
           )}
           <div className="box">
