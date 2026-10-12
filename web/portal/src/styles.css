@@ -697,3 +697,18 @@ html.drawer-open, html.drawer-open body { overflow: hidden; }
   .tip { left: 50% !important; white-space: normal; width: max-content; max-width: calc(100% - 16px); text-align: center; }
   .finder .btn { width: 100%; }
 }
+
+/* ------------------------------------------------------------------ overlay scrollbar
+   The native scrollbar is hidden everywhere (no width taken, nothing on the splash); a thin
+   floating bar starts below the header over a transparent rail. */
+:root { --header-h: 72px; }
+@media (max-width: 767px) { :root { --header-h: 62px; } }
+html { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.overlay-scrollbar { position: fixed; z-index: 950; top: calc(var(--header-h) + 6px); bottom: 6px; right: 2px; width: 12px; background: transparent; opacity: 0; transition: opacity 0.35s var(--ease); touch-action: none; }
+.overlay-scrollbar.active { opacity: 1; }
+.overlay-scrollbar.hidden, html.drawer-open .overlay-scrollbar { display: none; }
+.overlay-scrollbar .thumb { position: absolute; top: 0; right: 2px; width: 6px; border-radius: 6px; background: color-mix(in srgb, var(--ink) 38%, transparent); transition: width 0.2s var(--ease), background 0.2s; cursor: grab; will-change: transform; }
+.overlay-scrollbar:hover .thumb, .overlay-scrollbar .thumb:active { width: 9px; background: color-mix(in srgb, var(--ink) 55%, transparent); }
+.overlay-scrollbar .thumb:active { cursor: grabbing; }
+@media (hover: none) { .overlay-scrollbar { width: 8px; } .overlay-scrollbar .thumb { width: 4px; } }

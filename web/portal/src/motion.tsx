@@ -16,7 +16,7 @@ export function markSplashGone() {
   splashWaiters.clear();
 }
 
-function useSplashGone() {
+export function useSplashGone() {
   const [gone, setGone] = useState(splashGone);
   useEffect(() => {
     if (gone) return;
@@ -44,6 +44,12 @@ export function useSmoothScroll() {
       lenis = null;
     };
   }, []);
+}
+
+/** Jumps to a vertical position without animation (used by the overlay scrollbar while dragging). */
+export function scrollToY(y: number) {
+  if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+  else window.scrollTo({ top: y, behavior: 'instant' });
 }
 
 export function scrollToTop(immediate = false) {

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { Footer, Header } from './components';
 import { LangProvider } from './i18n';
+import OverlayScrollbar from './OverlayScrollbar';
 import { markSplashGone, prefersReducedMotion, scrollToTop, useSmoothScroll } from './motion';
 import AreasPage from './pages/AreasPage';
 import CategoryPage from './pages/CategoryPage';
@@ -61,6 +62,7 @@ function App() {
           <Route path="*" element={<Home />} />
         </Routes>
         <Footer />
+        <OverlayScrollbar />
       </HashRouter>
     </LangProvider>
   );
